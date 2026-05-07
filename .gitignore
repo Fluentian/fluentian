@@ -28,20 +28,13 @@ migrate_working_dir/
 .pub/
 /build/
 
-# Android
-android/
+# Symbolication related
+app.*.symbols
 
-# iOS
-ios/
+# Obfuscation related
+app.*.map.json
 
-# Web
-web/
-
-# Windows
-windows/
-
-# Linux
-linux/
-
-# macOS
-macos/
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release

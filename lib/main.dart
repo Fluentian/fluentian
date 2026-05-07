@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/theme.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,14 +23,7 @@ class FluentianApp extends StatelessWidget {
       title: 'Fluentian',
       debugShowCheckedModeBanner: false,
       theme: FluentianTheme.lightTheme,
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'Fluentian Starting Project',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+      home: const SplashScreen(),
     );
   }
 }
