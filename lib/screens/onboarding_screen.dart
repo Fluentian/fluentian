@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
+import 'auth/sign_in_screen.dart';
 import 'level_setup_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -28,7 +29,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _go() => Navigator.of(context).pushReplacement(
-    MaterialPageRoute(builder: (_) => const LevelSetupScreen()),
+    MaterialPageRoute(builder: (_) => const SignInScreen()),
   );
 
   @override
