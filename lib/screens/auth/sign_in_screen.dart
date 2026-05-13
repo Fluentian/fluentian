@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../home_screen.dart';
 import 'auth_widgets.dart';
 import 'sign_up_screen.dart';
 import 'forgot_password_screen.dart';
@@ -16,8 +17,11 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _hasError = false;
 
   void _handleSignIn() {
-    // Mock error state toggle for demonstration
-    setState(() => _hasError = !_hasError);
+    // Navigate to HomeScreen on sign in
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      (route) => false,
+    );
   }
 
   @override

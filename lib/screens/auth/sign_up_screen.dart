@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import '../home_screen.dart';
 import 'auth_widgets.dart';
 import 'sign_in_screen.dart';
 
@@ -14,6 +15,13 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   bool _agreedToTerms = false;
   String _selectedLang = 'English';
+  
+  void _handleSignUp() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      (route) => false,
+    );
+  }
 
   void _showLangBottomSheet() {
     showModalBottomSheet(
@@ -266,7 +274,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 28),
 
-                    AuthButton(text: 'Create account', onPressed: () {}),
+                    AuthButton(text: 'Create account', onPressed: _handleSignUp),
                     const SizedBox(height: 20),
                     const AuthDivider(),
                     const SizedBox(height: 16),
