@@ -45,7 +45,7 @@ async def update_my_profile(req: UpdateProfileRequest, user: User = Depends(get_
 async def update_my_settings(req: UpdateSettingsRequest, user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
     """Update user settings."""
     return await user_service.update_settings(db, user.id, **req.model_dump(exclude_unset=True))
-
+ 
 
 @router.get("/me/hearts", response_model=HeartsResponse)
 async def get_my_hearts(user: User = Depends(get_current_active_user)):
