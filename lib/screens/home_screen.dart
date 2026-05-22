@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/content_provider.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/bottom_nav.dart';
 import 'unit_detail_screen.dart';
-import 'ai_coach_screen.dart';
-import 'social_screen.dart';
-import 'opportunity_screen.dart';
 import 'profile_screen.dart';
 import 'lesson_list_screen.dart';
+import 'lesson_detail_screen.dart';
+import 'social_screen.dart';
+import 'opportunity_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +28,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final screens = [
       _HomeContent(),
-      const AiCoachScreen(),
       const SocialScreen(),
       const OpportunityScreen(),
       const ProfileScreen(),
@@ -46,160 +48,208 @@ class _HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top bar
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Good morning, Sara',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: FluentianColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  const StatChip(
-                    icon: Icons.local_fire_department_rounded,
-                    value: '7',
-                    color: FluentianColors.accent,
-                    bgColor: FluentianColors.accentTint,
-                  ),
-                  const SizedBox(width: 6),
-                  StatChip(
-                    icon: Icons.bolt_rounded,
-                    value: '340 XP',
-                    color: FluentianColors.primary,
-                    bgColor: FluentianColors.primaryTint,
-                  ),
-                  const SizedBox(width: 6),
-                  StatChip(
-                    icon: Icons.favorite_rounded,
-                    value: '5/5',
-                    color: FluentianColors.error,
-                    bgColor: FluentianColors.errorTint,
-                  ),
-                ],
-              ),
-            ),
-
-            // Streak banner
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: FluentianColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(16),
-                ),
+      child: Consumer2<AuthProvider, ContentProvider>(
+        builder: (context, auth, content, _) {
+          if (content.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (content.status == ContentStatus.error) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '7-day streak!',
-                                style: GoogleFonts.inter(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Don\'t break it — practice today',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          Iconsax.flash_15,
-                          color: Colors.white,
-                          size: 40,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: 340 / 500,
-                        backgroundColor: Colors.white.withValues(alpha: 0.2),
-                        valueColor: AlwaysStoppedAnimation(
-                          Colors.white.withValues(alpha: 0.8),
-                        ),
-                        minHeight: 6,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
+                    const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey),
+                    const SizedBox(height: 16),
                     Text(
-                      '340 / 500 XP to next level',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
+                      content.error ?? 'Connection error',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(fontSize: 16, color: FluentianColors.textSecondary),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => content.loadHomeData(),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
               ),
-            ),
+            );
+          }
+          
+          final user = auth.user;
+          final stats = content.stats;
+          final xp = stats?.totalXp ?? 0;
+          final streak = stats?.streakDays ?? 0;
+          final hearts = stats?.hearts ?? 5;
+          final currentLevel = stats?.currentLevel ?? 'A0';
+          
+          final xpForNextLevel = 500; // Simplified for MVP
+          final xpProgress = xp % xpForNextLevel;
 
-            const SizedBox(height: 24),
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top bar
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${user?.greeting ?? "Hello"}, ${user?.displayName ?? "Learner"}',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: FluentianColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      StatChip(
+                        icon: Icons.local_fire_department_rounded,
+                        value: '$streak',
+                        color: FluentianColors.accent,
+                        bgColor: FluentianColors.accentTint,
+                      ),
+                      const SizedBox(width: 6),
+                      StatChip(
+                        icon: Icons.bolt_rounded,
+                        value: '$xp XP',
+                        color: FluentianColors.primary,
+                        bgColor: FluentianColors.primaryTint,
+                      ),
+                      const SizedBox(width: 6),
+                      StatChip(
+                        icon: Icons.favorite_rounded,
+                        value: '$hearts/5',
+                        color: FluentianColors.error,
+                        bgColor: FluentianColors.errorTint,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Streak banner
+                if (streak > 0)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: FluentianColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '$streak-day streak!',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Don\'t break it — practice today',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        color: Colors.white.withValues(alpha: 0.6),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                Iconsax.flash_15,
+                                color: Colors.white,
+                                size: 40,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: xpProgress / xpForNextLevel,
+                              backgroundColor: Colors.white.withValues(alpha: 0.2),
+                              valueColor: AlwaysStoppedAnimation(
+                                Colors.white.withValues(alpha: 0.8),
+                              ),
+                              minHeight: 6,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '$xpProgress / $xpForNextLevel XP to next level',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 24),
 
             // Continue learning
             SectionHeader(
               title: 'Continue learning',
               actionText: 'View all',
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const LessonListScreen()));
+                // Navigate to course path or something
               },
             ),
             const SizedBox(height: 12),
             SizedBox(
               height: 130,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  _LessonCard(
-                    title: 'Greetings',
-                    unit: 'Unit 3',
-                    iconData: Iconsax.message5,
-                    xp: '20 XP',
-                    progress: 0.6,
-                    color: FluentianColors.primary,
-                  ),
-                  _LessonCard(
-                    title: 'At the café',
-                    unit: 'Unit 3',
-                    iconData: Iconsax.coffee5,
-                    xp: '20 XP',
-                    progress: 0.3,
-                    color: FluentianColors.primary,
-                  ),
-                  _LessonCard(
-                    title: 'Numbers',
-                    unit: 'Unit 2',
-                    iconData: Iconsax.math,
-                    xp: '15 XP',
-                    progress: 1.0,
-                    color: FluentianColors.primary,
-                  ),
-                ],
+              child: Builder(
+                builder: (context) {
+                  final nextLessons = content.getIncompleteLessons(3);
+                  if (nextLessons.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'All caught up!',
+                        style: GoogleFonts.inter(color: FluentianColors.textSecondary),
+                      ),
+                    );
+                  }
+                  return ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: nextLessons.map((l) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => LessonDetailScreen(lessonId: l.id),
+                            ),
+                          );
+                        },
+                        child: _LessonCard(
+                          title: l.title,
+                          unit: 'Next up',
+                          iconData: Iconsax.book_1,
+                          xp: '${l.xpReward} XP',
+                          progress: 0.0,
+                          color: FluentianColors.primary,
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
               ),
             ),
 
@@ -275,180 +325,156 @@ class _HomeContent extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Your learning path
-            const SectionHeader(title: 'Your learning path'),
-            const SizedBox(height: 12),
-            ..._buildUnitList(context),
+            if (content.courses.isNotEmpty) ...[
+              const SectionHeader(title: 'Your learning path'),
+              const SizedBox(height: 12),
+              ..._buildUnitList(context, content),
+            ],
 
             const SizedBox(height: 24),
           ],
         ),
-      ),
-    );
+      );
+      },
+    ));
   }
 
-  List<Widget> _buildUnitList(BuildContext context) {
-    final units = [
-      _UnitData(
-        'Basics',
-        'Unit 1',
-        '6 lessons · A1',
-        Icons.auto_stories_rounded,
-        FluentianColors.primary,
-        '5/6',
-        0.83,
-        false,
-      ),
-      _UnitData(
-        'Daily Life',
-        'Unit 2',
-        '8 lessons · A1',
-        Icons.wb_sunny_rounded,
-        FluentianColors.primary,
-        '8/8',
-        1.0,
-        false,
-      ),
-      _UnitData(
-        'Greetings',
-        'Unit 3',
-        '8 lessons · A2',
-        Icons.waving_hand_rounded,
-        FluentianColors.primary,
-        '3/8',
-        0.375,
-        false,
-      ),
-      _UnitData(
-        'Travel',
-        'Unit 4',
-        '6 lessons · A2',
-        Icons.flight_rounded,
-        FluentianColors.primary,
-        '0/6',
-        0.0,
-        true,
-      ),
-      _UnitData(
-        'Food & Dining',
-        'Unit 5',
-        '7 lessons · B1',
-        Icons.restaurant_rounded,
-        FluentianColors.primary,
-        '0/7',
-        0.0,
-        true,
-      ),
-    ];
+  List<Widget> _buildUnitList(BuildContext context, ContentProvider content) {
+    if (content.courses.isEmpty) return [];
+    
+    final course = content.courses.first;
+    final units = course.units;
 
-    return units
-        .map(
-          (u) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: GestureDetector(
-              onTap: u.locked
-                  ? null
-                  : () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const UnitDetailScreen(),
-                      ),
-                    ),
-              child: AnimatedOpacity(
-                opacity: u.locked ? 0.4 : 1.0,
-                duration: const Duration(milliseconds: 200),
-                child: Container(
-                  height: 80,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.black.withValues(alpha: 0.06),
-                    ),
-                    boxShadow: [FluentianShadows.subtle],
+    if (units.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'No units available yet.',
+            style: GoogleFonts.inter(color: FluentianColors.textSecondary),
+          ),
+        ),
+      ];
+    }
+
+    return units.map((u) {
+      int completedLessons = 0;
+      for (final lesson in u.lessons) {
+        if (content.isLessonCompleted(lesson.id)) completedLessons++;
+      }
+      final totalLessons = u.lessons.length;
+      final progress = totalLessons > 0 ? (completedLessons / totalLessons) : 0.0;
+      
+      // A unit is locked if the previous unit is NOT fully completed.
+      // (For MVP, let's keep all units unlocked, or unlock based on the first lesson)
+      final locked = !content.isLessonUnlocked(u.lessons, 0);
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: GestureDetector(
+          onTap: locked
+              ? null
+              : () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => UnitDetailScreen(unit: u),
                   ),
-                  child: Row(
+                ),
+          child: AnimatedOpacity(
+            opacity: locked ? 0.4 : 1.0,
+            duration: const Duration(milliseconds: 200),
+            child: Container(
+              height: 80,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.black.withValues(alpha: 0.06),
+                ),
+                boxShadow: [FluentianShadows.subtle],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: FluentianColors.primary.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Icon(Icons.auto_stories_rounded, size: 22, color: FluentianColors.primary),
+                        if (locked)
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.6),
+                            ),
+                            child: const Icon(
+                              Icons.lock_rounded,
+                              size: 16,
+                              color: Colors.grey,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          u.title,
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: FluentianColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          'Unit ${u.unitNo} · ${course.levelMin}',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: FluentianColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: u.color.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Icon(u.icon, size: 22, color: u.color),
-                            if (u.locked)
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                ),
-                                child: const Icon(
-                                  Icons.lock_rounded,
-                                  size: 16,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                          ],
+                      Text(
+                        '$completedLessons/$totalLessons',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: FluentianColors.textSecondary,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              u.name,
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: FluentianColors.textPrimary,
-                              ),
-                            ),
-                            Text(
-                              u.caption,
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: FluentianColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            u.stars,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: FluentianColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          CircularPercentIndicator(
-                            radius: 16,
-                            lineWidth: 3,
-                            percent: u.progress,
-                            progressColor: u.color,
-                            backgroundColor: u.color.withValues(alpha: 0.15),
-                          ),
-                        ],
+                      const SizedBox(height: 4),
+                      CircularPercentIndicator(
+                        radius: 16,
+                        lineWidth: 3,
+                        percent: progress,
+                        progressColor: FluentianColors.primary,
+                        backgroundColor: FluentianColors.primary.withValues(alpha: 0.15),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
             ),
           ),
-        )
-        .toList();
+        ),
+      );
+    }).toList();
   }
 }
 

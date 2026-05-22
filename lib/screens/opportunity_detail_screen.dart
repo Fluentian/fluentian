@@ -2,21 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
+import '../services/opportunities_api.dart';
+import 'professional_application_screen.dart';
 
 class OpportunityDetailScreen extends StatelessWidget {
-  final String title;
-  final String role;
-  final String company;
-  final String location;
-  final String timeText;
+  final Opportunity opportunity;
 
   const OpportunityDetailScreen({
     super.key,
-    this.title = 'English Teacher',
-    this.role = 'Teaching',
-    this.company = 'Global Edu',
-    this.location = 'Tokyo, Japan',
-    this.timeText = '2 days ago',
+    required this.opportunity,
   });
 
   @override
@@ -67,7 +61,7 @@ class OpportunityDetailScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              title,
+                              opportunity.title,
                               style: GoogleFonts.inter(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
@@ -75,9 +69,11 @@ class OpportunityDetailScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              company,
+                              opportunity.type.toUpperCase(),
                               style: GoogleFonts.inter(
-                                color: FluentianColors.textSecondary,
+                                color: FluentianColors.primary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
                               ),
                             ),
                           ],
@@ -89,8 +85,8 @@ class OpportunityDetailScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildPill(Iconsax.location, location),
-                      _buildPill(Iconsax.clock, timeText),
+                      _buildPill(Iconsax.location, 'Addis Ababa, Ethiopia'),
+                      _buildPill(Iconsax.clock, opportunity.deadline != null ? 'Ends ${opportunity.deadline.toString().split(' ')[0]}' : 'Ongoing'),
                     ],
                   ),
                 ],
@@ -98,7 +94,7 @@ class OpportunityDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Job Description',
+              'Description',
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -106,7 +102,7 @@ class OpportunityDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'We are looking for an enthusiastic English teacher to join our international team. You will be responsible for conducting online and offline classes, creating engaging lesson plans, and evaluating student progress.\n\nRequirements:\n• Native-level proficiency in English\n• Bachelor\'s degree or equivalent\n• TEFL/TESOL certification\n• 2+ years of teaching experience',
+              opportunity.description,
               style: GoogleFonts.inter(
                 fontSize: 15,
                 color: FluentianColors.textSecondary,
@@ -120,7 +116,14 @@ class OpportunityDetailScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProfessionalApplicationScreen(opportunity: opportunity),
+                ),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: FluentianColors.primary,
               foregroundColor: Colors.white,
@@ -141,6 +144,31 @@ class OpportunityDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildPill(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: FluentianColors.textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: FluentianColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
   Widget _buildPill(IconData icon, String text) {
     return Container(

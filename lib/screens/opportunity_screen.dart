@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
+import '../services/opportunities_api.dart';
 import 'opportunity_detail_screen.dart';
 
 class OpportunityScreen extends StatefulWidget {
@@ -10,6 +11,11 @@ class OpportunityScreen extends StatefulWidget {
 }
 
 class _OpportunityScreenState extends State<OpportunityScreen> {
+  final OpportunitiesApi _api = OpportunitiesApi();
+  List<Opportunity>? _opportunities;
+  bool _isLoading = true;
+  String? _error;
+
   int _filterIndex = 0;
   final _filters = [
     'All',
@@ -19,11 +25,44 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
     '🎪 Events',
     '🤝 Volunteer',
   ];
-  final Set<int> _saved = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOpportunities();
+  }
+
+  Future<void> _fetchOpportunities() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+      final results = await _api.getOpportunities();
+      setState(() {
+        _opportunities = results;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Opportunity> get _filteredOpportunities {
+    if (_opportunities == null) return [];
+    if (_filterIndex == 0) return _opportunities!;
+    
+    final category = _filters[_filterIndex].split(' ').last.toLowerCase();
+    return _opportunities!.where((o) => o.type.toLowerCase() == category).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return RefreshIndicator(
+      onRefresh: _fetchOpportunities,
       child: Column(
         children: [
           Padding(
@@ -39,19 +78,6 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                   ),
                 ),
                 const Spacer(),
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: FluentianColors.primaryTint,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.add_rounded,
-                    color: FluentianColors.primary,
-                    size: 20,
-                  ),
-                ),
               ],
             ),
           ),
@@ -98,296 +124,32 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
           const SizedBox(height: 16),
 
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  // Featured card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: FluentianColors.headerGradient,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+                ? Center(child: Text(_error!))
+                : _filteredOpportunities.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.search_off_rounded, size: 64, color: Colors.grey.shade300),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No opportunities found',
+                            style: GoogleFonts.inter(color: Colors.grey),
                           ),
-                          decoration: BoxDecoration(
-                            color: FluentianColors.primary,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'FEATURED',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: FluentianColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'CAMPUS France Scholarship 2025',
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'Deadline: Mar 15',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: FluentianColors.accent,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'B2+',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Full scholarship for Ethiopian students to study in France. Covers tuition and living expenses.',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.8),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'View details →',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: FluentianColors.primary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Opportunity cards
-                  ...List.generate(_opportunities.length, (i) {
-                    final o = _opportunities[i];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => OpportunityDetailScreen(
-                              title: o.title,
-                              company: o.org,
-                              location: 'France', // mock based on flag
-                              timeText: o.posted,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: Colors.black.withValues(alpha: 0.06),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: o.color.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    o.category,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: o.color,
-                                    ),
-                                  ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  o.posted,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    color: FluentianColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              o.title,
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: FluentianColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${o.org} 🇫🇷',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: FluentianColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.location_on_rounded,
-                                  size: 14,
-                                  color: FluentianColors.textSecondary,
-                                ),
-                                Text(
-                                  ' ${o.location}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: FluentianColors.textSecondary,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Icon(
-                                  Icons.calendar_today_rounded,
-                                  size: 14,
-                                  color: FluentianColors.textSecondary,
-                                ),
-                                Text(
-                                  ' ${o.deadline}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: FluentianColors.textSecondary,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Icon(
-                                  Icons.school_rounded,
-                                  size: 14,
-                                  color: FluentianColors.textSecondary,
-                                ),
-                                Text(
-                                  ' ${o.level}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    color: FluentianColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                const Spacer(),
-                                GestureDetector(
-                                  onTap: () => setState(
-                                    () => _saved.contains(i)
-                                        ? _saved.remove(i)
-                                        : _saved.add(i),
-                                  ),
-                                  child: Icon(
-                                    _saved.contains(i)
-                                        ? Icons.favorite_rounded
-                                        : Icons.favorite_border_rounded,
-                                    size: 20,
-                                    color: _saved.contains(i)
-                                        ? FluentianColors.primary
-                                        : FluentianColors.textSecondary,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: FluentianColors.primary,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    'Details',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: FluentianColors.primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
-                    );
-                  }),
-
-                  const SizedBox(height: 24),
-                ],
-              ),
-            ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _filteredOpportunities.length,
+                      itemBuilder: (context, i) {
+                        final o = _filteredOpportunities[i];
+                        return _OpportunityCard(opportunity: o);
+                      },
+                    ),
           ),
         ],
       ),
@@ -395,60 +157,104 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
   }
 }
 
-final _opportunities = [
-  _Opp(
-    '🎓 Scholarship',
-    'Alliance Française Scholarship',
-    'Alliance Française Ethiopia',
-    'Addis Ababa',
-    'Apr 30',
-    'B1+',
-    FluentianColors.primary,
-    '2 days ago',
-  ),
-  _Opp(
-    '💼 Job',
-    'French Translator — Remote',
-    'UN OCHA',
-    'Remote',
-    'May 15',
-    'B2+',
-    FluentianColors.accent,
-    '5 days ago',
-  ),
-  _Opp(
-    '🌍 Exchange',
-    'Student Exchange — Lyon',
-    'Université Lyon 2',
-    'Lyon, France',
-    'Jun 1',
-    'A2+',
-    FluentianColors.success,
-    '1 week ago',
-  ),
-  _Opp(
-    '🎪 Event',
-    'Francophone Culture Week',
-    'French Embassy',
-    'Addis Ababa',
-    'Mar 20',
-    'All levels',
-    FluentianColors.info,
-    '3 days ago',
-  ),
-];
+class _OpportunityCard extends StatelessWidget {
+  final Opportunity opportunity;
+  const _OpportunityCard({required this.opportunity});
 
-class _Opp {
-  final String category, title, org, location, deadline, level, posted;
-  final Color color;
-  const _Opp(
-    this.category,
-    this.title,
-    this.org,
-    this.location,
-    this.deadline,
-    this.level,
-    this.color,
-    this.posted,
-  );
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OpportunityDetailScreen(opportunity: opportunity),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.black.withOpacity(0.06),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: FluentianColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    opportunity.type.toUpperCase(),
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: FluentianColors.primary,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Ongoing',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: FluentianColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              opportunity.title,
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: FluentianColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              opportunity.description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: FluentianColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: FluentianColors.primary),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Details',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: FluentianColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

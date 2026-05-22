@@ -70,6 +70,10 @@ class AuthInputField extends StatefulWidget {
   final TextInputType keyboardType;
   final Widget? rightWidget;
   final void Function(String)? onChanged;
+  final void Function(String)? onSubmitted;
+  final TextEditingController? controller;
+  final bool enabled;
+  final String? hint;
 
   const AuthInputField({
     super.key,
@@ -80,6 +84,10 @@ class AuthInputField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.rightWidget,
     this.onChanged,
+    this.onSubmitted,
+    this.controller,
+    this.enabled = true,
+    this.hint,
   });
 
   @override
@@ -141,7 +149,10 @@ class _AuthInputFieldState extends State<AuthInputField> {
                   focusNode: _focusNode,
                   obscureText: _obscureText,
                   keyboardType: widget.keyboardType,
+                  controller: widget.controller,
+                  enabled: widget.enabled,
                   onChanged: widget.onChanged,
+                  onFieldSubmitted: widget.onSubmitted,
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     color: AuthColors.heading,
@@ -149,6 +160,11 @@ class _AuthInputFieldState extends State<AuthInputField> {
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     labelText: widget.label,
+                    hintText: widget.hint,
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: AuthColors.placeholder.withOpacity(0.7),
+                    ),
                     labelStyle: GoogleFonts.inter(
                       fontSize: _isFocused ? 12 : 16,
                       color: AuthColors.placeholder,

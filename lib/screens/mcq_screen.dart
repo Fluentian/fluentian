@@ -1,41 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
+import '../models/course_model.dart';
+import '../models/progress_model.dart';
+import '../providers/content_provider.dart';
 import 'lesson_complete_screen.dart';
 
 class McqScreen extends StatefulWidget {
-  const McqScreen({super.key});
+  final String lessonId;
+  final List<QuestionModel> questions;
+
+  const McqScreen({
+    super.key,
+    required this.lessonId,
+    required this.questions,
+  });
+
   @override
   State<McqScreen> createState() => _McqScreenState();
 }
 
 class _McqScreenState extends State<McqScreen> {
+  int _currentIndex = 0;
   int? _selected;
   _AnswerState _state = _AnswerState.unanswered;
-  final int _correctIndex = 1;
-  int _hearts = 3;
+  int _hearts = 5;
+  int _correctCount = 0;
+  
+  final List<AnswerPayload> _answers = [];
+  final DateTime _startTime = DateTime.now();
+  bool _isSubmitting = false;
 
-  final _options = const [
-    _Option('A', "Quel est ton nom ?", 'Informal form'),
-    _Option('B', "Comment vous appelez-vous ?", 'Formal form'),
-    _Option('C', "Où habites-tu ?", 'Where do you live?'),
-    _Option('D', "Comment allez-vous ?", 'How are you?'),
-  ];
+  QuestionModel get _currentQ => widget.questions[_currentIndex];
 
   void _check() {
     if (_selected == null) return;
+    
+    final selectedAnswer = _currentQ.mcqOptions[_selected!];
+    final isCorrect = selectedAnswer == _currentQ.mcqCorrectAnswer;
+
+    _answers.add(AnswerPayload(
+      questionId: _currentQ.id,
+      answer: selectedAnswer,
+      isCorrect: isCorrect,
+    ));
+
     setState(() {
-      _state = _selected == _correctIndex
-          ? _AnswerState.correct
-          : _AnswerState.wrong;
-      if (_state == _AnswerState.wrong && _hearts > 0) _hearts--;
+      _state = isCorrect ? _AnswerState.correct : _AnswerState.wrong;
+      if (isCorrect) {
+        _correctCount++;
+      } else if (_hearts > 0) {
+        _hearts--;
+      }
     });
-    _showResultSheet();
+    
+    _showResultSheet(isCorrect, _currentQ.mcqCorrectAnswer);
   }
 
-  void _showResultSheet() {
-    final correct = _state == _AnswerState.correct;
+  void _showResultSheet(bool correct, String correctAnswer) {
     showModalBottomSheet(
       context: context,
       isDismissible: false,
@@ -66,34 +90,25 @@ class _McqScreenState extends State<McqScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            if (correct)
-              Text(
-                '"Comment vous appelez-vous?" is the formal way to ask someone\'s name.',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: FluentianColors.textSecondary,
-                ),
-              )
-            else ...[
-              if (!correct)
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.favorite_rounded,
+            if (!correct) ...[
+              Row(
+                children: [
+                  const Icon(
+                    Icons.favorite_rounded,
+                    color: FluentianColors.error,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '-1',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                       color: FluentianColors.error,
-                      size: 16,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '-1',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: FluentianColors.error,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -112,12 +127,14 @@ class _McqScreenState extends State<McqScreen> {
                       size: 18,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      'Comment vous appelez-vous ?',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: FluentianColors.success,
+                    Expanded(
+                      child: Text(
+                        correctAnswer,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: FluentianColors.success,
+                        ),
                       ),
                     ),
                   ],
@@ -129,21 +146,7 @@ class _McqScreenState extends State<McqScreen> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  if (correct) {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (_) => const LessonCompleteScreen(),
-                      ),
-                    );
-                  } else {
-                    setState(() {
-                      _selected = null;
-                      _state = _AnswerState.unanswered;
-                    });
-                  }
-                },
+                onPressed: _isSubmitting ? null : () => _onNext(correct),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: correct
                       ? FluentianColors.success
@@ -155,7 +158,9 @@ class _McqScreenState extends State<McqScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(correct ? 'Continue' : 'Got it'),
+                child: _isSubmitting 
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : Text(correct ? 'Continue' : 'Got it'),
               ),
             ),
           ],
@@ -164,8 +169,51 @@ class _McqScreenState extends State<McqScreen> {
     );
   }
 
+  Future<void> _onNext(bool correct) async {
+    if (_currentIndex < widget.questions.length - 1) {
+      Navigator.pop(context); // close sheet
+      setState(() {
+        _currentIndex++;
+        _selected = null;
+        _state = _AnswerState.unanswered;
+      });
+    } else {
+      // Finished all questions!
+      setState(() => _isSubmitting = true);
+      
+      final score = widget.questions.isEmpty 
+          ? 1.0 
+          : _correctCount / widget.questions.length;
+      final timeSeconds = DateTime.now().difference(_startTime).inSeconds;
+
+      await context.read<ContentProvider>().completeLesson(
+        lessonId: widget.lessonId,
+        score: score,
+        answers: _answers,
+        timeSeconds: timeSeconds,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context); // close sheet
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const LessonCompleteScreen(),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.questions.isEmpty) {
+      return const Scaffold(
+        body: Center(child: Text("No questions found.")),
+      );
+    }
+
+    final options = _currentQ.mcqOptions;
+    final progress = (_currentIndex) / widget.questions.length;
+
     return Scaffold(
       backgroundColor: FluentianColors.white,
       body: SafeArea(
@@ -189,7 +237,7 @@ class _McqScreenState extends State<McqScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: LinearProgressIndicator(
-                        value: 0.6,
+                        value: progress,
                         backgroundColor: Colors.grey.shade200,
                         valueColor: const AlwaysStoppedAnimation(
                           FluentianColors.primary,
@@ -228,7 +276,7 @@ class _McqScreenState extends State<McqScreen> {
                   children: [
                     const SizedBox(height: 24),
                     Text(
-                      'TRANSLATE TO FRENCH',
+                      'QUESTION',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -238,7 +286,7 @@ class _McqScreenState extends State<McqScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'What is your name?',
+                      _currentQ.promptText,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 22,
@@ -249,14 +297,15 @@ class _McqScreenState extends State<McqScreen> {
                     const SizedBox(height: 32),
 
                     // Options
-                    ...List.generate(_options.length, (i) {
-                      final o = _options[i];
+                    ...List.generate(options.length, (i) {
+                      final optionText = options[i];
                       final isSelected = _selected == i;
-                      final isCorrect =
-                          _state != _AnswerState.unanswered &&
-                          i == _correctIndex;
-                      final isWrong =
-                          _state == _AnswerState.wrong && isSelected;
+                      
+                      // For MVP we just show selected or unselected while unanswered.
+                      // Correct/Wrong visual logic on options only matters if not immediately obscured by bottom sheet,
+                      // but bottom sheet pops up instantly. Still, keeping the UI states:
+                      final isCorrect = _state != _AnswerState.unanswered && isSelected && _state == _AnswerState.correct;
+                      final isWrong = _state == _AnswerState.wrong && isSelected;
 
                       Color bg = FluentianColors.white;
                       Color border = FluentianColors.border;
@@ -264,7 +313,7 @@ class _McqScreenState extends State<McqScreen> {
                         bg = FluentianColors.primaryTint;
                         border = FluentianColors.primary;
                       }
-                      if (isCorrect && _state != _AnswerState.unanswered) {
+                      if (isCorrect) {
                         bg = FluentianColors.successTint;
                         border = FluentianColors.success;
                       }
@@ -300,7 +349,7 @@ class _McqScreenState extends State<McqScreen> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    o.letter,
+                                    String.fromCharCode(65 + i), // A, B, C, D
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
@@ -311,24 +360,12 @@ class _McqScreenState extends State<McqScreen> {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      o.text,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        color: FluentianColors.textPrimary,
-                                      ),
-                                    ),
-                                    Text(
-                                      o.hint,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        color: FluentianColors.textSecondary,
-                                      ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  optionText,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    color: FluentianColors.textPrimary,
+                                  ),
                                 ),
                               ),
                             ],
@@ -364,8 +401,3 @@ class _McqScreenState extends State<McqScreen> {
 }
 
 enum _AnswerState { unanswered, correct, wrong }
-
-class _Option {
-  final String letter, text, hint;
-  const _Option(this.letter, this.text, this.hint);
-}

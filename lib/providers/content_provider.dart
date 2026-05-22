@@ -1,0 +1,160 @@
+import 'package:flutter/foundation.dart';
+import '../models/course_model.dart';
+import '../models/progress_model.dart';
+import '../services/content_api.dart';
+import '../services/progress_api.dart';
+import '../services/api_client.dart';
+
+enum ContentStatus { idle, loading, loaded, error }
+
+/// Holds course/unit/lesson data and lesson progress for the whole session.
+class ContentProvider extends ChangeNotifier {
+  ContentStatus _status = ContentStatus.idle;
+  String? _error;
+  List<CourseModel> _courses = [];
+  final Map<String, LessonDetailModel> _lessonCache = {};
+  final Map<String, LessonProgressModel> _progressByLesson = {};
+  UserStatsModel? _stats;
+
+  ContentStatus get status => _status;
+  String? get error => _error;
+  List<CourseModel> get courses => _courses;
+  UserStatsModel? get stats => _stats;
+  bool get isLoading => _status == ContentStatus.loading;
+
+  final _contentApi = ContentApi.instance;
+  final _progressApi = ProgressApi.instance;
+
+  /// Fetch all courses + user stats in one go. Called on home screen load.
+  Future<void> loadHomeData() async {
+    _status = ContentStatus.loading;
+    _error = null;
+    notifyListeners();
+    try {
+      final results = await Future.wait([
+        _contentApi.getCourses(),
+        _progressApi.getMyStats(),
+      ]);
+      _courses = results[0] as List<CourseModel>;
+      _stats = results[1] as UserStatsModel;
+      _status = ContentStatus.loaded;
+    } on ApiException catch (e) {
+      _error = e.userMessage;
+      _status = ContentStatus.error;
+    } on NetworkException catch (e) {
+      _error = e.message;
+      _status = ContentStatus.error;
+    } catch (e) {
+      _error = 'Failed to load content.';
+      _status = ContentStatus.error;
+      if (kDebugMode) debugPrint('ContentProvider.loadHomeData error: $e');
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  /// Fetch full lesson detail (cached by lessonId).
+  Future<LessonDetailModel?> getLessonDetail(String lessonId) async {
+    if (_lessonCache.containsKey(lessonId)) return _lessonCache[lessonId];
+    try {
+      final detail = await _contentApi.getLessonDetail(lessonId);
+      _lessonCache[lessonId] = detail;
+      notifyListeners();
+      return detail;
+    } on ApiException catch (e) {
+      if (kDebugMode) debugPrint('getLessonDetail error: ${e.message}');
+      return null;
+    } on NetworkException {
+      return null;
+    }
+  }
+
+  /// Fetch and cache lesson progress for a given list of lesson IDs.
+  Future<void> loadLessonProgress() async {
+    try {
+      final progress = await _progressApi.getMyLessonProgress();
+      _progressByLesson.clear();
+      for (final p in progress) {
+        _progressByLesson[p.lessonId] = p;
+      }
+      notifyListeners();
+    } catch (_) {
+      // Non-fatal: progress can be stale
+    }
+  }
+
+  /// Check if a specific lesson is completed.
+  bool isLessonCompleted(String lessonId) =>
+      _progressByLesson[lessonId]?.completed ?? false;
+
+  /// Get mastery score for a lesson (0.0–1.0).
+  double getLessonMastery(String lessonId) =>
+      _progressByLesson[lessonId]?.masteryScore ?? 0.0;
+
+  /// Determine lesson unlock state from progress.
+  /// A lesson is unlocked if it's the first, or the previous is completed.
+  bool isLessonUnlocked(List<LessonModel> lessons, int index) {
+    if (index == 0) return true;
+    final prevLesson = lessons[index - 1];
+    return isLessonCompleted(prevLesson.id);
+  }
+
+  /// Get up to [count] next incomplete lessons across all courses/units.
+  List<LessonModel> getIncompleteLessons(int count) {
+    final incomplete = <LessonModel>[];
+    for (final course in _courses) {
+      for (final unit in course.units) {
+        for (int i = 0; i < unit.lessons.length; i++) {
+          final lesson = unit.lessons[i];
+          if (!isLessonCompleted(lesson.id) && isLessonUnlocked(unit.lessons, i)) {
+            incomplete.add(lesson);
+            if (incomplete.length >= count) return incomplete;
+          }
+        }
+      }
+    }
+    return incomplete;
+  }
+
+  /// Submit lesson completion and refresh stats.
+  Future<CompleteLessonResult?> completeLesson({
+    required String lessonId,
+    required double score,
+    required List<AnswerPayload> answers,
+    required int timeSeconds,
+  }) async {
+    try {
+      final result = await _progressApi.completeLesson(
+        lessonId: lessonId,
+        score: score,
+        answers: answers,
+        timeSeconds: timeSeconds,
+      );
+      // Mark lesson as completed locally immediately
+      _progressByLesson[lessonId] = LessonProgressModel(
+        id: '',
+        userId: '',
+        lessonId: lessonId,
+        masteryScore: score,
+        completed: true,
+        completedAt: DateTime.now(),
+        createdAt: DateTime.now(),
+      );
+      // Refresh global stats
+      _stats = await _progressApi.getMyStats();
+      notifyListeners();
+      return result;
+    } catch (e) {
+      if (kDebugMode) debugPrint('completeLesson error: $e');
+      return null;
+    }
+  }
+
+  /// Refresh just the user stats (called after XP events).
+  Future<void> refreshStats() async {
+    try {
+      _stats = await _progressApi.getMyStats();
+      notifyListeners();
+    } catch (_) {}
+  }
+}

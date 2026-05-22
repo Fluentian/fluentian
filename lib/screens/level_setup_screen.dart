@@ -109,7 +109,7 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
                 onPressed: _selected != null
                     ? () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => const GoalSetupScreen(),
+                          builder: (_) => GoalSetupScreen(level: _selected!),
                         ),
                       )
                     : null,

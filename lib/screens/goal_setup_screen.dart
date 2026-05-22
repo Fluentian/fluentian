@@ -3,10 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
 import '../widgets/common_widgets.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'home_screen.dart';
 
 class GoalSetupScreen extends StatefulWidget {
-  const GoalSetupScreen({super.key});
+  final CEFRLevel level;
+  const GoalSetupScreen({super.key, required this.level});
   @override
   State<GoalSetupScreen> createState() => _GoalSetupScreenState();
 }
@@ -229,12 +232,33 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: FluentianButton(
-                text: 'Start learning',
-                onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const HomeScreen()),
-                  (route) => false,
-                ),
+              child: Consumer<AuthProvider>(
+                builder: (context, auth, _) {
+                  return FluentianButton(
+                    text: auth.isLoading ? 'Saving...' : 'Start learning',
+                    onPressed: auth.isLoading
+                        ? null
+                        : () async {
+                            final success = await auth.updateProfile({
+                              'current_level': widget.level.code,
+                              'daily_goal_xp': DailyGoal.goals[_selectedIndex].xp,
+                            });
+                            if (success && mounted) {
+                              auth.completeOnboarding();
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                    builder: (_) => const HomeScreen()),
+                                (route) => false,
+                              );
+                            } else if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Failed to save profile')),
+                              );
+                            }
+                          },
+                  );
+                },
               ),
             ),
           ],

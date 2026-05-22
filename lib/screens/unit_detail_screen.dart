@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
-import 'mcq_screen.dart';
+import '../models/course_model.dart';
+import '../providers/content_provider.dart';
+import 'lesson_detail_screen.dart';
 
 class UnitDetailScreen extends StatelessWidget {
-  const UnitDetailScreen({super.key});
+  final UnitModel unit;
+  const UnitDetailScreen({super.key, required this.unit});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +46,7 @@ class UnitDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Unit 3 — Greetings & introductions',
+                  'Unit ${unit.unitNo} — ${unit.title}',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 18,
@@ -61,7 +65,7 @@ class UnitDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: Text(
-                    'A2 · Grammar + Vocabulary',
+                    'Lessons: ${unit.lessons.length}',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       color: Colors.white.withValues(alpha: 0.8),
@@ -70,39 +74,36 @@ class UnitDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 // Progress bar
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: 3 / 8,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    valueColor: const AlwaysStoppedAnimation(Colors.white),
-                    minHeight: 6,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '3 of 8 lessons complete',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    5,
-                    (i) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Icon(
-                        i < 3 ? Icons.star_rounded : Icons.star_border_rounded,
-                        size: 20,
-                        color: i < 3
-                            ? const Color(0xFFF59E0B)
-                            : Colors.white.withValues(alpha: 0.4),
-                      ),
-                    ),
-                  ),
+                Consumer<ContentProvider>(
+                  builder: (context, content, _) {
+                    final completedCount = unit.lessons
+                        .where((l) => content.isLessonCompleted(l.id))
+                        .length;
+                    final totalCount = unit.lessons.length;
+                    final progress = totalCount > 0 ? completedCount / totalCount : 0.0;
+                    
+                    return Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            backgroundColor: Colors.white.withValues(alpha: 0.2),
+                            valueColor: const AlwaysStoppedAnimation(Colors.white),
+                            minHeight: 6,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '$completedCount of $totalCount lessons complete',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
@@ -112,7 +113,11 @@ class UnitDetailScreen extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Column(children: _buildLessonPath(context)),
+              child: Consumer<ContentProvider>(
+                builder: (context, content, _) {
+                  return Column(children: _buildLessonPath(context, content));
+                },
+              ),
             ),
           ),
 
@@ -154,86 +159,58 @@ class UnitDetailScreen extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildLessonPath(BuildContext context) {
-    final lessons = [
-      _LessonNode(
-        'Bonjour!',
-        Iconsax.message5,
-        'Dialogue',
-        '20 XP',
-        _NodeState.completed,
-        0,
-      ),
-      _LessonNode(
-        'How are you?',
-        Iconsax.book_14,
-        'Reading',
-        '20 XP',
-        _NodeState.completed,
-        1,
-      ),
-      _LessonNode(
-        'My name is...',
-        Iconsax.message_24,
-        'Dialogue',
-        '20 XP',
-        _NodeState.completed,
-        0,
-      ),
-      _LessonNode(
-        'Checkpoint 1',
-        Iconsax.gemini_24,
-        'Checkpoint',
-        '',
-        _NodeState.checkpoint,
-        1,
-      ),
-      _LessonNode(
-        'Meeting people',
-        Iconsax.microphone_24,
-        'Speaking',
-        '25 XP',
-        _NodeState.active,
-        0,
-      ),
-      _LessonNode(
-        'Formal vs informal',
-        Iconsax.book_14,
-        'Reading',
-        '20 XP',
-        _NodeState.locked,
-        1,
-      ),
-      _LessonNode(
-        'Introducing others',
-        Iconsax.message_24,
-        'Dialogue',
-        '20 XP',
-        _NodeState.locked,
-        0,
-      ),
-      _LessonNode(
-        'Checkpoint 2',
-        Iconsax.gemini_24,
-        'Checkpoint',
-        '',
-        _NodeState.lockedCheckpoint,
-        1,
-      ),
-      _LessonNode(
-        'Unit review',
-        Iconsax.document_text_14,
-        'Review',
-        '30 XP',
-        _NodeState.locked,
-        0,
-      ),
-    ];
+  List<Widget> _buildLessonPath(BuildContext context, ContentProvider content) {
+    if (unit.lessons.isEmpty) {
+      return [
+        Center(
+          child: Text(
+            'No lessons available yet.',
+            style: GoogleFonts.inter(color: Colors.grey),
+          ),
+        )
+      ];
+    }
+
+    final nodes = <_LessonNode>[];
+    for (int i = 0; i < unit.lessons.length; i++) {
+      final l = unit.lessons[i];
+      final isCompleted = content.isLessonCompleted(l.id);
+      final isUnlocked = content.isLessonUnlocked(unit.lessons, i);
+      
+      _NodeState state;
+      if (isCompleted) {
+        state = _NodeState.completed;
+      } else if (isUnlocked) {
+        state = _NodeState.active;
+      } else {
+        state = _NodeState.locked;
+      }
+
+      IconData icon;
+      switch (l.lessonKind) {
+        case 'dialogue': icon = Iconsax.message5; break;
+        case 'grammar': icon = Iconsax.book_14; break;
+        case 'speaking': icon = Iconsax.microphone_24; break;
+        case 'quiz':
+        case 'review': icon = Iconsax.document_text_14; break;
+        default: icon = Iconsax.category_24;
+      }
+
+      nodes.add(_LessonNode(
+        id: l.id,
+        name: l.title,
+        iconData: icon,
+        type: l.lessonKind,
+        xp: '${l.xpReward} XP',
+        state: state,
+        offset: i % 2 == 0 ? 0 : 1,
+      ));
+    }
 
     final widgets = <Widget>[];
-    for (int i = 0; i < lessons.length; i++) {
-      final l = lessons[i];
-      final isLast = i == lessons.length - 1;
+    for (int i = 0; i < nodes.length; i++) {
+      final l = nodes[i];
+      final isLast = i == nodes.length - 1;
       final leftPad = l.offset == 0 ? 60.0 : 140.0;
 
       widgets.add(
@@ -266,7 +243,9 @@ class UnitDetailScreen extends StatelessWidget {
                 child: GestureDetector(
                   onTap: l.state == _NodeState.active
                       ? () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const McqScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => LessonDetailScreen(lessonId: l.id),
+                          ),
                         )
                       : null,
                   child: _buildNode(l),
@@ -425,16 +404,17 @@ class _DashPainter extends CustomPainter {
 enum _NodeState { completed, active, locked, checkpoint, lockedCheckpoint }
 
 class _LessonNode {
-  final String name, type, xp;
+  final String id, name, type, xp;
   final IconData iconData;
   final _NodeState state;
   final int offset;
-  const _LessonNode(
-    this.name,
-    this.iconData,
-    this.type,
-    this.xp,
-    this.state,
-    this.offset,
-  );
+  const _LessonNode({
+    this.id = '',
+    required this.name,
+    required this.iconData,
+    required this.type,
+    required this.xp,
+    required this.state,
+    required this.offset,
+  });
 }

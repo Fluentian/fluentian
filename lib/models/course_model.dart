@@ -1,0 +1,221 @@
+/// Course / Unit / Lesson / Block / Question models
+/// Mirrors the backend content schemas exactly.
+
+class CourseModel {
+  final String id;
+  final String targetLanguageId;
+  final String code;
+  final String levelMin;
+  final String levelMax;
+  final bool isPublished;
+  final DateTime createdAt;
+  final List<UnitModel> units;
+
+  const CourseModel({
+    required this.id,
+    required this.targetLanguageId,
+    required this.code,
+    required this.levelMin,
+    required this.levelMax,
+    required this.isPublished,
+    required this.createdAt,
+    required this.units,
+  });
+
+  factory CourseModel.fromJson(Map<String, dynamic> json) => CourseModel(
+        id: json['id'] as String,
+        targetLanguageId: json['target_language_id'] as String,
+        code: json['code'] as String,
+        levelMin: json['level_min'] as String,
+        levelMax: json['level_max'] as String,
+        isPublished: json['is_published'] as bool? ?? false,
+        createdAt: DateTime.parse(json['created_at'] as String),
+        units: (json['units'] as List<dynamic>? ?? [])
+            .map((u) => UnitModel.fromJson(u as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class UnitModel {
+  final String id;
+  final String courseId;
+  final String unitKind;
+  final int unitNo;
+  final String title;
+  final DateTime createdAt;
+  final List<LessonModel> lessons;
+
+  const UnitModel({
+    required this.id,
+    required this.courseId,
+    required this.unitKind,
+    required this.unitNo,
+    required this.title,
+    required this.createdAt,
+    required this.lessons,
+  });
+
+  factory UnitModel.fromJson(Map<String, dynamic> json) => UnitModel(
+        id: json['id'] as String,
+        courseId: json['course_id'] as String,
+        unitKind: json['unit_kind'] as String? ?? 'standard',
+        unitNo: json['unit_no'] as int,
+        title: json['title'] as String,
+        createdAt: DateTime.parse(json['created_at'] as String),
+        lessons: (json['lessons'] as List<dynamic>? ?? [])
+            .map((l) => LessonModel.fromJson(l as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class LessonModel {
+  final String id;
+  final String courseId;
+  final String unitId;
+  final String lessonKind; // dialogue, grammar, vocabulary, speaking, quiz, review
+  final int sequenceNo;
+  final String title;
+  final int estimatedMinutes;
+  final int xpReward;
+  final bool isPublished;
+
+  const LessonModel({
+    required this.id,
+    required this.courseId,
+    required this.unitId,
+    required this.lessonKind,
+    required this.sequenceNo,
+    required this.title,
+    required this.estimatedMinutes,
+    required this.xpReward,
+    required this.isPublished,
+  });
+
+  factory LessonModel.fromJson(Map<String, dynamic> json) => LessonModel(
+        id: json['id'] as String,
+        courseId: json['course_id'] as String,
+        unitId: json['unit_id'] as String,
+        lessonKind: json['lesson_kind'] as String? ?? 'vocabulary',
+        sequenceNo: json['sequence_no'] as int,
+        title: json['title'] as String,
+        estimatedMinutes: json['estimated_minutes'] as int? ?? 5,
+        xpReward: json['xp_reward'] as int? ?? 10,
+        isPublished: json['is_published'] as bool? ?? false,
+      );
+}
+
+class LessonDetailModel extends LessonModel {
+  final List<BlockModel> blocks;
+  final List<QuestionModel> questions;
+
+  const LessonDetailModel({
+    required super.id,
+    required super.courseId,
+    required super.unitId,
+    required super.lessonKind,
+    required super.sequenceNo,
+    required super.title,
+    required super.estimatedMinutes,
+    required super.xpReward,
+    required super.isPublished,
+    required this.blocks,
+    required this.questions,
+  });
+
+  factory LessonDetailModel.fromJson(Map<String, dynamic> json) {
+    return LessonDetailModel(
+      id: json['id'] as String,
+      courseId: json['course_id'] as String,
+      unitId: json['unit_id'] as String,
+      lessonKind: json['lesson_kind'] as String? ?? 'vocabulary',
+      sequenceNo: json['sequence_no'] as int,
+      title: json['title'] as String,
+      estimatedMinutes: json['estimated_minutes'] as int? ?? 5,
+      xpReward: json['xp_reward'] as int? ?? 10,
+      isPublished: json['is_published'] as bool? ?? false,
+      blocks: (json['blocks'] as List<dynamic>? ?? [])
+          .map((b) => BlockModel.fromJson(b as Map<String, dynamic>))
+          .toList(),
+      questions: (json['questions'] as List<dynamic>? ?? [])
+          .map((q) => QuestionModel.fromJson(q as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class BlockModel {
+  final String id;
+  final String lessonId;
+  final String blockKind; // explanation, vocabulary, example, audio, image, dialogue
+  final int sequenceNo;
+  final Map<String, dynamic> blockPayload;
+  final DateTime createdAt;
+
+  const BlockModel({
+    required this.id,
+    required this.lessonId,
+    required this.blockKind,
+    required this.sequenceNo,
+    required this.blockPayload,
+    required this.createdAt,
+  });
+
+  factory BlockModel.fromJson(Map<String, dynamic> json) => BlockModel(
+        id: json['id'] as String,
+        lessonId: json['lesson_id'] as String,
+        blockKind: json['block_kind'] as String,
+        sequenceNo: json['sequence_no'] as int,
+        blockPayload:
+            Map<String, dynamic>.from(json['block_payload'] as Map? ?? {}),
+        createdAt: DateTime.parse(json['created_at'] as String),
+      );
+}
+
+class QuestionModel {
+  final String id;
+  final String lessonId;
+  final String questionKind; // mcq, fill_blank, matching, true_false
+  final int sequenceNo;
+  final Map<String, dynamic> promptPayload;
+  final Map<String, dynamic> gradingPayload;
+  final DateTime createdAt;
+
+  const QuestionModel({
+    required this.id,
+    required this.lessonId,
+    required this.questionKind,
+    required this.sequenceNo,
+    required this.promptPayload,
+    required this.gradingPayload,
+    required this.createdAt,
+  });
+
+  factory QuestionModel.fromJson(Map<String, dynamic> json) => QuestionModel(
+        id: json['id'] as String,
+        lessonId: json['lesson_id'] as String,
+        questionKind: json['question_kind'] as String,
+        sequenceNo: json['sequence_no'] as int,
+        promptPayload:
+            Map<String, dynamic>.from(json['prompt_payload'] as Map? ?? {}),
+        gradingPayload:
+            Map<String, dynamic>.from(json['grading_payload'] as Map? ?? {}),
+        createdAt: DateTime.parse(json['created_at'] as String),
+      );
+
+  /// For MCQ questions — returns list of option strings from prompt_payload.
+  List<String> get mcqOptions {
+    final opts = promptPayload['options'];
+    if (opts is List) return opts.map((e) => e.toString()).toList();
+    return [];
+  }
+
+  /// For MCQ — returns the correct answer string from grading_payload.
+  String get mcqCorrectAnswer =>
+      gradingPayload['correct_answer']?.toString() ?? '';
+
+  /// Prompt text from payload.
+  String get promptText =>
+      promptPayload['prompt']?.toString() ??
+      promptPayload['text']?.toString() ??
+      '';
+}
