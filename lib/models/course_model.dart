@@ -215,7 +215,38 @@ class QuestionModel {
 
   /// Prompt text from payload.
   String get promptText =>
+      promptPayload['question']?.toString() ??
       promptPayload['prompt']?.toString() ??
       promptPayload['text']?.toString() ??
       '';
+
+  /// For image-based questions
+  String? get imageUrl => promptPayload['image_url']?.toString();
+
+  /// For audio/listening/dictation/speaking questions
+  String? get audioUrl => promptPayload['audio_url']?.toString();
+
+  /// For MCQ Multi questions — returns list of correct options.
+  List<String> get mcqMultiCorrectAnswers {
+    final correct = gradingPayload['correct_answers'];
+    if (correct is List) return correct.map((e) => e.toString()).toList();
+    return [];
+  }
+
+  /// For Match Pairs — returns list of maps with 'left' and 'right' keys.
+  List<Map<String, String>> get matchPairs {
+    final pairs = promptPayload['pairs'];
+    if (pairs is List) {
+      return pairs.map((e) {
+        if (e is Map) {
+          return {
+            'left': e['left']?.toString() ?? '',
+            'right': e['right']?.toString() ?? '',
+          };
+        }
+        return <String, String>{};
+      }).toList();
+    }
+    return [];
+  }
 }

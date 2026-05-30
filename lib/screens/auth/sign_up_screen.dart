@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import 'auth_widgets.dart';
 import 'sign_in_screen.dart';
 import '../level_setup_screen.dart';
+import 'otp_verification_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -63,8 +64,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     if (!mounted) return;
     if (success) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LevelSetupScreen()),
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => OtpVerificationScreen(email: email),
+        ),
       );
     } else {
       // Error displayed in UI via Consumer below
@@ -395,12 +398,7 @@ class _ErrorBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8F8),
         borderRadius: BorderRadius.circular(12),
-        border: const Border(
-          left: BorderSide(color: AuthColors.errorText, width: 3),
-          top: BorderSide(color: Color(0xFFFECACA)),
-          right: BorderSide(color: Color(0xFFFECACA)),
-          bottom: BorderSide(color: Color(0xFFFECACA)),
-        ),
+        border: Border.all(color: const Color(0xFFFECACA)),
       ),
       child: Row(
         children: [

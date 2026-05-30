@@ -136,12 +136,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: _speaking,
                   onChanged: (v) => setState(() => _speaking = v),
                 ),
-                SettingsRow(
-                  icon: Icons.auto_awesome_rounded,
-                  label: 'AI feedback detail',
-                  trailing: 'Standard',
-                  onTap: () {},
-                ),
               ],
             ),
 
@@ -164,12 +158,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   max: 2.0,
                   displayValue: '${_ttsSpeed.toStringAsFixed(1)}×',
                   onChanged: (v) => setState(() => _ttsSpeed = v),
-                ),
-                SettingsRow(
-                  icon: Icons.record_voice_over_rounded,
-                  label: 'AI Coach voice',
-                  trailing: 'Marie (Parisian)',
-                  onTap: () {},
                 ),
                 _SliderRow(
                   label: 'Microphone sensitivity',

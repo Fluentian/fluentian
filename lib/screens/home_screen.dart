@@ -8,7 +8,6 @@ import '../providers/content_provider.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/bottom_nav.dart';
-import 'unit_detail_screen.dart';
 import 'profile_screen.dart';
 import 'lesson_list_screen.dart';
 import 'lesson_detail_screen.dart';
@@ -60,12 +59,19 @@ class _HomeContent extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey),
+                    const Icon(
+                      Icons.cloud_off_rounded,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       content.error ?? 'Connection error',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(fontSize: 16, color: FluentianColors.textSecondary),
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: FluentianColors.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
@@ -77,14 +83,13 @@ class _HomeContent extends StatelessWidget {
               ),
             );
           }
-          
+
           final user = auth.user;
           final stats = content.stats;
           final xp = stats?.totalXp ?? 0;
           final streak = stats?.streakDays ?? 0;
           final hearts = stats?.hearts ?? 5;
-          final currentLevel = stats?.currentLevel ?? 'A0';
-          
+
           final xpForNextLevel = 500; // Simplified for MVP
           final xpProgress = xp % xpForNextLevel;
 
@@ -108,7 +113,7 @@ class _HomeContent extends StatelessWidget {
                         ),
                       ),
                       StatChip(
-                        icon: Icons.local_fire_department_rounded,
+                        emoji: '🔥',
                         value: '$streak',
                         color: FluentianColors.accent,
                         bgColor: FluentianColors.accentTint,
@@ -163,7 +168,9 @@ class _HomeContent extends StatelessWidget {
                                       'Don\'t break it — practice today',
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
-                                        color: Colors.white.withValues(alpha: 0.6),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.6,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -181,7 +188,9 @@ class _HomeContent extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
                               value: xpProgress / xpForNextLevel,
-                              backgroundColor: Colors.white.withValues(alpha: 0.2),
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.2,
+                              ),
                               valueColor: AlwaysStoppedAnimation(
                                 Colors.white.withValues(alpha: 0.8),
                               ),
@@ -203,145 +212,153 @@ class _HomeContent extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-            // Continue learning
-            SectionHeader(
-              title: 'Continue learning',
-              actionText: 'View all',
-              onTap: () {
-                // Navigate to course path or something
-              },
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 130,
-              child: Builder(
-                builder: (context) {
-                  final nextLessons = content.getIncompleteLessons(3);
-                  if (nextLessons.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'All caught up!',
-                        style: GoogleFonts.inter(color: FluentianColors.textSecondary),
+                // Continue learning
+                SectionHeader(
+                  title: 'Continue learning',
+                  actionText: 'View all',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const LessonListScreen(),
                       ),
                     );
-                  }
-                  return ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: nextLessons.map((l) {
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => LessonDetailScreen(lessonId: l.id),
+                  },
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 130,
+                  child: Builder(
+                    builder: (context) {
+                      final nextLessons = content.getIncompleteLessons(3);
+                      if (nextLessons.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'All caught up!',
+                            style: GoogleFonts.inter(
+                              color: FluentianColors.textSecondary,
+                            ),
+                          ),
+                        );
+                      }
+                      return ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        children: nextLessons.map((l) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      LessonDetailScreen(lessonId: l.id),
+                                ),
+                              );
+                            },
+                            child: _LessonCard(
+                              title: l.title,
+                              unit: 'Next up',
+                              iconData: Iconsax.book_1,
+                              xp: '${l.xpReward} XP',
+                              progress: 0.0,
+                              color: FluentianColors.primary,
                             ),
                           );
-                        },
-                        child: _LessonCard(
-                          title: l.title,
-                          unit: 'Next up',
-                          iconData: Iconsax.book_1,
-                          xp: '${l.xpReward} XP',
-                          progress: 0.0,
-                          color: FluentianColors.primary,
-                        ),
+                        }).toList(),
                       );
-                    }).toList(),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Daily challenge
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: FluentianColors.accentTint,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: FluentianColors.accent.withValues(alpha: 0.2),
+                    },
                   ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Iconsax.cup5,
-                      color: FluentianColors.primary,
-                      size: 32,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'DAILY CHALLENGE',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: FluentianColors.accent,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Complete 3 lessons today',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: FluentianColors.textPrimary,
-                            ),
-                          ),
-                        ],
+
+                const SizedBox(height: 24),
+
+                // Daily challenge
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: FluentianColors.accentTint,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: FluentianColors.accent.withValues(alpha: 0.2),
                       ),
                     ),
-                    CircularPercentIndicator(
-                      radius: 22,
-                      lineWidth: 4,
-                      percent: 2 / 3,
-                      center: Text(
-                        '2/3',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Iconsax.cup5,
                           color: FluentianColors.primary,
+                          size: 32,
                         ),
-                      ),
-                      progressColor: FluentianColors.primary,
-                      backgroundColor: FluentianColors.primary.withValues(
-                        alpha: 0.15,
-                      ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'DAILY CHALLENGE',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: FluentianColors.accent,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Complete 3 lessons today',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: FluentianColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        CircularPercentIndicator(
+                          radius: 22,
+                          lineWidth: 4,
+                          percent: 2 / 3,
+                          center: Text(
+                            '2/3',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: FluentianColors.primary,
+                            ),
+                          ),
+                          progressColor: FluentianColors.primary,
+                          backgroundColor: FluentianColors.primary.withValues(
+                            alpha: 0.15,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: 24),
+
+                // Your learning path
+                if (content.courses.isNotEmpty) ...[
+                  const SectionHeader(title: 'Your learning path'),
+                  const SizedBox(height: 12),
+                  ..._buildUnitList(context, content),
+                ],
+
+                const SizedBox(height: 24),
+              ],
             ),
-
-            const SizedBox(height: 24),
-
-            // Your learning path
-            if (content.courses.isNotEmpty) ...[
-              const SectionHeader(title: 'Your learning path'),
-              const SizedBox(height: 12),
-              ..._buildUnitList(context, content),
-            ],
-
-            const SizedBox(height: 24),
-          ],
-        ),
-      );
-      },
-    ));
+          );
+        },
+      ),
+    );
   }
 
   List<Widget> _buildUnitList(BuildContext context, ContentProvider content) {
     if (content.courses.isEmpty) return [];
-    
+
     final course = content.courses.first;
     final units = course.units;
 
@@ -363,8 +380,10 @@ class _HomeContent extends StatelessWidget {
         if (content.isLessonCompleted(lesson.id)) completedLessons++;
       }
       final totalLessons = u.lessons.length;
-      final progress = totalLessons > 0 ? (completedLessons / totalLessons) : 0.0;
-      
+      final progress = totalLessons > 0
+          ? (completedLessons / totalLessons)
+          : 0.0;
+
       // A unit is locked if the previous unit is NOT fully completed.
       // (For MVP, let's keep all units unlocked, or unlock based on the first lesson)
       final locked = !content.isLessonUnlocked(u.lessons, 0);
@@ -376,7 +395,7 @@ class _HomeContent extends StatelessWidget {
               ? null
               : () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => UnitDetailScreen(unit: u),
+                    builder: (_) => LessonListScreen(initialUnitId: u.id),
                   ),
                 ),
           child: AnimatedOpacity(
@@ -388,9 +407,7 @@ class _HomeContent extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.black.withValues(alpha: 0.06),
-                ),
+                border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
                 boxShadow: [FluentianShadows.subtle],
               ),
               child: Row(
@@ -405,7 +422,11 @@ class _HomeContent extends StatelessWidget {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        const Icon(Icons.auto_stories_rounded, size: 22, color: FluentianColors.primary),
+                        const Icon(
+                          Icons.auto_stories_rounded,
+                          size: 22,
+                          color: FluentianColors.primary,
+                        ),
                         if (locked)
                           Container(
                             width: 44,
@@ -464,7 +485,9 @@ class _HomeContent extends StatelessWidget {
                         lineWidth: 3,
                         percent: progress,
                         progressColor: FluentianColors.primary,
-                        backgroundColor: FluentianColors.primary.withValues(alpha: 0.15),
+                        backgroundColor: FluentianColors.primary.withValues(
+                          alpha: 0.15,
+                        ),
                       ),
                     ],
                   ),
@@ -521,14 +544,19 @@ class _LessonCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: FluentianColors.textPrimary,
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: FluentianColors.textPrimary,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               XpChip(value: xp),
             ],
           ),
@@ -546,22 +574,4 @@ class _LessonCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _UnitData {
-  final String name, unit, caption, stars;
-  final IconData icon;
-  final Color color;
-  final double progress;
-  final bool locked;
-  const _UnitData(
-    this.name,
-    this.unit,
-    this.caption,
-    this.icon,
-    this.color,
-    this.stars,
-    this.progress,
-    this.locked,
-  );
 }

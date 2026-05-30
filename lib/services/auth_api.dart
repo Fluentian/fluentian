@@ -8,13 +8,13 @@ class AuthApi {
 
   final _client = ApiClient.instance;
 
-  /// Register a new user. Returns [AuthResponse] with tokens + user.
-  Future<AuthResponse> register({
+  /// Register a new user.
+  Future<void> register({
     required String username,
     required String email,
     required String password,
   }) async {
-    final json = await _client.post(
+    await _client.post(
       '/auth/register',
       {
         'username': username,
@@ -23,9 +23,37 @@ class AuthApi {
       },
       auth: false,
     );
+  }
+
+  /// Verify signup OTP. Returns [AuthResponse] with tokens + user.
+  Future<AuthResponse> verifyEmail({
+    required String email,
+    required String otp,
+  }) async {
+    final json = await _client.post(
+      '/auth/verify-email',
+      {
+        'email': email,
+        'otp': otp,
+      },
+      auth: false,
+    );
     final res = AuthResponse.fromJson(json);
     await _client.saveTokens(res.accessToken, res.refreshToken);
     return res;
+  }
+
+  /// Resend signup OTP.
+  Future<void> resendOtp({
+    required String email,
+  }) async {
+    await _client.post(
+      '/auth/resend-otp',
+      {
+        'email': email,
+      },
+      auth: false,
+    );
   }
 
   /// Log in with email + password.
@@ -81,12 +109,17 @@ class AuthApi {
 
   /// Reset password using the code from the email.
   Future<void> resetPassword({
+    required String email,
     required String token,
     required String newPassword,
   }) async {
     await _client.post(
       '/auth/reset-password',
-      {'token': token, 'new_password': newPassword},
+      {
+        'email': email,
+        'token': token,
+        'new_password': newPassword,
+      },
       auth: false,
     );
   }

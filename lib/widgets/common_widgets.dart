@@ -4,14 +4,16 @@ import '../core/theme.dart';
 
 /// Stat chip — used in top bar and profile
 class StatChip extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? emoji;
   final String value;
   final Color color;
   final Color bgColor;
 
   const StatChip({
     super.key,
-    required this.icon,
+    this.icon,
+    this.emoji,
     required this.value,
     required this.color,
     required this.bgColor,
@@ -29,7 +31,13 @@ class StatChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
+          if (emoji != null)
+            Text(
+              emoji!,
+              style: const TextStyle(fontSize: 14),
+            )
+          else if (icon != null)
+            Icon(icon!, size: 14, color: color),
           const SizedBox(width: 4),
           Text(
             value,

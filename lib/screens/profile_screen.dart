@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../core/constants.dart';
 import '../widgets/common_widgets.dart';
+import '../providers/auth_provider.dart';
+import '../providers/content_provider.dart';
 import 'auth/sign_in_screen.dart';
 import 'settings_screen.dart';
 import 'paywall_screen.dart';
@@ -12,6 +16,30 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final contentProvider = context.watch<ContentProvider>();
+    final user = authProvider.user;
+    final stats = contentProvider.stats;
+
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: FluentianColors.pageBg,
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final initial = user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U';
+    final name = user.displayName;
+    final username = '@${user.username}';
+    final currentLevel = CEFRLevel.getFriendlyName(user.currentLevel);
+    
+    final streakVal = stats?.streakDays ?? user.streakDays;
+    final xpVal = stats?.totalXp ?? user.xpTotal;
+    final lessonsVal = stats?.lessonsCompleted ?? 0;
+    final unitsVal = stats?.unitsCompleted ?? 0;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -24,9 +52,7 @@ class ProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                border: const Border(
-                  top: BorderSide(color: FluentianColors.primary, width: 4),
-                ),
+                border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
                 boxShadow: [FluentianShadows.subtle],
               ),
               child: Column(
@@ -44,7 +70,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        'S',
+                        initial,
                         style: GoogleFonts.inter(
                           fontSize: 32,
                           fontWeight: FontWeight.w700,
@@ -55,7 +81,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Sara Tesfaye',
+                    name,
                     style: GoogleFonts.inter(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
@@ -63,7 +89,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '@sara_t',
+                    username,
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       color: FluentianColors.textSecondary,
@@ -80,7 +106,7 @@ class ProfileScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: Text(
-                      'A2',
+                      currentLevel,
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -91,24 +117,24 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 14),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       StatChip(
-                        icon: Icons.local_fire_department_rounded,
-                        value: '7 days',
+                        emoji: '🔥',
+                        value: '$streakVal days',
                         color: FluentianColors.accent,
                         bgColor: FluentianColors.accentTint,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       StatChip(
                         icon: Icons.bolt_rounded,
-                        value: '2,340 XP',
+                        value: '$xpVal XP',
                         color: FluentianColors.primary,
                         bgColor: FluentianColors.primaryTint,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       StatChip(
                         icon: Icons.check_circle_rounded,
-                        value: '47 lessons',
+                        value: '$lessonsVal lessons',
                         color: FluentianColors.success,
                         bgColor: FluentianColors.successTint,
                       ),
@@ -121,17 +147,17 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Streak calendar
-            _buildStreakCalendar(),
+            _buildStreakCalendar(streakVal),
 
             const SizedBox(height: 16),
 
             // Skills breakdown
-            _buildSkillsCard(),
+            _buildSkillsCard(lessonsVal),
 
             const SizedBox(height: 16),
 
             // Badges
-            _buildBadgesCard(),
+            _buildBadgesCard(streakVal, lessonsVal, unitsVal),
 
             const SizedBox(height: 20),
 
@@ -183,14 +209,13 @@ class ProfileScreen extends StatelessWidget {
                             Text(
                               'Master French Faster',
                               style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: FluentianColors.textPrimary,
-                              ),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: FluentianColors.textPrimary),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Unlock AI Coach, unlimited hearts, and exclusive cultural deep-dives.',
+                              'Unlock unlimited hearts and exclusive cultural deep-dives.',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
                                 color: FluentianColors.textSecondary,
@@ -269,11 +294,14 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
 
             TextButton(
-              onPressed: () {
-                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const SignInScreen()),
-                  (route) => false,
-                );
+              onPressed: () async {
+                await authProvider.logout();
+                if (context.mounted) {
+                  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const SignInScreen()),
+                    (route) => false,
+                  );
+                }
               },
               child: Text(
                 'Sign out',
@@ -292,15 +320,17 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStreakCalendar() {
-    // Simulated streak data: 1 = practiced, 0 = missed, 2 = today
-    final weeks = [
-      [1, 1, 1, 1, 1, 0, 0],
-      [1, 1, 1, 0, 1, 1, 1],
-      [1, 1, 0, 0, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 2],
-    ];
+  Widget _buildStreakCalendar(int streakDays) {
     final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    
+    // Highlight days representing the current streak at the end of the week
+    final weekHighlights = List.generate(7, (i) {
+      if (streakDays <= 0) return 0;
+      if (i >= 7 - streakDays) {
+        return (i == 6) ? 2 : 1; // 2 = today, 1 = completed
+      }
+      return 0;
+    });
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -339,69 +369,66 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          ...weeks.map(
-            (week) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                children: List.generate(7, (i) {
-                  final d = week[i];
-                  return Expanded(
-                    child: Center(
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: d == 1
-                              ? FluentianColors.primary
-                              : d == 2
-                              ? Colors.transparent
-                              : Colors.grey.shade200,
-                          border: d == 2
-                              ? Border.all(
-                                  color: FluentianColors.primary,
-                                  width: 2,
-                                )
-                              : d == 1
-                              ? Border.all(
-                                  color: const Color(0xFFF59E0B),
-                                  width: 1.5,
-                                )
-                              : null,
-                        ),
-                        child: d == 1
-                            ? const Icon(
-                                Icons.check_rounded,
-                                size: 14,
-                                color: Colors.white,
-                              )
-                            : d == 2
-                            ? const Icon(
-                                Icons.circle,
-                                size: 8,
-                                color: FluentianColors.primary,
-                              )
-                            : null,
-                      ),
+          Row(
+            children: List.generate(7, (i) {
+              final d = weekHighlights[i];
+              return Expanded(
+                child: Center(
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: d == 1
+                          ? FluentianColors.primary
+                          : d == 2
+                          ? Colors.transparent
+                          : Colors.grey.shade200,
+                      border: d == 2
+                          ? Border.all(
+                              color: FluentianColors.primary,
+                              width: 2,
+                            )
+                          : d == 1
+                          ? Border.all(
+                              color: const Color(0xFFF59E0B),
+                              width: 1.5,
+                            )
+                          : null,
                     ),
-                  );
-                }),
-              ),
-            ),
+                    child: d == 1
+                        ? const Icon(
+                            Icons.check_rounded,
+                            size: 14,
+                            color: Colors.white,
+                          )
+                        : d == 2
+                        ? const Icon(
+                            Icons.circle,
+                            size: 8,
+                            color: FluentianColors.primary,
+                          )
+                        : null,
+                  ),
+                ),
+              );
+            }),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSkillsCard() {
+  Widget _buildSkillsCard(int lessonsCompleted) {
+    final baseMastery = lessonsCompleted > 0 ? (lessonsCompleted / 10).clamp(0.1, 1.0) : 0.05;
+
     final skills = [
-      _Skill('Grammar', 0.78, FluentianColors.primary),
-      _Skill('Vocabulary', 0.65, const Color(0xFF14B8A6)),
-      _Skill('Listening', 0.88, FluentianColors.info),
-      _Skill('Speaking', 0.55, FluentianColors.accent),
-      _Skill('Reading', 0.80, FluentianColors.success),
-      _Skill('Writing', 0.42, FluentianColors.error),
+      _Skill('Grammar', (baseMastery * 1.2).clamp(0.05, 0.95), Iconsax.book_1),
+      _Skill('Vocabulary', (baseMastery * 1.1).clamp(0.05, 0.95), Iconsax.bookmark),
+      _Skill('Listening', (baseMastery * 0.9).clamp(0.05, 0.95), Iconsax.volume_high),
+      _Skill('Speaking', (baseMastery * 0.7).clamp(0.05, 0.95), Iconsax.microphone_2),
+      _Skill('Reading', (baseMastery * 1.0).clamp(0.05, 0.95), Iconsax.document_text),
+      _Skill('Writing', (baseMastery * 0.5).clamp(0.05, 0.95), Iconsax.pen_tool),
     ];
 
     return Container(
@@ -425,37 +452,44 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 16),
           ...skills.map(
             (s) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
+                  Icon(
+                    s.iconData,
+                    size: 18,
+                    color: FluentianColors.textSecondary,
+                  ),
+                  const SizedBox(width: 10),
                   SizedBox(
-                    width: 80,
+                    width: 90,
                     child: Text(
                       s.name,
                       style: GoogleFonts.inter(
                         fontSize: 13,
-                        color: FluentianColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                        color: FluentianColors.textPrimary,
                       ),
                     ),
                   ),
                   Expanded(
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(10),
                       child: LinearProgressIndicator(
                         value: s.value,
-                        backgroundColor: s.color.withValues(alpha: 0.12),
-                        valueColor: AlwaysStoppedAnimation(s.color),
-                        minHeight: 8,
+                        backgroundColor: FluentianColors.primary.withValues(alpha: 0.1),
+                        valueColor: const AlwaysStoppedAnimation(FluentianColors.primary),
+                        minHeight: 6,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Text(
                     '${(s.value * 100).toInt()}%',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: s.color,
+                      color: FluentianColors.primary,
                     ),
                   ),
                 ],
@@ -467,14 +501,14 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBadgesCard() {
+  Widget _buildBadgesCard(int streakDays, int lessonsCompleted, int unitsCompleted) {
     final badges = [
-      _Badge(Iconsax.flash_15, 'First streak', true),
-      _Badge(Iconsax.message5, 'First dialogue', true),
-      _Badge(Iconsax.radar5, '100% accuracy', true),
-      _Badge(Iconsax.book5, 'Unit complete', true),
-      _Badge(Iconsax.cup5, '30-day streak', false),
-      _Badge(Iconsax.star5, 'All stars', false),
+      _Badge(Iconsax.flash_15, 'First streak', streakDays >= 1),
+      _Badge(Iconsax.message5, 'First lesson', lessonsCompleted >= 1),
+      _Badge(Iconsax.radar5, '100% accuracy', lessonsCompleted >= 2),
+      _Badge(Iconsax.book5, 'Unit complete', unitsCompleted >= 1),
+      _Badge(Iconsax.cup5, '30-day streak', streakDays >= 30),
+      _Badge(Iconsax.star5, 'Super Star', lessonsCompleted >= 10),
     ];
 
     return Container(
@@ -560,8 +594,8 @@ class ProfileScreen extends StatelessWidget {
 class _Skill {
   final String name;
   final double value;
-  final Color color;
-  const _Skill(this.name, this.value, this.color);
+  final IconData iconData;
+  const _Skill(this.name, this.value, this.iconData);
 }
 
 class _Badge {

@@ -245,11 +245,7 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                             });
                             if (success && mounted) {
                               auth.completeOnboarding();
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                    builder: (_) => const HomeScreen()),
-                                (route) => false,
-                              );
+                              Navigator.of(context).popUntil((route) => route.isFirst);
                             } else if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(

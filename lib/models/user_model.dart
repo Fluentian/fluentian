@@ -10,6 +10,10 @@ class UserModel {
   final int streakDays;
   final int hearts;
   final DateTime createdAt;
+  final String? displayNameField;
+  final String? avatarUrl;
+  final String? bio;
+  final String? learningGoal;
 
   const UserModel({
     required this.id,
@@ -21,19 +25,30 @@ class UserModel {
     required this.streakDays,
     required this.hearts,
     required this.createdAt,
+    this.displayNameField,
+    this.avatarUrl,
+    this.bio,
+    this.learningGoal,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-        id: json['id'] as String,
-        username: json['username'] as String,
-        email: json['email'] as String,
-        role: json['role'] as String,
-        currentLevel: json['current_level'] as String? ?? 'A0',
-        xpTotal: json['xp_total'] as int? ?? 0,
-        streakDays: json['streak_days'] as int? ?? 0,
-        hearts: json['hearts'] as int? ?? 5,
-        createdAt: DateTime.parse(json['created_at'] as String),
-      );
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    final profile = json['profile'] as Map<dynamic, dynamic>?;
+    return UserModel(
+      id: json['id'] as String,
+      username: json['username'] as String,
+      email: json['email'] as String,
+      role: json['role'] as String,
+      currentLevel: json['current_level'] as String? ?? 'A0',
+      xpTotal: json['xp_total'] as int? ?? 0,
+      streakDays: json['streak_days'] as int? ?? 0,
+      hearts: json['hearts'] as int? ?? 5,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      displayNameField: profile?['display_name']?.toString() ?? json['display_name_field']?.toString(),
+      avatarUrl: profile?['avatar_url']?.toString() ?? json['avatar_url']?.toString(),
+      bio: profile?['bio']?.toString() ?? json['bio']?.toString(),
+      learningGoal: profile?['learning_goal']?.toString() ?? json['learning_goal']?.toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -45,6 +60,10 @@ class UserModel {
         'streak_days': streakDays,
         'hearts': hearts,
         'created_at': createdAt.toIso8601String(),
+        'display_name_field': displayNameField,
+        'avatar_url': avatarUrl,
+        'bio': bio,
+        'learning_goal': learningGoal,
       };
 
   UserModel copyWith({
@@ -57,6 +76,10 @@ class UserModel {
     int? streakDays,
     int? hearts,
     DateTime? createdAt,
+    String? displayNameField,
+    String? avatarUrl,
+    String? bio,
+    String? learningGoal,
   }) =>
       UserModel(
         id: id ?? this.id,
@@ -68,6 +91,10 @@ class UserModel {
         streakDays: streakDays ?? this.streakDays,
         hearts: hearts ?? this.hearts,
         createdAt: createdAt ?? this.createdAt,
+        displayNameField: displayNameField ?? this.displayNameField,
+        avatarUrl: avatarUrl ?? this.avatarUrl,
+        bio: bio ?? this.bio,
+        learningGoal: learningGoal ?? this.learningGoal,
       );
 
   /// Greeting based on time of day.
@@ -79,7 +106,9 @@ class UserModel {
   }
 
   /// Returns display name (username fallback).
-  String get displayName => username;
+  String get displayName => (displayNameField != null && displayNameField!.isNotEmpty)
+      ? displayNameField!
+      : username;
 }
 
 class AuthResponse {

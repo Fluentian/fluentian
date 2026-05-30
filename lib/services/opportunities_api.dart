@@ -1,5 +1,4 @@
 import 'package:fluentian/services/api_client.dart';
-import 'package:uuid/uuid.dart';
 
 class Opportunity {
   final String id;
@@ -24,22 +23,25 @@ class Opportunity {
       title: json['title'],
       description: json['description'],
       type: json['type'],
-      deadline: json['deadline'] != null ? DateTime.parse(json['deadline']) : null,
+      deadline: json['deadline'] != null
+          ? DateTime.parse(json['deadline'])
+          : null,
       isActive: json['is_active'],
     );
   }
 }
 
 class OpportunitiesApi {
-  final ApiClient _client = ApiClient();
+  final ApiClient _client = ApiClient.instance;
 
   Future<List<Opportunity>> getOpportunities() async {
-    final response = await _client.get('/opportunities');
-    final List<dynamic> items = response.data['items'];
-    return items.map((json) => Opportunity.fromJson(json)).toList();
+    final items = await _client.getList('/opportunities');
+    return items
+        .map((json) => Opportunity.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> applyForOpportunity(String id, Map<String, dynamic> data) async {
-    await _client.post('/opportunities/$id/apply', data: data);
+    await _client.post('/opportunities/$id/apply', data);
   }
 }

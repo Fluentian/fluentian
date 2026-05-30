@@ -3,12 +3,14 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../models/user_model.dart';
 
 /// Central exception class for all API errors.
 class ApiException implements Exception {
   final int statusCode;
   final String message;
-  const ApiException(this.statusCode, this.message);
+  final Map<String, dynamic>? responseBody;
+  const ApiException(this.statusCode, this.message, [this.responseBody]);
 
   @override
   String toString() => 'ApiException($statusCode): $message';
@@ -19,9 +21,20 @@ class ApiException implements Exception {
       case 400:
         return message;
       case 401:
+        final lower = message.toLowerCase();
+        if (lower.contains('email') ||
+            lower.contains('password') ||
+            lower.contains('credential') ||
+            lower.contains('invalid') ||
+            lower.contains('user') ||
+            lower.contains('incorrect') ||
+            lower.contains('no active account') ||
+            lower.contains('verified')) {
+          return message;
+        }
         return 'Your session expired. Please sign in again.';
       case 403:
-        return 'You don\'t have permission to do that.';
+        return message;
       case 404:
         return 'Not found.';
       case 409:
@@ -42,7 +55,7 @@ class ApiException implements Exception {
 
 class NetworkException implements Exception {
   final String message;
-  const NetworkException([this.message = 'No internet connection.']);
+  const NetworkException([this.message = 'No internet connection or server is unreachable. Make sure the backend is running.']);
   @override
   String toString() => 'NetworkException: $message';
 }
@@ -53,8 +66,25 @@ class ApiClient {
   static final ApiClient instance = ApiClient._();
 
   // ── Configuration ────────────────────────────────────
-  // Change this to your backend URL (localhost for emulator, LAN IP for device)
-  static const String _baseUrl = 'http://10.0.2.2:8000/api/v1';
+  static String get _baseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:8000/api/v1';
+    }
+    try {
+      if (Platform.isAndroid) {
+        // For Android Emulator, use '10.0.2.2' to connect to host's localhost.
+        // For physical Android devices on the same Wi-Fi, change to your host IP: '192.168.1.3'
+        // (Ensure port 8000 is open in your computer's firewall if using a physical device)
+        return 'http://192.168.1.3:8000/api/v1';
+      }
+      if (Platform.isIOS) {
+        // For iOS Simulator, use localhost.
+        // For physical iOS devices, change to your host IP: '192.168.1.3'
+        return 'http://192.168.1.3:8000/api/v1';
+      }
+    } catch (_) {}
+    return 'http://localhost:8000/api/v1';
+  }
   // For physical device on same network use e.g. 'http://192.168.1.x:8000/api/v1'
 
   static const _storage = FlutterSecureStorage(
@@ -62,6 +92,36 @@ class ApiClient {
   );
   static const _accessKey = 'fluentian_access_token';
   static const _refreshKey = 'fluentian_refresh_token';
+  static const _userKey = 'fluentian_cached_user';
+  static const _introKey = 'fluentian_seen_intro';
+
+  // ── Cache management ─────────────────────────────────
+  Future<void> saveUser(UserModel user) async {
+    await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+  }
+
+  Future<UserModel?> getUser() async {
+    try {
+      final data = await _storage.read(key: _userKey);
+      if (data == null || data.isEmpty) return null;
+      return UserModel.fromJson(jsonDecode(data) as Map<String, dynamic>);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> clearUser() async {
+    await _storage.delete(key: _userKey);
+  }
+
+  Future<void> setIntroSeen(bool value) async {
+    await _storage.write(key: _introKey, value: value.toString());
+  }
+
+  Future<bool> hasSeenIntro() async {
+    final value = await _storage.read(key: _introKey);
+    return value == 'true';
+  }
 
   // ── Token management ─────────────────────────────────
   Future<void> saveTokens(String access, String refresh) async {
@@ -193,11 +253,13 @@ class ApiClient {
   void _checkStatus(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
     String message = 'Request failed';
+    Map<String, dynamic>? responseBody;
     try {
       final body = jsonDecode(utf8.decode(response.bodyBytes));
       if (body is Map) {
-        message = body['detail']?.toString() ??
-            body['message']?.toString() ??
+        responseBody = Map<String, dynamic>.from(body);
+        message = body['message']?.toString() ??
+            body['detail']?.toString() ??
             message;
       }
     } catch (_) {
@@ -206,6 +268,6 @@ class ApiClient {
     if (kDebugMode) {
       debugPrint('API Error ${response.statusCode}: $message');
     }
-    throw ApiException(response.statusCode, message);
+    throw ApiException(response.statusCode, message, responseBody);
   }
 }
