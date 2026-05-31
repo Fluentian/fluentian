@@ -66,25 +66,7 @@ class ApiClient {
   static final ApiClient instance = ApiClient._();
 
   // ── Configuration ────────────────────────────────────
-  static String get _baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:8000/api/v1';
-    }
-    try {
-      if (Platform.isAndroid) {
-        // For Android Emulator, use '10.0.2.2' to connect to host's localhost.
-        // For physical Android devices on the same Wi-Fi, change to your host IP: '192.168.1.3'
-        // (Ensure port 8000 is open in your computer's firewall if using a physical device)
-        return 'http://192.168.1.3:8000/api/v1';
-      }
-      if (Platform.isIOS) {
-        // For iOS Simulator, use localhost.
-        // For physical iOS devices, change to your host IP: '192.168.1.3'
-        return 'http://192.168.1.3:8000/api/v1';
-      }
-    } catch (_) {}
-    return 'http://localhost:8000/api/v1';
-  }
+  static String get _baseUrl => 'https://api.fluentianapp.binovatechnologies.com/api/v1';
   // For physical device on same network use e.g. 'http://192.168.1.x:8000/api/v1'
 
   static const _storage = FlutterSecureStorage(
