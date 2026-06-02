@@ -175,6 +175,26 @@ class BlockModel {
   /// For audio content blocks.
   String? get audioUrl =>
       ApiClient.resolveMediaUrl(blockPayload['audio_url']?.toString());
+
+  bool get ttsEnabled {
+    final value = blockPayload['tts_enabled'];
+    return value == true || value?.toString().toLowerCase() == 'true';
+  }
+
+  String get ttsLanguage =>
+      blockPayload['tts_language']?.toString().trim().isNotEmpty == true
+          ? blockPayload['tts_language'].toString()
+          : 'fr-FR';
+
+  String get textToSpeak =>
+      blockPayload['tts_text']?.toString() ??
+      blockPayload['word']?.toString() ??
+      blockPayload['target']?.toString() ??
+      blockPayload['example']?.toString() ??
+      blockPayload['rule']?.toString() ??
+      blockPayload['content']?.toString() ??
+      blockPayload['text']?.toString() ??
+      '';
 }
 
 class QuestionModel {
@@ -233,6 +253,11 @@ class QuestionModel {
   /// For audio/listening/dictation/speaking questions
   String? get audioUrl =>
       ApiClient.resolveMediaUrl(promptPayload['audio_url']?.toString());
+
+  String get textToSpeak =>
+      promptPayload['tts_text']?.toString() ??
+      promptPayload['text']?.toString() ??
+      promptText;
 
   /// For MCQ Multi questions — returns list of correct options.
   List<String> get mcqMultiCorrectAnswers {

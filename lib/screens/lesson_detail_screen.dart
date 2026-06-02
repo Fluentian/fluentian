@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 import '../models/course_model.dart';
 import '../providers/content_provider.dart';
+import '../services/tts_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'mcq_screen.dart';
 import 'lesson_complete_screen.dart';
@@ -22,6 +23,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   bool _isLoading = true;
   LessonDetailModel? _lesson;
   late final AudioPlayer _audioPlayer;
+  final TtsService _ttsService = TtsService.instance;
 
   @override
   void initState() {
@@ -45,6 +47,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   @override
   void dispose() {
     _audioPlayer.dispose();
+    _ttsService.stop();
     super.dispose();
   }
 
@@ -250,14 +253,32 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
               boxShadow: [FluentianShadows.subtle],
             ),
-            child: Text(
-              text,
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                color: FluentianColors.textPrimary,
-                height: 1.6,
-                fontWeight: FontWeight.w400,
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    text,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: FluentianColors.textPrimary,
+                      height: 1.6,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+                if (block.ttsEnabled && block.textToSpeak.trim().isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  IconButton(
+                    tooltip: 'Listen',
+                    icon: const Icon(
+                      Icons.volume_up_rounded,
+                      color: FluentianColors.primary,
+                    ),
+                    onPressed: () => _speakBlock(block),
+                  ),
+                ],
+              ],
             ),
           ),
         );
@@ -301,28 +322,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               ),
               IconButton(
                 icon: const Icon(Icons.volume_up_rounded, color: FluentianColors.primary),
-                onPressed: () async {
-                  final audioUrl = block.audioUrl;
-                  if (audioUrl != null && audioUrl.isNotEmpty) {
-                    try {
-                      await _audioPlayer.setUrl(audioUrl);
-                      _audioPlayer.play();
-                    } catch (e) {
-                      debugPrint('Lesson audio playback error: $audioUrl $e');
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Could not play audio')),
-                        );
-                      }
-                    }
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Audio not available')),
-                      );
-                    }
-                  }
-                },
+                onPressed: () => _playBlockAudioOrTts(block),
               ),
             ],
           ),
@@ -376,11 +376,21 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   ],
                 ),
               ),
-              const Icon(
-                Iconsax.translate,
-                color: FluentianColors.primary,
-                size: 22,
-              ),
+              if (block.ttsEnabled && block.textToSpeak.trim().isNotEmpty)
+                IconButton(
+                  tooltip: 'Listen',
+                  icon: const Icon(
+                    Icons.volume_up_rounded,
+                    color: FluentianColors.primary,
+                  ),
+                  onPressed: () => _speakBlock(block),
+                )
+              else
+                const Icon(
+                  Iconsax.translate,
+                  color: FluentianColors.primary,
+                  size: 22,
+                ),
             ],
           ),
         );
@@ -423,6 +433,22 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   height: 1.4,
                 ),
               ),
+              if (block.ttsEnabled && block.textToSpeak.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => _speakBlock(block),
+                    icon: const Icon(Icons.volume_up_rounded, size: 18),
+                    label: const Text('Listen'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: FluentianColors.primary,
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
+              ],
               if (example.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Container(
@@ -464,6 +490,38 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         return const SizedBox.shrink();
       default:
         return const SizedBox.shrink();
+    }
+  }
+
+  Future<void> _playBlockAudioOrTts(BlockModel block) async {
+    final audioUrl = block.audioUrl;
+    if (audioUrl != null && audioUrl.isNotEmpty) {
+      try {
+        await _ttsService.stop();
+        await _audioPlayer.setUrl(audioUrl);
+        _audioPlayer.play();
+        return;
+      } catch (e) {
+        debugPrint('Lesson audio playback error: $audioUrl $e');
+      }
+    }
+
+    await _speakBlock(block);
+  }
+
+  Future<void> _speakBlock(BlockModel block) async {
+    try {
+      await _audioPlayer.stop();
+      await _ttsService.speak(
+        block.textToSpeak,
+        language: block.ttsLanguage,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not play audio')),
+        );
+      }
     }
   }
 }

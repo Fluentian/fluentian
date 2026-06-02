@@ -7,6 +7,7 @@ import '../widgets/common_widgets.dart';
 import '../models/course_model.dart';
 import '../models/progress_model.dart';
 import '../providers/content_provider.dart';
+import '../services/tts_service.dart';
 import 'lesson_complete_screen.dart';
 
 enum _RecordState { idle, recording, analyzing, result }
@@ -37,6 +38,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
   bool _isSubmitting = false;
 
   late final AudioPlayer _audioPlayer;
+  final TtsService _ttsService = TtsService.instance;
 
   // Controllers
   final TextEditingController _textController = TextEditingController();
@@ -91,6 +93,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
   @override
   void dispose() {
     _audioPlayer.dispose();
+    _ttsService.stop();
     _pulseCtrl.dispose();
     _textController.dispose();
     super.dispose();
@@ -164,7 +167,10 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
     if (_audioLoading) return; // Prevent double taps while loading/buffering
 
     final url = _currentQ.audioUrl;
-    if (url == null || url.isEmpty) return;
+    if (url == null || url.isEmpty) {
+      await _speakCurrentQuestion();
+      return;
+    }
 
     try {
       if (_loadedAudioUrl != url) {
@@ -208,6 +214,20 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
         _stopRecording();
       }
     });
+  }
+
+  Future<void> _speakCurrentQuestion() async {
+    if (_currentQ.questionKind != 'speech_record') return;
+    try {
+      await _audioPlayer.stop();
+      await _ttsService.speak(_currentQ.textToSpeak);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load audio.')),
+        );
+      }
+    }
   }
 
   void _stopRecording() {
@@ -1359,7 +1379,8 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
         const SizedBox(height: 24),
         
         // Native speaking audio player card
-        if (_currentQ.audioUrl != null && _currentQ.audioUrl!.isNotEmpty)
+        if ((_currentQ.audioUrl != null && _currentQ.audioUrl!.isNotEmpty) ||
+            _currentQ.textToSpeak.trim().isNotEmpty)
           GestureDetector(
             onTap: _toggleAudio,
             child: Container(
