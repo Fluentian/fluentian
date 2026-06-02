@@ -18,6 +18,7 @@ class LessonListScreen extends StatefulWidget {
 class _LessonListScreenState extends State<LessonListScreen> {
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _unitKeys = {};
+  final Set<String> _collapsedUnitIds = {};
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
   }
 
   void _scrollToUnit(String unitId) {
+    _collapsedUnitIds.remove(unitId);
     final key = _unitKeys[unitId];
     if (key == null) return;
     final context = key.currentContext;
@@ -46,6 +48,18 @@ class _LessonListScreenState extends State<LessonListScreen> {
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOutCubic,
     );
+  }
+
+  bool _isUnitExpanded(String unitId) => !_collapsedUnitIds.contains(unitId);
+
+  void _toggleUnit(String unitId) {
+    setState(() {
+      if (_collapsedUnitIds.contains(unitId)) {
+        _collapsedUnitIds.remove(unitId);
+      } else {
+        _collapsedUnitIds.add(unitId);
+      }
+    });
   }
 
   @override
@@ -182,7 +196,11 @@ class _LessonListScreenState extends State<LessonListScreen> {
                           final key = _unitKeys.putIfAbsent(item.unit.id, () => GlobalKey());
                           return Container(
                             key: key,
-                            child: _buildUnitHeader(context, item.unit),
+                            child: _buildUnitHeader(
+                              context,
+                              item.unit,
+                              isExpanded: _isUnitExpanded(item.unit.id),
+                            ),
                           );
                         } else if (item is _LessonNodeItem) {
                           return _buildLessonNode(context, item, constraints);
@@ -209,6 +227,8 @@ class _LessonListScreenState extends State<LessonListScreen> {
     for (final unit in course.units) {
       items.add(_UnitHeaderItem(unit));
 
+      if (!_isUnitExpanded(unit.id)) continue;
+
       final lessons = unit.lessons;
       for (int i = 0; i < lessons.length; i++) {
         final lesson = lessons[i];
@@ -230,90 +250,110 @@ class _LessonListScreenState extends State<LessonListScreen> {
     return items;
   }
 
-  Widget _buildUnitHeader(BuildContext context, UnitModel unit) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            FluentianColors.primary,
-            Color(0xFF4E22D4),
+  Widget _buildUnitHeader(
+    BuildContext context,
+    UnitModel unit, {
+    required bool isExpanded,
+  }) {
+    return GestureDetector(
+      onTap: () => _toggleUnit(unit.id),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              FluentianColors.primary,
+              Color(0xFF4E22D4),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: FluentianColors.primary.withValues(alpha: 0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            )
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: FluentianColors.primary.withValues(alpha: 0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'UNIT ${unit.unitNo}',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white.withValues(alpha: 0.7),
-                    letterSpacing: 1.0,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  unit.title,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Master ${unit.lessons.length} steps to unlock the next unit',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          ElevatedButton.icon(
-            onPressed: () {
-              _showGuidebookDialog(context, unit);
-            },
-            icon: const Icon(Iconsax.book_1, size: 16, color: FluentianColors.primary),
-            label: Text(
-              'GUIDE',
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: FluentianColors.primary,
+        child: Row(
+          children: [
+            AnimatedRotation(
+              turns: isExpanded ? 0.0 : -0.25,
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              child: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Colors.white.withValues(alpha: 0.9),
+                size: 28,
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: FluentianColors.primary,
-              elevation: 0,
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'UNIT ${unit.unitNo}',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white.withValues(alpha: 0.7),
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    unit.title,
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    isExpanded
+                        ? 'Master ${unit.lessons.length} steps to unlock the next unit'
+                        : '${unit.lessons.length} lessons hidden',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            ElevatedButton.icon(
+              onPressed: () {
+                _showGuidebookDialog(context, unit);
+              },
+              icon: const Icon(Iconsax.book_1, size: 16, color: FluentianColors.primary),
+              label: Text(
+                'GUIDE',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: FluentianColors.primary,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: FluentianColors.primary,
+                elevation: 0,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
