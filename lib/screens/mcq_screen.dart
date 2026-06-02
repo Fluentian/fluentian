@@ -28,17 +28,36 @@ class _McqScreenState extends State<McqScreen> {
   _AnswerState _state = _AnswerState.unanswered;
   int _hearts = 5;
   int _correctCount = 0;
-  
+
   final List<AnswerPayload> _answers = [];
   final DateTime _startTime = DateTime.now();
   bool _isSubmitting = false;
+  final TextEditingController _textController = TextEditingController();
 
   QuestionModel get _currentQ => widget.questions[_currentIndex];
 
-  void _check() {
+  bool get _isMcq => _currentQ.isMcq;
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  bool _matchesAccepted(String input) {
+    final normalized = input.trim().toLowerCase();
+    for (final accepted in _currentQ.acceptedAnswers) {
+      if (accepted.trim().toLowerCase() == normalized) return true;
+    }
+    return false;
+  }
+
+  void _checkMcq() {
     if (_selected == null) return;
-    
-    final selectedAnswer = _currentQ.mcqOptions[_selected!];
+    final options = _currentQ.mcqOptions;
+    if (_selected! >= options.length) return;
+
+    final selectedAnswer = options[_selected!];
     final isCorrect = selectedAnswer == _currentQ.mcqCorrectAnswer;
 
     _answers.add(AnswerPayload(
@@ -57,6 +76,41 @@ class _McqScreenState extends State<McqScreen> {
     });
     
     _showResultSheet(isCorrect, _currentQ.mcqCorrectAnswer);
+  }
+
+  void _checkOpenAnswer() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    final isCorrect = _matchesAccepted(text);
+    final displayCorrect = _currentQ.acceptedAnswers.isNotEmpty
+        ? _currentQ.acceptedAnswers.first
+        : _currentQ.mcqCorrectAnswer;
+
+    _answers.add(AnswerPayload(
+      questionId: _currentQ.id,
+      answer: text,
+      isCorrect: isCorrect,
+    ));
+
+    setState(() {
+      _state = isCorrect ? _AnswerState.correct : _AnswerState.wrong;
+      if (isCorrect) {
+        _correctCount++;
+      } else if (_hearts > 0) {
+        _hearts--;
+      }
+    });
+
+    _showResultSheet(isCorrect, displayCorrect);
+  }
+
+  void _check() {
+    if (_isMcq) {
+      _checkMcq();
+    } else {
+      _checkOpenAnswer();
+    }
   }
 
   void _showResultSheet(bool correct, String correctAnswer) {
@@ -175,6 +229,7 @@ class _McqScreenState extends State<McqScreen> {
       setState(() {
         _currentIndex++;
         _selected = null;
+        _textController.clear();
         _state = _AnswerState.unanswered;
       });
     } else {
@@ -213,6 +268,10 @@ class _McqScreenState extends State<McqScreen> {
 
     final options = _currentQ.mcqOptions;
     final progress = (_currentIndex) / widget.questions.length;
+    final canCheck = _isMcq
+        ? _selected != null && _state == _AnswerState.unanswered
+        : _textController.text.trim().isNotEmpty &&
+            _state == _AnswerState.unanswered;
 
     return Scaffold(
       backgroundColor: FluentianColors.white,
@@ -296,8 +355,33 @@ class _McqScreenState extends State<McqScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Options
-                    ...List.generate(options.length, (i) {
+                    if (!_isMcq) ...[
+                      TextField(
+                        controller: _textController,
+                        enabled: _state == _AnswerState.unanswered,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          hintText: 'Type your answer',
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: FluentianColors.border,
+                            ),
+                          ),
+                        ),
+                        style: GoogleFonts.inter(fontSize: 16),
+                      ),
+                    ] else if (options.isEmpty)
+                      Text(
+                        'No answer options for this question.',
+                        style: GoogleFonts.inter(
+                          color: FluentianColors.textSecondary,
+                        ),
+                      )
+                    else
+                      ...List.generate(options.length, (i) {
                       final optionText = options[i];
                       final isSelected = _selected == i;
                       
@@ -372,7 +456,7 @@ class _McqScreenState extends State<McqScreen> {
                           ),
                         ),
                       );
-                    }),
+                      }),
                   ],
                 ),
               ),
@@ -383,14 +467,10 @@ class _McqScreenState extends State<McqScreen> {
               padding: const EdgeInsets.all(16),
               child: FluentianButton(
                 text: 'Check ✓',
-                onPressed:
-                    _selected != null && _state == _AnswerState.unanswered
-                    ? _check
-                    : null,
-                backgroundColor: _selected != null
-                    ? FluentianColors.primary
-                    : Colors.grey.shade300,
-                textColor: _selected != null ? Colors.white : Colors.grey,
+                onPressed: canCheck ? _check : null,
+                backgroundColor:
+                    canCheck ? FluentianColors.primary : Colors.grey.shade300,
+                textColor: canCheck ? Colors.white : Colors.grey,
               ),
             ),
           ],

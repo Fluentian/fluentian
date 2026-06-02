@@ -1,5 +1,5 @@
-/// Course / Unit / Lesson / Block / Question models
-/// Mirrors the backend content schemas exactly.
+/// Course / Unit / Lesson / Block / Question models.
+/// Payload fields accept Admin, seed, and import aliases via getters below.
 
 class CourseModel {
   final String id;
@@ -58,7 +58,7 @@ class UnitModel {
   factory UnitModel.fromJson(Map<String, dynamic> json) => UnitModel(
         id: json['id'] as String,
         courseId: json['course_id'] as String,
-        unitKind: json['unit_kind'] as String? ?? 'standard',
+        unitKind: json['unit_kind'] as String? ?? 'core',
         unitNo: json['unit_no'] as int,
         title: json['title'] as String,
         createdAt: DateTime.parse(json['created_at'] as String),
@@ -202,20 +202,55 @@ class QuestionModel {
         createdAt: DateTime.parse(json['created_at'] as String),
       );
 
-  /// For MCQ questions — returns list of option strings from prompt_payload.
+  bool get isMcq =>
+      questionKind == 'mcq_single' || questionKind == 'mcq_multi';
+
+  bool get isOpenAnswer =>
+      questionKind == 'fill_blank' ||
+      questionKind == 'translation' ||
+      questionKind == 'short_text' ||
+      questionKind == 'dictation' ||
+      questionKind == 'listening_comprehension';
+
+  /// For MCQ questions — options from canonical or legacy keys.
   List<String> get mcqOptions {
-    final opts = promptPayload['options'];
-    if (opts is List) return opts.map((e) => e.toString()).toList();
+    final opts = promptPayload['options'] ?? promptPayload['mcqOptions'];
+    if (opts is List) {
+      return opts.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    }
     return [];
   }
 
-  /// For MCQ — returns the correct answer string from grading_payload.
-  String get mcqCorrectAnswer =>
-      gradingPayload['correct_answer']?.toString() ?? '';
+  /// For MCQ — correct answer from grading or legacy prompt fields.
+  String get mcqCorrectAnswer {
+    final fromGrading = gradingPayload['correct_answer'] ??
+        promptPayload['mcqCorrectAnswer'];
+    if (fromGrading != null && fromGrading.toString().isNotEmpty) {
+      return fromGrading.toString();
+    }
+    final idx = gradingPayload['correct_index'];
+    final opts = mcqOptions;
+    if (idx is int && idx >= 0 && idx < opts.length) {
+      return opts[idx];
+    }
+    return '';
+  }
 
-  /// Prompt text from payload.
+  /// Accepted answers for fill-in / translation (server re-grades on submit).
+  List<String> get acceptedAnswers {
+    final raw = gradingPayload['accepted_answers'];
+    if (raw is List && raw.isNotEmpty) {
+      return raw.map((e) => e.toString()).toList();
+    }
+    final single = mcqCorrectAnswer;
+    if (single.isNotEmpty) return [single];
+    return [];
+  }
+
+  /// Prompt text from payload (Admin, seed, or import).
   String get promptText =>
-      promptPayload['prompt']?.toString() ??
+      promptPayload['question']?.toString() ??
       promptPayload['text']?.toString() ??
+      promptPayload['prompt']?.toString() ??
       '';
 }
