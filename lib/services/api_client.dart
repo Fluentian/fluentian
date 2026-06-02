@@ -66,8 +66,53 @@ class ApiClient {
   static final ApiClient instance = ApiClient._();
 
   // ── Configuration ────────────────────────────────────
-  static String get _baseUrl => 'https://api.fluentianapp.binovatechnologies.com/api/v1';
-  // For physical device on same network use e.g. 'http://192.168.1.x:8000/api/v1'
+  static const String _baseUrl =
+      'https://api.fluentianapp.binovatechnologies.com/api/v1';
+  static final Uri _baseUri = Uri.parse(_baseUrl);
+
+  static String? resolveMediaUrl(String? value) {
+    final raw = value?.trim();
+    if (raw == null || raw.isEmpty) return null;
+
+    final parsed = Uri.tryParse(raw);
+    if (parsed == null) return raw;
+
+    if (parsed.hasScheme) {
+      return _withoutApiPrefixForMedia(parsed).toString();
+    }
+
+    final path = parsed.path.startsWith('/') ? parsed.path : '/${parsed.path}';
+    return _withoutApiPrefixForMedia(
+      _baseUri.replace(
+        path: path,
+        query: parsed.query.isEmpty ? null : parsed.query,
+        fragment: parsed.fragment.isEmpty ? null : parsed.fragment,
+      ),
+    ).toString();
+  }
+
+  static Uri _withoutApiPrefixForMedia(Uri uri) {
+    const apiPrefix = '/api/v1';
+    const mediaPrefixes = [
+      '/media',
+      '/static',
+      '/uploads',
+      '/audio',
+      '/assets',
+      '/files',
+      '/storage',
+    ];
+    final path = uri.path;
+    if (path.startsWith(apiPrefix)) {
+      final withoutApi = path.substring(apiPrefix.length);
+      if (mediaPrefixes.any(
+        (prefix) => withoutApi == prefix || withoutApi.startsWith('$prefix/'),
+      )) {
+        return uri.replace(path: withoutApi);
+      }
+    }
+    return uri;
+  }
 
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -76,6 +121,7 @@ class ApiClient {
   static const _refreshKey = 'fluentian_refresh_token';
   static const _userKey = 'fluentian_cached_user';
   static const _introKey = 'fluentian_seen_intro';
+  static const _setupCompleteKey = 'fluentian_setup_complete';
 
   // ── Cache management ─────────────────────────────────
   Future<void> saveUser(UserModel user) async {
@@ -102,6 +148,15 @@ class ApiClient {
 
   Future<bool> hasSeenIntro() async {
     final value = await _storage.read(key: _introKey);
+    return value == 'true';
+  }
+
+  Future<void> setSetupComplete(bool value) async {
+    await _storage.write(key: _setupCompleteKey, value: value.toString());
+  }
+
+  Future<bool> hasCompletedSetup() async {
+    final value = await _storage.read(key: _setupCompleteKey);
     return value == 'true';
   }
 

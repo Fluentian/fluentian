@@ -12,6 +12,7 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
   bool _isLoading = false;
   bool _hasSeenIntro = false;
+  bool _hasCompletedSetup = false;
   String? _unverifiedEmail;
 
   AuthStatus get status => _status;
@@ -20,6 +21,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _status == AuthStatus.authenticated;
   bool get hasSeenIntro => _hasSeenIntro;
+  bool get hasCompletedSetup => _hasCompletedSetup;
   String? get unverifiedEmail => _unverifiedEmail;
 
   final _authApi = AuthApi.instance;
@@ -28,7 +30,18 @@ class AuthProvider extends ChangeNotifier {
   /// Called once at app startup to restore auth state from stored tokens.
   Future<void> initialize() async {
     final startTime = DateTime.now();
-    _hasSeenIntro = await _apiClient.hasSeenIntro();
+    try {
+      _hasSeenIntro = await _apiClient.hasSeenIntro();
+    } catch (e) {
+      _hasSeenIntro = false;
+      if (kDebugMode) debugPrint('Intro flag read error: $e');
+    }
+    try {
+      _hasCompletedSetup = await _apiClient.hasCompletedSetup();
+    } catch (e) {
+      _hasCompletedSetup = false;
+      if (kDebugMode) debugPrint('Setup flag read error: $e');
+    }
     final cachedUser = await _apiClient.getUser();
 
     final hasToken = await _apiClient.hasValidToken();
@@ -36,6 +49,7 @@ class AuthProvider extends ChangeNotifier {
       try {
         final res = await _authApi.refreshTokens();
         _user = res.user;
+        _hasCompletedSetup = _hasCompletedSetup || _hasFinishedSetup(res.user);
         _status = AuthStatus.authenticated;
         await _apiClient.saveUser(res.user);
       } catch (e) {
@@ -48,6 +62,8 @@ class AuthProvider extends ChangeNotifier {
           // Network or server error, use cached session if present
           if (cachedUser != null) {
             _user = cachedUser;
+            _hasCompletedSetup =
+                _hasCompletedSetup || _hasFinishedSetup(cachedUser);
             _status = AuthStatus.authenticated;
           } else {
             _status = AuthStatus.unauthenticated;
@@ -113,6 +129,7 @@ class AuthProvider extends ChangeNotifier {
         otp: otp,
       );
       _user = res.user;
+      _hasCompletedSetup = _hasFinishedSetup(res.user);
       await _apiClient.saveUser(res.user);
       _status = AuthStatus.authenticated;
       _errorMessage = null;
@@ -164,6 +181,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       final res = await _authApi.login(email: email, password: password);
       _user = res.user;
+      _hasCompletedSetup = _hasCompletedSetup || _hasFinishedSetup(res.user);
       await _apiClient.saveUser(res.user);
       _status = AuthStatus.authenticated;
       _errorMessage = null;
@@ -259,9 +277,27 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Complete onboarding and transition to authenticated state.
-  void completeOnboarding() {
+  Future<void> completeOnboarding({String? selectedLevel}) async {
+    UserModel? updatedUser;
+    if (selectedLevel != null && _user != null) {
+      _user = _user!.copyWith(currentLevel: selectedLevel);
+      updatedUser = _user;
+    }
+    _hasCompletedSetup = true;
     _status = AuthStatus.authenticated;
     notifyListeners();
+    if (updatedUser != null) {
+      try {
+        await _apiClient.saveUser(updatedUser);
+      } catch (e) {
+        if (kDebugMode) debugPrint('Onboarding user cache write error: $e');
+      }
+    }
+    try {
+      await _apiClient.setSetupComplete(true);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Setup flag write error: $e');
+    }
   }
 
   /// Update profile via API and refresh user object.
@@ -270,6 +306,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       final updated = await _authApi.updateProfile(data);
       _user = updated;
+      _hasCompletedSetup = _hasCompletedSetup || _hasFinishedSetup(updated);
       await _apiClient.saveUser(updated);
       return true;
     } catch (e) {
@@ -282,9 +319,13 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> setIntroSeen(bool value) async {
-    await _apiClient.setIntroSeen(value);
     _hasSeenIntro = value;
     notifyListeners();
+    try {
+      await _apiClient.setIntroSeen(value);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Intro flag write error: $e');
+    }
   }
 
   /// Clear error so the UI can reset after showing a snackbar.
@@ -297,4 +338,8 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = val;
     notifyListeners();
   }
+
+  bool _hasFinishedSetup(UserModel user) =>
+      user.currentLevel.trim().isNotEmpty &&
+      user.currentLevel.toUpperCase() != 'A0';
 }

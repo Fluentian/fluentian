@@ -5,7 +5,6 @@ import '../core/constants.dart';
 import '../widgets/common_widgets.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'home_screen.dart';
 
 class GoalSetupScreen extends StatefulWidget {
   final CEFRLevel level;
@@ -244,8 +243,12 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                               'daily_goal_xp': DailyGoal.goals[_selectedIndex].xp,
                             });
                             if (success && mounted) {
-                              auth.completeOnboarding();
-                              Navigator.of(context).popUntil((route) => route.isFirst);
+                              await auth.completeOnboarding(
+                                selectedLevel: widget.level.code,
+                              );
+                              if (!mounted) return;
+                              Navigator.of(context)
+                                  .popUntil((route) => route.isFirst);
                             } else if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(

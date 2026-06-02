@@ -150,7 +150,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
         }
         await _audioPlayer.play();
       } catch (e) {
-        debugPrint('Audio playback error: $e');
+        debugPrint('Audio playback error: $url $e');
         if (mounted) {
           setState(() {
             _audioLoading = false;
@@ -184,7 +184,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
         await _audioPlayer.play();
       }
     } catch (e) {
-      debugPrint('Audio player error: $e');
+      debugPrint('Audio player error: $url $e');
       if (mounted) {
         setState(() {
           _audioLoading = false;

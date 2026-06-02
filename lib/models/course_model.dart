@@ -1,6 +1,8 @@
 /// Course / Unit / Lesson / Block / Question models
 /// Mirrors the backend content schemas exactly.
 
+import '../services/api_client.dart';
+
 class CourseModel {
   final String id;
   final String targetLanguageId;
@@ -169,6 +171,10 @@ class BlockModel {
             Map<String, dynamic>.from(json['block_payload'] as Map? ?? {}),
         createdAt: DateTime.parse(json['created_at'] as String),
       );
+
+  /// For audio content blocks.
+  String? get audioUrl =>
+      ApiClient.resolveMediaUrl(blockPayload['audio_url']?.toString());
 }
 
 class QuestionModel {
@@ -221,10 +227,12 @@ class QuestionModel {
       '';
 
   /// For image-based questions
-  String? get imageUrl => promptPayload['image_url']?.toString();
+  String? get imageUrl =>
+      ApiClient.resolveMediaUrl(promptPayload['image_url']?.toString());
 
   /// For audio/listening/dictation/speaking questions
-  String? get audioUrl => promptPayload['audio_url']?.toString();
+  String? get audioUrl =>
+      ApiClient.resolveMediaUrl(promptPayload['audio_url']?.toString());
 
   /// For MCQ Multi questions — returns list of correct options.
   List<String> get mcqMultiCorrectAnswers {

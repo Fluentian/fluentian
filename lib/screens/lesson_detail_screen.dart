@@ -302,12 +302,13 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               IconButton(
                 icon: const Icon(Icons.volume_up_rounded, color: FluentianColors.primary),
                 onPressed: () async {
-                  final audioUrl = block.blockPayload['audio_url']?.toString();
+                  final audioUrl = block.audioUrl;
                   if (audioUrl != null && audioUrl.isNotEmpty) {
                     try {
                       await _audioPlayer.setUrl(audioUrl);
                       _audioPlayer.play();
                     } catch (e) {
+                      debugPrint('Lesson audio playback error: $audioUrl $e');
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Could not play audio')),

@@ -68,8 +68,7 @@ class _AppRootState extends State<_AppRoot> {
             child = const SplashScreen(key: ValueKey('splash'));
             break;
           case AuthStatus.authenticated:
-            final level = (auth.user?.currentLevel ?? 'A0').toUpperCase();
-            if (level == 'A0') {
+            if (!auth.hasCompletedSetup) {
               child = const LevelSetupScreen(key: ValueKey('level_setup'));
             } else {
               WidgetsBinding.instance.addPostFrameCallback((_) {
