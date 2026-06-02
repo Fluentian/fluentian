@@ -7,6 +7,8 @@ import 'providers/content_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/auth/sign_in_screen.dart';
+import 'screens/level_setup_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,20 +62,42 @@ class _AppRootState extends State<_AppRoot> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
+        Widget child;
         switch (auth.status) {
           case AuthStatus.unknown:
-            // Show splash while we determine auth state
-            return const SplashScreen();
+            child = const SplashScreen(key: ValueKey('splash'));
+            break;
           case AuthStatus.authenticated:
-            // Pre-load home data as soon as user is confirmed
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.read<ContentProvider>().loadHomeData();
-              context.read<ContentProvider>().loadLessonProgress();
-            });
-            return const HomeScreen();
+            if (!auth.hasCompletedSetup) {
+              child = const LevelSetupScreen(key: ValueKey('level_setup'));
+            } else {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (context.mounted) {
+                  context.read<ContentProvider>().loadHomeData();
+                  context.read<ContentProvider>().loadLessonProgress();
+                }
+              });
+              child = const HomeScreen(key: ValueKey('home'));
+            }
+            break;
           case AuthStatus.unauthenticated:
-            return const SignInScreen();
+            if (auth.hasSeenIntro) {
+              child = const SignInScreen(key: ValueKey('sign_in'));
+            } else {
+              child = const OnboardingScreen(key: ValueKey('onboarding'));
+            }
+            break;
         }
+
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          switchInCurve: Curves.easeInOut,
+          switchOutCurve: Curves.easeInOut,
+          transitionBuilder: (child, animation) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          child: child,
+        );
       },
     );
   }

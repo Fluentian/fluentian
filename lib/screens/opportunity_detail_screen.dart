@@ -8,10 +8,7 @@ import 'professional_application_screen.dart';
 class OpportunityDetailScreen extends StatelessWidget {
   final Opportunity opportunity;
 
-  const OpportunityDetailScreen({
-    super.key,
-    required this.opportunity,
-  });
+  const OpportunityDetailScreen({super.key, required this.opportunity});
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +83,12 @@ class OpportunityDetailScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _buildPill(Iconsax.location, 'Addis Ababa, Ethiopia'),
-                      _buildPill(Iconsax.clock, opportunity.deadline != null ? 'Ends ${opportunity.deadline.toString().split(' ')[0]}' : 'Ongoing'),
+                      _buildPill(
+                        Iconsax.clock,
+                        opportunity.deadline != null
+                            ? 'Ends ${opportunity.deadline.toString().split(' ')[0]}'
+                            : 'Ongoing',
+                      ),
                     ],
                   ),
                 ],
@@ -120,7 +122,8 @@ class OpportunityDetailScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => ProfessionalApplicationScreen(opportunity: opportunity),
+                  builder: (_) =>
+                      ProfessionalApplicationScreen(opportunity: opportunity),
                 ),
               );
             },
@@ -144,31 +147,6 @@ class OpportunityDetailScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildPill(IconData icon, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: FluentianColors.textSecondary),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: FluentianColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
   Widget _buildPill(IconData icon, String text) {
     return Container(

@@ -5,7 +5,7 @@ import '../../providers/auth_provider.dart';
 import 'auth_widgets.dart';
 import 'sign_up_screen.dart';
 import 'forgot_password_screen.dart';
-import '../onboarding_screen.dart';
+import 'otp_verification_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -40,14 +40,21 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
 
-    final success = await context.read<AuthProvider>().login(
-          email: email,
-          password: password,
-        );
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.login(
+      email: email,
+      password: password,
+    );
 
     if (!mounted) return;
     if (!success) {
-      // Error is shown via Consumer below — no additional navigation needed
+      if (authProvider.unverifiedEmail != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => OtpVerificationScreen(email: authProvider.unverifiedEmail!),
+          ),
+        );
+      }
     }
     // On success, _AppRoot Consumer in main.dart auto-navigates to HomeScreen
   }
@@ -145,7 +152,8 @@ class _SignInScreenState extends State<SignInScreen> {
                               onTap: auth.isLoading
                                   ? null
                                   : () => setState(
-                                      () => _rememberMe = !_rememberMe),
+                                      () => _rememberMe = !_rememberMe,
+                                    ),
                               child: Container(
                                 width: 20,
                                 height: 20,
@@ -161,8 +169,11 @@ class _SignInScreenState extends State<SignInScreen> {
                                   ),
                                 ),
                                 child: _rememberMe
-                                    ? const Icon(Icons.check,
-                                        size: 14, color: Colors.white)
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 14,
+                                        color: Colors.white,
+                                      )
                                     : null,
                               ),
                             ),
@@ -170,7 +181,9 @@ class _SignInScreenState extends State<SignInScreen> {
                             Text(
                               'Remember me',
                               style: GoogleFonts.inter(
-                                  fontSize: 14, color: AuthColors.body),
+                                fontSize: 14,
+                                color: AuthColors.body,
+                              ),
                             ),
                           ],
                         ),
@@ -205,14 +218,16 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   const SizedBox(height: 24),
                   GestureDetector(
-                    onTap: () => Navigator.pushReplacement(
+                    onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const SignUpScreen()),
                     ),
                     child: RichText(
                       text: TextSpan(
                         style: GoogleFonts.inter(
-                            fontSize: 14, color: AuthColors.placeholder),
+                          fontSize: 14,
+                          color: AuthColors.placeholder,
+                        ),
                         children: const [
                           TextSpan(text: "Don't have an account? "),
                           TextSpan(
@@ -248,17 +263,15 @@ class _ErrorBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8F8),
         borderRadius: BorderRadius.circular(12),
-        border: Border(
-          left: const BorderSide(color: AuthColors.errorText, width: 3),
-          top: const BorderSide(color: Color(0xFFFECACA)),
-          right: const BorderSide(color: Color(0xFFFECACA)),
-          bottom: const BorderSide(color: Color(0xFFFECACA)),
-        ),
+        border: Border.all(color: const Color(0xFFFECACA)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded,
-              color: AuthColors.errorText, size: 18),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: AuthColors.errorText,
+            size: 18,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

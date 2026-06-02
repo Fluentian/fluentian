@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import 'auth_widgets.dart';
 import 'sign_in_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  final String email;
+  const ResetPasswordScreen({super.key, required this.email});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -12,6 +15,8 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   bool _isSuccess = false;
+  bool _isLoading = false;
+  String _code = "";
   String _pwd1 = "";
   String _pwd2 = "";
 
@@ -21,6 +26,28 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (pwd.length < 7) return 2;
     if (pwd.length < 10) return 3;
     return 4;
+  }
+
+  Future<void> _handleResetPassword() async {
+    final code = _code.trim();
+    final pwd = _pwd1;
+
+    if (code.isEmpty || pwd.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields.')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    final success = await context.read<AuthProvider>().resetPasswordWithOtp(code, pwd);
+    setState(() => _isLoading = false);
+
+    if (!mounted) return;
+
+    if (success) {
+      setState(() => _isSuccess = true);
+    }
   }
 
   @override
@@ -51,6 +78,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     int strength = _getPwdStrength(_pwd1);
     bool pwdMatch = _pwd1 == _pwd2 && _pwd1.isNotEmpty;
     bool showMismatchError = _pwd2.isNotEmpty && !pwdMatch;
+    final auth = context.watch<AuthProvider>();
 
     return Container(
       key: const ValueKey('stateA'),
@@ -72,33 +100,57 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Your new password must be different from your previous one.',
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              color: AuthColors.placeholder,
-              height: 1.5,
+          RichText(
+            text: TextSpan(
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                color: AuthColors.placeholder,
+                height: 1.5,
+              ),
+              children: [
+                const TextSpan(text: 'We sent a verification code to '),
+                TextSpan(
+                  text: widget.email,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: AuthColors.heading,
+                  ),
+                ),
+                const TextSpan(text: '. Enter it below along with your new password.'),
+              ],
             ),
           ),
           const SizedBox(height: 32),
+
+          AuthInputField(
+            label: 'Verification code',
+            leftIcon: Icons.vpn_key_outlined,
+            keyboardType: TextInputType.number,
+            onChanged: (val) => setState(() => _code = val),
+            enabled: !_isLoading,
+          ),
+          const SizedBox(height: 16),
 
           AuthInputField(
             label: 'New password',
             leftIcon: Icons.lock_outline,
             isPassword: true,
             onChanged: (val) => setState(() => _pwd1 = val),
+            enabled: !_isLoading,
           ),
           if (_pwd1.isNotEmpty) ...[
             const SizedBox(height: 8),
             _buildStrengthIndicator(strength),
           ],
           const SizedBox(height: 16),
+
           AuthInputField(
             label: 'Confirm password',
             leftIcon: Icons.lock_outline,
             isPassword: !pwdMatch,
             errorText: showMismatchError ? 'Passwords do not match' : null,
             onChanged: (val) => setState(() => _pwd2 = val),
+            enabled: !_isLoading,
             rightWidget: pwdMatch
                 ? const Padding(
                     padding: EdgeInsets.only(right: 12),
@@ -111,11 +163,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 : null,
           ),
 
+          if (auth.errorMessage != null) ...[
+            const SizedBox(height: 20),
+            _ErrorBanner(message: auth.errorMessage!),
+          ],
+
           const SizedBox(height: 28),
           AuthButton(
-            text: 'Reset password',
-            onPressed: pwdMatch
-                ? () => setState(() => _isSuccess = true)
+            text: _isLoading ? 'Updating…' : 'Reset password',
+            onPressed: (pwdMatch && _code.isNotEmpty && !_isLoading)
+                ? _handleResetPassword
                 : null,
           ),
         ],
@@ -219,6 +276,35 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             onPressed: () => Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const SignInScreen()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  final String message;
+  const _ErrorBanner({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8F8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFECACA)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: AuthColors.errorText, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
             ),
           ),
         ],

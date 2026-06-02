@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 import '../models/course_model.dart';
 import '../providers/content_provider.dart';
+import '../services/tts_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'mcq_screen.dart';
+import 'lesson_complete_screen.dart';
 
 class LessonDetailScreen extends StatefulWidget {
   final String lessonId;
@@ -20,6 +23,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   bool _isLoading = true;
   LessonDetailModel? _lesson;
   late final AudioPlayer _audioPlayer;
+  final TtsService _ttsService = TtsService.instance;
 
   @override
   void initState() {
@@ -43,28 +47,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   @override
   void dispose() {
     _audioPlayer.dispose();
+    _ttsService.stop();
     super.dispose();
-  }
-
-  Future<void> _playAudio(String? url) async {
-    if (url == null || url.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Audio not available')),
-        );
-      }
-      return;
-    }
-    try {
-      await _audioPlayer.setUrl(url);
-      await _audioPlayer.play();
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not play audio')),
-        );
-      }
-    }
   }
 
   @override
@@ -99,10 +83,13 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       );
     }
 
+    // Sort blocks by sequence_no
     final blocks = List<BlockModel>.from(_lesson!.blocks)
       ..sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
-    final questions = List<QuestionModel>.from(_lesson!.questions)
-      ..sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
+
+    final quizQuestions = _lesson!.questions
+        .where((q) => q.questionKind != 'speech_record')
+        .toList();
 
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
@@ -123,11 +110,63 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: blocks.length,
-                itemBuilder: (context, index) => _buildBlock(blocks[index]),
-              ),
+              child: blocks.isEmpty
+                  ? Center(
+                      child: Container(
+                        margin: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                          boxShadow: [FluentianShadows.subtle],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: FluentianColors.primary.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Iconsax.book_1,
+                                color: FluentianColors.primary,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Quiz-Only Session',
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: FluentianColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'This lesson is an assessment designed to test your skills directly without preparatory reading material.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: FluentianColors.textSecondary,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: blocks.length,
+                      itemBuilder: (context, index) {
+                        return _buildBlock(blocks[index]);
+                      },
+                    ),
             ),
             Container(
               padding: const EdgeInsets.all(16),
@@ -145,30 +184,43 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: questions.isEmpty
-                      ? null
-                      : () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => McqScreen(
-                                lessonId: _lesson!.id,
-                                questions: questions,
-                              ),
-                            ),
-                          );
-                        },
+                  onPressed: () async {
+                    if (quizQuestions.isEmpty) {
+                      setState(() => _isLoading = true);
+                      await context.read<ContentProvider>().completeLesson(
+                        lessonId: _lesson!.id,
+                        score: 1.0,
+                        answers: [],
+                        timeSeconds: 5,
+                      );
+                      if (mounted) {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (_) => const LessonCompleteScreen(),
+                          ),
+                        );
+                      }
+                    } else {
+                      // Navigate to MCQ flow with the questions
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => McqScreen(
+                            lessonId: _lesson!.id,
+                            questions: quizQuestions,
+                          ),
+                        ),
+                      );
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: FluentianColors.primary,
-                    disabledBackgroundColor: Colors.grey.shade300,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   child: Text(
-                    questions.isEmpty
-                        ? 'No quiz yet'
-                        : 'Continue to Quiz',
+                    quizQuestions.isEmpty ? 'Complete Lesson' : 'Continue to Quiz',
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -185,237 +237,291 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Widget _buildBlock(BlockModel block) {
-    final kind = block.blockKind;
-    final p = block.blockPayload;
-
-    switch (kind) {
+    switch (block.blockKind) {
       case 'explanation':
-      case 'rich_text':
       case 'text':
-        final text =
-            p['content']?.toString() ?? p['text']?.toString() ?? '';
-        return _textBlock(text);
-      case 'vocabulary':
-        return _vocabularyBlock(
-          p['word']?.toString() ?? '',
-          p['meaning']?.toString() ?? '',
-          p['audio_url']?.toString(),
-        );
-      case 'grammar_note':
-        return _grammarBlock(
-          p['rule']?.toString() ?? p['text']?.toString() ?? '',
-          p['example']?.toString() ?? '',
-        );
-      case 'sentence_pair':
-        return _sentencePairBlock(
-          p['target']?.toString() ?? p['french']?.toString() ?? '',
-          p['base']?.toString() ?? p['translation']?.toString() ?? '',
-        );
-      case 'ai_hint':
-        return _hintBlock(p['hint']?.toString() ?? '');
-      case 'audio_clip':
-      case 'audio':
-        return _audioBlock(
-          p['caption']?.toString() ?? 'Listen',
-          p['url']?.toString() ?? p['audio_url']?.toString(),
-        );
-      default:
-        final fallback = p['text']?.toString() ??
-            p['content']?.toString() ??
-            p['word']?.toString();
-        if (fallback != null && fallback.isNotEmpty) {
-          return _textBlock(fallback);
-        }
-        return const SizedBox.shrink();
-    }
-  }
-
-  Widget _textBlock(String text) {
-    if (text.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Text(
-        text,
-        style: GoogleFonts.inter(
-          fontSize: 16,
-          color: FluentianColors.textPrimary,
-          height: 1.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _vocabularyBlock(String word, String meaning, String? audioUrl) {
-    if (word.isEmpty) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
+      case 'rich_text':
+        final text = block.blockPayload['content']?.toString() ??
+                     block.blockPayload['text']?.toString() ?? '';
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+              boxShadow: [FluentianShadows.subtle],
+            ),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  word,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: FluentianColors.textPrimary,
+                Expanded(
+                  child: Text(
+                    text,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: FluentianColors.textPrimary,
+                      height: 1.6,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
-                if (meaning.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    meaning,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: FluentianColors.textSecondary,
+                if (block.ttsEnabled && block.textToSpeak.trim().isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  IconButton(
+                    tooltip: 'Listen',
+                    icon: const Icon(
+                      Icons.volume_up_rounded,
+                      color: FluentianColors.primary,
                     ),
+                    onPressed: () => _speakBlock(block),
                   ),
                 ],
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(
-              Icons.volume_up_rounded,
-              color: FluentianColors.primary,
-            ),
-            onPressed: () => _playAudio(audioUrl),
+        );
+      case 'vocabulary':
+        final word = block.blockPayload['word']?.toString() ?? '';
+        final meaning = block.blockPayload['meaning']?.toString() ?? '';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            boxShadow: [FluentianShadows.subtle],
           ),
-        ],
-      ),
-    );
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      word,
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: FluentianColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      meaning,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: FluentianColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.volume_up_rounded, color: FluentianColors.primary),
+                onPressed: () => _playBlockAudioOrTts(block),
+              ),
+            ],
+          ),
+        );
+      case 'sentence_pair':
+        final base = block.blockPayload['base']?.toString() ?? '';
+        final target = block.blockPayload['target']?.toString() ?? '';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Colors.white, Color(0xFFFAF9FF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: FluentianColors.primary.withValues(alpha: 0.1)),
+            boxShadow: [FluentianShadows.subtle],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      target,
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: FluentianColors.primary,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 32,
+                      height: 2,
+                      color: FluentianColors.primary.withValues(alpha: 0.2),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      base,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: FluentianColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (block.ttsEnabled && block.textToSpeak.trim().isNotEmpty)
+                IconButton(
+                  tooltip: 'Listen',
+                  icon: const Icon(
+                    Icons.volume_up_rounded,
+                    color: FluentianColors.primary,
+                  ),
+                  onPressed: () => _speakBlock(block),
+                )
+              else
+                const Icon(
+                  Iconsax.translate,
+                  color: FluentianColors.primary,
+                  size: 22,
+                ),
+            ],
+          ),
+        );
+      case 'grammar_note':
+        final rule = block.blockPayload['rule']?.toString() ?? '';
+        final example = block.blockPayload['example']?.toString() ?? '';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF6F3FF),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: FluentianColors.primary.withValues(alpha: 0.15)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Iconsax.book_1, color: FluentianColors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'GRAMMAR RULE',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: FluentianColors.primary,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                rule,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: FluentianColors.textPrimary,
+                  height: 1.4,
+                ),
+              ),
+              if (block.ttsEnabled && block.textToSpeak.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => _speakBlock(block),
+                    icon: const Icon(Icons.volume_up_rounded, size: 18),
+                    label: const Text('Listen'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: FluentianColors.primary,
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
+              ],
+              if (example.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'EXAMPLE',
+                        style: GoogleFonts.inter(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey.shade500,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        example,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic,
+                          color: FluentianColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      case 'ai_hint':
+        return const SizedBox.shrink();
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
-  Widget _grammarBlock(String rule, String example) {
-    if (rule.isEmpty && example.isEmpty) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: FluentianColors.primaryTint,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: FluentianColors.primary.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (rule.isNotEmpty)
-            Text(
-              rule,
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: FluentianColors.textPrimary,
-                height: 1.4,
-              ),
-            ),
-          if (example.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              example,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-                color: FluentianColors.textSecondary,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+  Future<void> _playBlockAudioOrTts(BlockModel block) async {
+    final audioUrl = block.audioUrl;
+    if (audioUrl != null && audioUrl.isNotEmpty) {
+      try {
+        await _ttsService.stop();
+        await _audioPlayer.setUrl(audioUrl);
+        _audioPlayer.play();
+        return;
+      } catch (e) {
+        debugPrint('Lesson audio playback error: $audioUrl $e');
+      }
+    }
+
+    await _speakBlock(block);
   }
 
-  Widget _sentencePairBlock(String target, String base) {
-    if (target.isEmpty && base.isEmpty) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              target,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: FluentianColors.textPrimary,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: Text(
-              base,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: FluentianColors.textSecondary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _hintBlock(String hint) {
-    if (hint.isEmpty) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.amber.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.shade200),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.lightbulb_outline, color: Colors.amber.shade800, size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              hint,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: FluentianColors.textPrimary,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _audioBlock(String caption, String? url) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: OutlinedButton.icon(
-        onPressed: () => _playAudio(url),
-        icon: const Icon(Icons.play_arrow_rounded),
-        label: Text(caption),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: FluentianColors.primary,
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-        ),
-      ),
-    );
+  Future<void> _speakBlock(BlockModel block) async {
+    try {
+      await _audioPlayer.stop();
+      await _ttsService.speak(
+        block.textToSpeak,
+        language: block.ttsLanguage,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not play audio')),
+        );
+      }
+    }
   }
 }

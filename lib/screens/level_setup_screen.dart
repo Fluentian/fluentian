@@ -166,9 +166,9 @@ class _LevelCard extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  level.code,
+                  '${CEFRLevel.values.indexOf(level) + 1}',
                   style: GoogleFonts.inter(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: level.color,
                   ),

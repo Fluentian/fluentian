@@ -195,7 +195,6 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
 const _features = [
   'Unlimited hearts — never stop learning',
-  'AI Coach — unlimited conversations',
   'Offline lessons — learn anywhere',
   'All 7 CEFR levels unlocked',
 ];

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
-import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -52,19 +51,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _logoController.forward();
 
-    // Auto-navigate after 2.5 seconds
-    Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const OnboardingScreen(),
-            transitionsBuilder: (_, a, __, child) =>
-                FadeTransition(opacity: a, child: child),
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
-      }
-    });
+
   }
 
   @override

@@ -8,10 +8,12 @@ class ProfessionalApplicationScreen extends StatefulWidget {
   const ProfessionalApplicationScreen({super.key, required this.opportunity});
 
   @override
-  State<ProfessionalApplicationScreen> createState() => _ProfessionalApplicationScreenState();
+  State<ProfessionalApplicationScreen> createState() =>
+      _ProfessionalApplicationScreenState();
 }
 
-class _ProfessionalApplicationScreenState extends State<ProfessionalApplicationScreen> {
+class _ProfessionalApplicationScreenState
+    extends State<ProfessionalApplicationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _api = OpportunitiesApi();
   bool _isLoading = false;
@@ -61,9 +63,9 @@ class _ProfessionalApplicationScreenState extends State<ProfessionalApplicationS
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -75,7 +77,10 @@ class _ProfessionalApplicationScreenState extends State<ProfessionalApplicationS
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Apply: ${widget.opportunity.title}', style: GoogleFonts.inter(fontSize: 16)),
+        title: Text(
+          'Apply: ${widget.opportunity.title}',
+          style: GoogleFonts.inter(fontSize: 16),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: FluentianColors.textPrimary,
@@ -89,31 +94,75 @@ class _ProfessionalApplicationScreenState extends State<ProfessionalApplicationS
             children: [
               Text(
                 'Professional Application',
-                style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w700),
+                style: GoogleFonts.inter(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Fill in your details to apply for this opportunity.',
-                style: GoogleFonts.inter(fontSize: 14, color: FluentianColors.textSecondary),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: FluentianColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 32),
-              
+
               _buildSectionTitle('Personal Information'),
-              _buildField('Full Name', _nameController, icon: Icons.person_outline),
-              _buildField('Email Address', _emailController, icon: Icons.email_outline, isEmail: true),
-              _buildField('Phone Number', _phoneController, icon: Icons.phone_outlined),
-              
+              _buildField(
+                'Full Name',
+                _nameController,
+                icon: Icons.person_outline,
+              ),
+              _buildField(
+                'Email Address',
+                _emailController,
+                icon: Icons.email_outlined,
+                isEmail: true,
+              ),
+              _buildField(
+                'Phone Number',
+                _phoneController,
+                icon: Icons.phone_outlined,
+              ),
+
               const SizedBox(height: 24),
               _buildSectionTitle('Professional Profile'),
-              _buildField('Educational Background', _educationController, maxLines: 2, icon: Icons.school_outlined),
-              _buildField('Relevant Experience', _experienceController, maxLines: 3, icon: Icons.work_outline),
-              _buildField('Key Skills', _skillsController, icon: Icons.psychology_outlined, placeholder: 'e.g. French B2, Public Speaking'),
-              
+              _buildField(
+                'Educational Background',
+                _educationController,
+                maxLines: 2,
+                icon: Icons.school_outlined,
+              ),
+              _buildField(
+                'Relevant Experience',
+                _experienceController,
+                maxLines: 3,
+                icon: Icons.work_outline,
+              ),
+              _buildField(
+                'Key Skills',
+                _skillsController,
+                icon: Icons.psychology_outlined,
+                placeholder: 'e.g. French B2, Public Speaking',
+              ),
+
               const SizedBox(height: 24),
               _buildSectionTitle('Statement of Intent'),
-              _buildField('Motivation Letter', _motivationController, maxLines: 5, icon: Icons.description_outlined),
-              _buildField('Resume Link (LinkedIn/Drive)', _resumeController, icon: Icons.link_rounded, isRequired: false),
-              
+              _buildField(
+                'Motivation Letter',
+                _motivationController,
+                maxLines: 5,
+                icon: Icons.description_outlined,
+              ),
+              _buildField(
+                'Resume Link (LinkedIn/Drive)',
+                _resumeController,
+                icon: Icons.link_rounded,
+                isRequired: false,
+              ),
+
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
@@ -122,12 +171,28 @@ class _ProfessionalApplicationScreenState extends State<ProfessionalApplicationS
                   onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: FluentianColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 0,
                   ),
-                  child: _isLoading 
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : Text('Submit Application', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Submit Application',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 40),
@@ -143,36 +208,71 @@ class _ProfessionalApplicationScreenState extends State<ProfessionalApplicationS
       padding: const EdgeInsets.only(bottom: 16),
       child: Text(
         title.toUpperCase(),
-        style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: FluentianColors.primary, letterSpacing: 1.2),
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: FluentianColors.primary,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller, {int maxLines = 1, IconData? icon, bool isEmail = false, bool isRequired = true, String? placeholder}) {
+  Widget _buildField(
+    String label,
+    TextEditingController controller, {
+    int maxLines = 1,
+    IconData? icon,
+    bool isEmail = false,
+    bool isRequired = true,
+    String? placeholder,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: FluentianColors.textPrimary)),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: FluentianColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             maxLines: maxLines,
             style: GoogleFonts.inter(fontSize: 14),
-            keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+            keyboardType: isEmail
+                ? TextInputType.emailAddress
+                : TextInputType.text,
             validator: (val) {
-              if (isRequired && (val == null || val.isEmpty)) return 'This field is required';
-              if (isEmail && val != null && !val.contains('@')) return 'Invalid email';
+              if (isRequired && (val == null || val.isEmpty))
+                return 'This field is required';
+              if (isEmail && val != null && !val.contains('@'))
+                return 'Invalid email';
               return null;
             },
             decoration: InputDecoration(
               hintText: placeholder,
-              prefixIcon: icon != null ? Icon(icon, size: 18, color: FluentianColors.textSecondary) : null,
+              prefixIcon: icon != null
+                  ? Icon(icon, size: 18, color: FluentianColors.textSecondary)
+                  : null,
               contentPadding: const EdgeInsets.all(16),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: FluentianColors.primary)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: FluentianColors.primary),
+              ),
               filled: true,
               fillColor: Colors.grey.shade50,
             ),

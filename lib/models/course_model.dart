@@ -1,6 +1,8 @@
 /// Course / Unit / Lesson / Block / Question models.
 /// Payload fields accept Admin, seed, and import aliases via getters below.
 
+import '../services/api_client.dart';
+
 class CourseModel {
   final String id;
   final String targetLanguageId;
@@ -169,6 +171,30 @@ class BlockModel {
             Map<String, dynamic>.from(json['block_payload'] as Map? ?? {}),
         createdAt: DateTime.parse(json['created_at'] as String),
       );
+
+  /// For audio content blocks.
+  String? get audioUrl =>
+      ApiClient.resolveMediaUrl(blockPayload['audio_url']?.toString());
+
+  bool get ttsEnabled {
+    final value = blockPayload['tts_enabled'];
+    return value == true || value?.toString().toLowerCase() == 'true';
+  }
+
+  String get ttsLanguage =>
+      blockPayload['tts_language']?.toString().trim().isNotEmpty == true
+          ? blockPayload['tts_language'].toString()
+          : 'fr-FR';
+
+  String get textToSpeak =>
+      blockPayload['tts_text']?.toString() ??
+      blockPayload['word']?.toString() ??
+      blockPayload['target']?.toString() ??
+      blockPayload['example']?.toString() ??
+      blockPayload['rule']?.toString() ??
+      blockPayload['content']?.toString() ??
+      blockPayload['text']?.toString() ??
+      '';
 }
 
 class QuestionModel {
@@ -253,4 +279,41 @@ class QuestionModel {
       promptPayload['text']?.toString() ??
       promptPayload['prompt']?.toString() ??
       '';
+
+  /// For image-based questions
+  String? get imageUrl =>
+      ApiClient.resolveMediaUrl(promptPayload['image_url']?.toString());
+
+  /// For audio/listening/dictation/speaking questions
+  String? get audioUrl =>
+      ApiClient.resolveMediaUrl(promptPayload['audio_url']?.toString());
+
+  String get textToSpeak =>
+      promptPayload['tts_text']?.toString() ??
+      promptPayload['text']?.toString() ??
+      promptText;
+
+  /// For MCQ Multi questions — returns list of correct options.
+  List<String> get mcqMultiCorrectAnswers {
+    final correct = gradingPayload['correct_answers'];
+    if (correct is List) return correct.map((e) => e.toString()).toList();
+    return [];
+  }
+
+  /// For Match Pairs — returns list of maps with 'left' and 'right' keys.
+  List<Map<String, String>> get matchPairs {
+    final pairs = promptPayload['pairs'];
+    if (pairs is List) {
+      return pairs.map((e) {
+        if (e is Map) {
+          return {
+            'left': e['left']?.toString() ?? '',
+            'right': e['right']?.toString() ?? '',
+          };
+        }
+        return <String, String>{};
+      }).toList();
+    }
+    return [];
+  }
 }
