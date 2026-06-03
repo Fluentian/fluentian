@@ -66,8 +66,10 @@ class ApiClient {
   static final ApiClient instance = ApiClient._();
 
   // ── Configuration ────────────────────────────────────
-  static const String _baseUrl =
-      'https://api.fluentianapp.binovatechnologies.com/api/v1';
+  static const String _baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://api.fluentianapp.binovatechnologies.com/api/v1',
+  );
   static final Uri _baseUri = Uri.parse(_baseUrl);
 
   static String? resolveMediaUrl(String? value) {

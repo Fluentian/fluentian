@@ -137,6 +137,8 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
     // Play audio automatically if autoplay is appropriate (dictation / listening)
     if (q.audioUrl != null && q.audioUrl!.isNotEmpty) {
       _playQuestionAudio();
+    } else if (q.ttsEnabled && q.textToSpeak.trim().isNotEmpty && q.questionKind != 'speech_record') {
+      _speakCurrentQuestion();
     }
   }
 
@@ -217,10 +219,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
   }
 
   Future<void> _speakCurrentQuestion() async {
-    if (_currentQ.questionKind != 'speech_record') return;
     try {
       await _audioPlayer.stop();
-      await _ttsService.speak(_currentQ.textToSpeak);
+      await _ttsService.speak(_currentQ.textToSpeak, language: _currentQ.ttsLanguage);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -693,7 +694,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                     ],
 
                     // Render dynamic audio if present
-                    if (q.audioUrl != null && q.audioUrl!.isNotEmpty && q.questionKind != 'speech_record') ...[
+                    if (((q.audioUrl != null && q.audioUrl!.isNotEmpty) || (q.ttsEnabled && q.textToSpeak.trim().isNotEmpty)) && q.questionKind != 'speech_record') ...[
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(

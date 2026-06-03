@@ -25,17 +25,17 @@ class CourseModel {
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) => CourseModel(
-        id: json['id'] as String,
-        targetLanguageId: json['target_language_id'] as String,
-        code: json['code'] as String,
-        levelMin: json['level_min'] as String,
-        levelMax: json['level_max'] as String,
-        isPublished: json['is_published'] as bool? ?? false,
-        createdAt: DateTime.parse(json['created_at'] as String),
-        units: (json['units'] as List<dynamic>? ?? [])
-            .map((u) => UnitModel.fromJson(u as Map<String, dynamic>))
-            .toList(),
-      );
+    id: json['id'] as String,
+    targetLanguageId: json['target_language_id'] as String,
+    code: json['code'] as String,
+    levelMin: json['level_min'] as String,
+    levelMax: json['level_max'] as String,
+    isPublished: json['is_published'] as bool? ?? false,
+    createdAt: DateTime.parse(json['created_at'] as String),
+    units: (json['units'] as List<dynamic>? ?? [])
+        .map((u) => UnitModel.fromJson(u as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class UnitModel {
@@ -58,23 +58,24 @@ class UnitModel {
   });
 
   factory UnitModel.fromJson(Map<String, dynamic> json) => UnitModel(
-        id: json['id'] as String,
-        courseId: json['course_id'] as String,
-        unitKind: json['unit_kind'] as String? ?? 'standard',
-        unitNo: json['unit_no'] as int,
-        title: json['title'] as String,
-        createdAt: DateTime.parse(json['created_at'] as String),
-        lessons: (json['lessons'] as List<dynamic>? ?? [])
-            .map((l) => LessonModel.fromJson(l as Map<String, dynamic>))
-            .toList(),
-      );
+    id: json['id'] as String,
+    courseId: json['course_id'] as String,
+    unitKind: json['unit_kind'] as String? ?? 'standard',
+    unitNo: json['unit_no'] as int,
+    title: json['title'] as String,
+    createdAt: DateTime.parse(json['created_at'] as String),
+    lessons: (json['lessons'] as List<dynamic>? ?? [])
+        .map((l) => LessonModel.fromJson(l as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class LessonModel {
   final String id;
   final String courseId;
   final String unitId;
-  final String lessonKind; // dialogue, grammar, vocabulary, speaking, quiz, review
+  // dialogue, grammar, vocabulary, speaking, quiz, review
+  final String lessonKind;
   final int sequenceNo;
   final String title;
   final int estimatedMinutes;
@@ -94,16 +95,16 @@ class LessonModel {
   });
 
   factory LessonModel.fromJson(Map<String, dynamic> json) => LessonModel(
-        id: json['id'] as String,
-        courseId: json['course_id'] as String,
-        unitId: json['unit_id'] as String,
-        lessonKind: json['lesson_kind'] as String? ?? 'vocabulary',
-        sequenceNo: json['sequence_no'] as int,
-        title: json['title'] as String,
-        estimatedMinutes: json['estimated_minutes'] as int? ?? 5,
-        xpReward: json['xp_reward'] as int? ?? 10,
-        isPublished: json['is_published'] as bool? ?? false,
-      );
+    id: json['id'] as String,
+    courseId: json['course_id'] as String,
+    unitId: json['unit_id'] as String,
+    lessonKind: json['lesson_kind'] as String? ?? 'vocabulary',
+    sequenceNo: json['sequence_no'] as int,
+    title: json['title'] as String,
+    estimatedMinutes: json['estimated_minutes'] as int? ?? 5,
+    xpReward: json['xp_reward'] as int? ?? 10,
+    isPublished: json['is_published'] as bool? ?? false,
+  );
 }
 
 class LessonDetailModel extends LessonModel {
@@ -148,7 +149,8 @@ class LessonDetailModel extends LessonModel {
 class BlockModel {
   final String id;
   final String lessonId;
-  final String blockKind; // explanation, vocabulary, example, audio, image, dialogue
+  // explanation, vocabulary, example, audio, image, dialogue
+  final String blockKind;
   final int sequenceNo;
   final Map<String, dynamic> blockPayload;
   final DateTime createdAt;
@@ -163,14 +165,15 @@ class BlockModel {
   });
 
   factory BlockModel.fromJson(Map<String, dynamic> json) => BlockModel(
-        id: json['id'] as String,
-        lessonId: json['lesson_id'] as String,
-        blockKind: json['block_kind'] as String,
-        sequenceNo: json['sequence_no'] as int,
-        blockPayload:
-            Map<String, dynamic>.from(json['block_payload'] as Map? ?? {}),
-        createdAt: DateTime.parse(json['created_at'] as String),
-      );
+    id: json['id'] as String,
+    lessonId: json['lesson_id'] as String,
+    blockKind: json['block_kind'] as String,
+    sequenceNo: json['sequence_no'] as int,
+    blockPayload: Map<String, dynamic>.from(
+      json['block_payload'] as Map? ?? {},
+    ),
+    createdAt: DateTime.parse(json['created_at'] as String),
+  );
 
   /// For audio content blocks.
   String? get audioUrl =>
@@ -183,15 +186,17 @@ class BlockModel {
 
   String get ttsLanguage =>
       blockPayload['tts_language']?.toString().trim().isNotEmpty == true
-          ? blockPayload['tts_language'].toString()
-          : 'fr-FR';
+      ? blockPayload['tts_language'].toString()
+      : 'fr-FR';
 
   String get textToSpeak =>
       blockPayload['tts_text']?.toString() ??
       blockPayload['word']?.toString() ??
       blockPayload['target']?.toString() ??
+      blockPayload['fr']?.toString() ??
       blockPayload['example']?.toString() ??
       blockPayload['rule']?.toString() ??
+      blockPayload['title']?.toString() ??
       blockPayload['content']?.toString() ??
       blockPayload['text']?.toString() ??
       '';
@@ -217,22 +222,44 @@ class QuestionModel {
   });
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) => QuestionModel(
-        id: json['id'] as String,
-        lessonId: json['lesson_id'] as String,
-        questionKind: json['question_kind'] as String,
-        sequenceNo: json['sequence_no'] as int,
-        promptPayload:
-            Map<String, dynamic>.from(json['prompt_payload'] as Map? ?? {}),
-        gradingPayload:
-            Map<String, dynamic>.from(json['grading_payload'] as Map? ?? {}),
-        createdAt: DateTime.parse(json['created_at'] as String),
-      );
+    id: json['id'] as String,
+    lessonId: json['lesson_id'] as String,
+    questionKind: json['question_kind'] as String,
+    sequenceNo: json['sequence_no'] as int,
+    promptPayload: Map<String, dynamic>.from(
+      json['prompt_payload'] as Map? ?? {},
+    ),
+    gradingPayload: Map<String, dynamic>.from(
+      json['grading_payload'] as Map? ?? {},
+    ),
+    createdAt: DateTime.parse(json['created_at'] as String),
+  );
 
   /// For MCQ questions — returns list of option strings from prompt_payload.
   List<String> get mcqOptions {
-    final opts = promptPayload['options'];
-    if (opts is List) return opts.map((e) => e.toString()).toList();
+    final opts =
+        promptPayload['options'] ??
+        promptPayload['chips'] ??
+        promptPayload['word_bank'];
+    if (opts is List) {
+      return opts
+          .map((e) => e.toString().trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+    }
+    if (questionKind == 'translation' || questionKind == 'reorder') {
+      return _wordsFromAnswer(mcqCorrectAnswer);
+    }
     return [];
+  }
+
+  List<String> _wordsFromAnswer(String answer) {
+    final cleaned = answer.replaceAll(RegExp(r'[.,!?;:]'), '');
+    return cleaned
+        .split(RegExp(r'\s+'))
+        .map((word) => word.trim())
+        .where((word) => word.isNotEmpty)
+        .toList();
   }
 
   /// For MCQ — returns the correct answer string from grading_payload.
@@ -253,6 +280,16 @@ class QuestionModel {
   /// For audio/listening/dictation/speaking questions
   String? get audioUrl =>
       ApiClient.resolveMediaUrl(promptPayload['audio_url']?.toString());
+
+  bool get ttsEnabled {
+    final value = promptPayload['tts_enabled'];
+    return value == true || value?.toString().toLowerCase() == 'true';
+  }
+
+  String get ttsLanguage =>
+      promptPayload['tts_language']?.toString().trim().isNotEmpty == true
+      ? promptPayload['tts_language'].toString()
+      : 'fr-FR';
 
   String get textToSpeak =>
       promptPayload['tts_text']?.toString() ??

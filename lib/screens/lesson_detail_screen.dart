@@ -33,9 +33,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Future<void> _loadLesson() async {
-    final detail = await context
-        .read<ContentProvider>()
-        .getLessonDetail(widget.lessonId);
+    final detail = await context.read<ContentProvider>().getLessonDetail(
+      widget.lessonId,
+    );
     if (mounted) {
       setState(() {
         _lesson = detail;
@@ -118,7 +118,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                          border: Border.all(
+                            color: Colors.black.withValues(alpha: 0.05),
+                          ),
                           boxShadow: [FluentianShadows.subtle],
                         ),
                         child: Column(
@@ -128,7 +130,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                               width: 64,
                               height: 64,
                               decoration: BoxDecoration(
-                                color: FluentianColors.primary.withValues(alpha: 0.1),
+                                color: FluentianColors.primary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -220,7 +224,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     ),
                   ),
                   child: Text(
-                    quizQuestions.isEmpty ? 'Complete Lesson' : 'Continue to Quiz',
+                    quizQuestions.isEmpty
+                        ? 'Complete Lesson'
+                        : 'Continue to Quiz',
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -241,8 +247,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       case 'explanation':
       case 'text':
       case 'rich_text':
-        final text = block.blockPayload['content']?.toString() ??
-                     block.blockPayload['text']?.toString() ?? '';
+        final text =
+            block.blockPayload['content']?.toString() ??
+            block.blockPayload['text']?.toString() ??
+            '';
         return Padding(
           padding: const EdgeInsets.only(bottom: 20),
           child: Container(
@@ -267,7 +275,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     ),
                   ),
                 ),
-                if (block.ttsEnabled && block.textToSpeak.trim().isNotEmpty) ...[
+                if (block.ttsEnabled &&
+                    block.textToSpeak.trim().isNotEmpty) ...[
                   const SizedBox(width: 8),
                   IconButton(
                     tooltip: 'Listen',
@@ -321,14 +330,21 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.volume_up_rounded, color: FluentianColors.primary),
+                icon: const Icon(
+                  Icons.volume_up_rounded,
+                  color: FluentianColors.primary,
+                ),
                 onPressed: () => _playBlockAudioOrTts(block),
               ),
             ],
           ),
         );
       case 'sentence_pair':
-        final base = block.blockPayload['base']?.toString() ?? '';
+        final base =
+            block.blockPayload['base']?.toString() ??
+            block.blockPayload['source']?.toString() ??
+            block.blockPayload['en']?.toString() ??
+            '';
         final target = block.blockPayload['target']?.toString() ?? '';
         return Container(
           margin: const EdgeInsets.only(bottom: 20),
@@ -340,7 +356,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: FluentianColors.primary.withValues(alpha: 0.1)),
+            border: Border.all(
+              color: FluentianColors.primary.withValues(alpha: 0.1),
+            ),
             boxShadow: [FluentianShadows.subtle],
           ),
           child: Row(
@@ -395,22 +413,35 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           ),
         );
       case 'grammar_note':
-        final rule = block.blockPayload['rule']?.toString() ?? '';
-        final example = block.blockPayload['example']?.toString() ?? '';
+        final rule =
+            block.blockPayload['rule']?.toString() ??
+            block.blockPayload['content']?.toString() ??
+            block.blockPayload['text']?.toString() ??
+            '';
+        final example =
+            block.blockPayload['example']?.toString() ??
+            _firstGrammarExample(block) ??
+            '';
         return Container(
           margin: const EdgeInsets.only(bottom: 20),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: const Color(0xFFF6F3FF),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: FluentianColors.primary.withValues(alpha: 0.15)),
+            border: Border.all(
+              color: FluentianColors.primary.withValues(alpha: 0.15),
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(Iconsax.book_1, color: FluentianColors.primary, size: 20),
+                  const Icon(
+                    Iconsax.book_1,
+                    color: FluentianColors.primary,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'GRAMMAR RULE',
@@ -512,16 +543,29 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   Future<void> _speakBlock(BlockModel block) async {
     try {
       await _audioPlayer.stop();
-      await _ttsService.speak(
-        block.textToSpeak,
-        language: block.ttsLanguage,
-      );
+      await _ttsService.speak(block.textToSpeak, language: block.ttsLanguage);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not play audio')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Could not play audio')));
       }
     }
+  }
+
+  String? _firstGrammarExample(BlockModel block) {
+    final examples = block.blockPayload['examples'];
+    if (examples is List && examples.isNotEmpty) {
+      final first = examples.first;
+      if (first is Map) {
+        final fr = first['fr']?.toString();
+        final en = first['en']?.toString();
+        if (fr != null && fr.trim().isNotEmpty) {
+          return en != null && en.trim().isNotEmpty ? '$fr\n$en' : fr;
+        }
+      }
+      return first.toString();
+    }
+    return null;
   }
 }
