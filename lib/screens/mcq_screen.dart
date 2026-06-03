@@ -16,23 +16,20 @@ class McqScreen extends StatefulWidget {
   final String lessonId;
   final List<QuestionModel> questions;
 
-  const McqScreen({
-    super.key,
-    required this.lessonId,
-    required this.questions,
-  });
+  const McqScreen({super.key, required this.lessonId, required this.questions});
 
   @override
   State<McqScreen> createState() => _McqScreenState();
 }
 
-class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMixin {
+class _McqScreenState extends State<McqScreen>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   int? _selected;
   _AnswerState _state = _AnswerState.unanswered;
   int _hearts = 5;
   int _correctCount = 0;
-  
+
   final List<AnswerPayload> _answers = [];
   final DateTime _startTime = DateTime.now();
   bool _isSubmitting = false;
@@ -75,13 +72,16 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-    
+
     // Listen to player state streams
     _audioPlayer.playerStateStream.listen((state) {
       if (mounted) {
         setState(() {
-          _audioPlaying = state.playing && state.processingState != ProcessingState.completed;
-          _audioLoading = state.processingState == ProcessingState.loading ||
+          _audioPlaying =
+              state.playing &&
+              state.processingState != ProcessingState.completed;
+          _audioLoading =
+              state.processingState == ProcessingState.loading ||
               state.processingState == ProcessingState.buffering;
         });
       }
@@ -118,7 +118,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
     _pronunciationScore = 0.0;
 
     final q = _currentQ;
-    
+
     // Prepare for Reorder or Translation (chips)
     if (q.questionKind == 'reorder' || q.questionKind == 'translation') {
       final opts = q.mcqOptions;
@@ -126,7 +126,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
         _remainingScrambled = List<String>.from(opts)..shuffle();
       }
     }
-    
+
     // Prepare for Match Pairs
     if (q.questionKind == 'match_pairs') {
       final pairs = q.matchPairs;
@@ -137,7 +137,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
     // Play audio automatically if autoplay is appropriate (dictation / listening)
     if (q.audioUrl != null && q.audioUrl!.isNotEmpty) {
       _playQuestionAudio();
-    } else if (q.ttsEnabled && q.textToSpeak.trim().isNotEmpty && q.questionKind != 'speech_record') {
+    } else if (q.ttsEnabled &&
+        q.textToSpeak.trim().isNotEmpty &&
+        q.questionKind != 'speech_record') {
       _speakCurrentQuestion();
     }
   }
@@ -197,9 +199,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
         setState(() {
           _audioLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load audio.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to load audio.')));
       }
     }
   }
@@ -209,7 +211,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
       _recordState = _RecordState.recording;
     });
     _pulseCtrl.repeat(reverse: true);
-    
+
     // Auto stop after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted && _recordState == _RecordState.recording) {
@@ -221,12 +223,15 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
   Future<void> _speakCurrentQuestion() async {
     try {
       await _audioPlayer.stop();
-      await _ttsService.speak(_currentQ.textToSpeak, language: _currentQ.ttsLanguage);
+      await _ttsService.speak(
+        _currentQ.textToSpeak,
+        language: _currentQ.ttsLanguage,
+      );
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load audio.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to load audio.')));
       }
     }
   }
@@ -236,7 +241,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
     setState(() {
       _recordState = _RecordState.analyzing;
     });
-    
+
     // Simulate analyzing for 1.5 seconds
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
@@ -330,9 +335,12 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
 
   bool _isCheckEnabled() {
     final q = _currentQ;
-    if (q.questionKind == 'mcq_single' || 
+    if (q.questionKind == 'mcq_single' ||
         q.questionKind == 'fill_blank' && q.mcqOptions.isNotEmpty ||
-        q.questionKind == 'translation' && q.mcqOptions.isNotEmpty && _assembledWords.isEmpty && _selected != null ||
+        q.questionKind == 'translation' &&
+            q.mcqOptions.isNotEmpty &&
+            _assembledWords.isEmpty &&
+            _selected != null ||
         q.questionKind == 'listening_comprehension') {
       return _selected != null;
     }
@@ -363,46 +371,50 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
     String correctAnswerText = '';
     String userAnswerText = '';
 
-    if (q.questionKind == 'mcq_single' || 
+    if (q.questionKind == 'mcq_single' ||
         q.questionKind == 'fill_blank' && q.mcqOptions.isNotEmpty ||
-        q.questionKind == 'translation' && q.mcqOptions.isNotEmpty && _assembledWords.isEmpty && _selected != null ||
+        q.questionKind == 'translation' &&
+            q.mcqOptions.isNotEmpty &&
+            _assembledWords.isEmpty &&
+            _selected != null ||
         q.questionKind == 'listening_comprehension') {
       if (_selected == null) return;
       final selectedAnswer = q.mcqOptions[_selected!];
       isCorrect = selectedAnswer == q.mcqCorrectAnswer;
       correctAnswerText = q.mcqCorrectAnswer;
       userAnswerText = selectedAnswer;
-    } 
-    else if (q.questionKind == 'mcq_multi') {
-      final selectedAnswers = _selectedMulti.map((idx) => q.mcqOptions[idx]).toSet();
+    } else if (q.questionKind == 'mcq_multi') {
+      final selectedAnswers = _selectedMulti
+          .map((idx) => q.mcqOptions[idx])
+          .toSet();
       final correctAnswers = q.mcqMultiCorrectAnswers.toSet();
-      isCorrect = selectedAnswers.length == correctAnswers.length && 
-                  selectedAnswers.every((e) => correctAnswers.contains(e));
+      isCorrect =
+          selectedAnswers.length == correctAnswers.length &&
+          selectedAnswers.every((e) => correctAnswers.contains(e));
       correctAnswerText = q.mcqMultiCorrectAnswers.join(', ');
       userAnswerText = selectedAnswers.join(', ');
-    }
-    else if (q.questionKind == 'fill_blank' && q.mcqOptions.isEmpty ||
-             q.questionKind == 'short_text' ||
-             q.questionKind == 'dictation') {
+    } else if (q.questionKind == 'fill_blank' && q.mcqOptions.isEmpty ||
+        q.questionKind == 'short_text' ||
+        q.questionKind == 'dictation') {
       final typed = _textController.text.trim();
       final correct = q.mcqCorrectAnswer.trim();
-      
-      String clean(String s) => s.toLowerCase().replaceAll(RegExp(r'[.,!?]'), '').trim();
+
+      String clean(String s) =>
+          s.toLowerCase().replaceAll(RegExp(r'[.,!?]'), '').trim();
       isCorrect = clean(typed) == clean(correct);
       correctAnswerText = correct;
       userAnswerText = typed;
-    }
-    else if (q.questionKind == 'reorder' ||
-             q.questionKind == 'translation' && _assembledWords.isNotEmpty) {
+    } else if (q.questionKind == 'reorder' ||
+        q.questionKind == 'translation' && _assembledWords.isNotEmpty) {
       final assembled = _assembledWords.join(' ').trim();
       final correct = q.mcqCorrectAnswer.trim();
-      
-      String clean(String s) => s.toLowerCase().replaceAll(RegExp(r'[.,!?]'), '').trim();
+
+      String clean(String s) =>
+          s.toLowerCase().replaceAll(RegExp(r'[.,!?]'), '').trim();
       isCorrect = clean(assembled) == clean(correct);
       correctAnswerText = correct;
       userAnswerText = assembled;
-    }
-    else if (q.questionKind == 'match_pairs') {
+    } else if (q.questionKind == 'match_pairs') {
       final pairs = q.matchPairs;
       isCorrect = true;
       for (final p in pairs) {
@@ -411,20 +423,25 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
           break;
         }
       }
-      correctAnswerText = pairs.map((e) => "${e['left']} -> ${e['right']}").join('\n');
-      userAnswerText = _matches.entries.map((e) => "${e.key} -> ${e.value}").join('\n');
-    }
-    else if (q.questionKind == 'speech_record') {
+      correctAnswerText = pairs
+          .map((e) => "${e['left']} -> ${e['right']}")
+          .join('\n');
+      userAnswerText = _matches.entries
+          .map((e) => "${e.key} -> ${e.value}")
+          .join('\n');
+    } else if (q.questionKind == 'speech_record') {
       isCorrect = _pronunciationScore >= 80.0;
       correctAnswerText = q.mcqCorrectAnswer;
       userAnswerText = 'Pronunciation Score: ${_pronunciationScore.toInt()}%';
     }
 
-    _answers.add(AnswerPayload(
-      questionId: q.id,
-      answer: userAnswerText,
-      isCorrect: isCorrect,
-    ));
+    _answers.add(
+      AnswerPayload(
+        questionId: q.id,
+        answer: userAnswerText,
+        isCorrect: isCorrect,
+      ),
+    );
 
     setState(() {
       _state = isCorrect ? _AnswerState.correct : _AnswerState.wrong;
@@ -537,8 +554,15 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: _isSubmitting 
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
                     : Text(correct ? 'Continue' : 'Got it'),
               ),
             ),
@@ -558,9 +582,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
       _initQuestion();
     } else {
       setState(() => _isSubmitting = true);
-      
-      final score = widget.questions.isEmpty 
-          ? 1.0 
+
+      final score = widget.questions.isEmpty
+          ? 1.0
           : _correctCount / widget.questions.length;
       final timeSeconds = DateTime.now().difference(_startTime).inSeconds;
 
@@ -574,9 +598,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
       if (!mounted) return;
       Navigator.pop(context); // close sheet
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const LessonCompleteScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const LessonCompleteScreen()),
       );
     }
   }
@@ -584,9 +606,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     if (widget.questions.isEmpty) {
-      return const Scaffold(
-        body: Center(child: Text("No questions found.")),
-      );
+      return const Scaffold(body: Center(child: Text("No questions found.")));
     }
 
     final progress = (_currentIndex) / widget.questions.length;
@@ -664,7 +684,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      q.promptText.isNotEmpty ? q.promptText : 'Follow the prompt below:',
+                      q.promptText.isNotEmpty
+                          ? q.promptText
+                          : 'Follow the prompt below:',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 20,
@@ -686,7 +708,11 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                           errorBuilder: (_, __, ___) => Container(
                             height: 180,
                             color: Colors.grey.shade100,
-                            child: const Icon(Icons.broken_image_rounded, size: 40, color: Colors.grey),
+                            child: const Icon(
+                              Icons.broken_image_rounded,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                       ),
@@ -694,13 +720,20 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                     ],
 
                     // Render dynamic audio if present
-                    if (((q.audioUrl != null && q.audioUrl!.isNotEmpty) || (q.ttsEnabled && q.textToSpeak.trim().isNotEmpty)) && q.questionKind != 'speech_record') ...[
+                    if (((q.audioUrl != null && q.audioUrl!.isNotEmpty) ||
+                            (q.ttsEnabled &&
+                                q.textToSpeak.trim().isNotEmpty)) &&
+                        q.questionKind != 'speech_record') ...[
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: FluentianColors.primaryTint,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: FluentianColors.primary.withValues(alpha: 0.15)),
+                          border: Border.all(
+                            color: FluentianColors.primary.withValues(
+                              alpha: 0.15,
+                            ),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -722,7 +755,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                                         ),
                                       )
                                     : Icon(
-                                        _audioPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                        _audioPlaying
+                                            ? Icons.pause_rounded
+                                            : Icons.play_arrow_rounded,
                                         color: Colors.white,
                                         size: 26,
                                       ),
@@ -733,8 +768,8 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                               _audioLoading
                                   ? 'Loading audio...'
                                   : _audioPlaying
-                                      ? 'Playing...'
-                                      : 'Tap to listen to clip',
+                                  ? 'Playing...'
+                                  : 'Tap to listen to clip',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -759,7 +794,8 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
               padding: const EdgeInsets.all(16),
               child: FluentianButton(
                 text: 'Check ✓',
-                onPressed: _isCheckEnabled() && _state == _AnswerState.unanswered
+                onPressed:
+                    _isCheckEnabled() && _state == _AnswerState.unanswered
                     ? _check
                     : null,
                 backgroundColor: _isCheckEnabled()
@@ -805,7 +841,10 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
       children: List.generate(options.length, (i) {
         final optionText = options[i];
         final isSelected = _selected == i;
-        final isCorrect = _state != _AnswerState.unanswered && isSelected && _state == _AnswerState.correct;
+        final isCorrect =
+            _state != _AnswerState.unanswered &&
+            isSelected &&
+            _state == _AnswerState.correct;
         final isWrong = _state == _AnswerState.wrong && isSelected;
 
         Color bg = FluentianColors.white;
@@ -883,8 +922,14 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
       children: List.generate(options.length, (i) {
         final optionText = options[i];
         final isSelected = _selectedMulti.contains(i);
-        final isCorrect = _state != _AnswerState.unanswered && isSelected && _currentQ.mcqMultiCorrectAnswers.contains(optionText);
-        final isWrong = _state == _AnswerState.wrong && isSelected && !_currentQ.mcqMultiCorrectAnswers.contains(optionText);
+        final isCorrect =
+            _state != _AnswerState.unanswered &&
+            isSelected &&
+            _currentQ.mcqMultiCorrectAnswers.contains(optionText);
+        final isWrong =
+            _state == _AnswerState.wrong &&
+            isSelected &&
+            !_currentQ.mcqMultiCorrectAnswers.contains(optionText);
 
         Color bg = FluentianColors.white;
         Color border = FluentianColors.border;
@@ -928,8 +973,12 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
             child: Row(
               children: [
                 Icon(
-                  isSelected ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
-                  color: isSelected ? FluentianColors.primary : FluentianColors.textSecondary,
+                  isSelected
+                      ? Icons.check_box_rounded
+                      : Icons.check_box_outline_blank_rounded,
+                  color: isSelected
+                      ? FluentianColors.primary
+                      : FluentianColors.textSecondary,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -955,10 +1004,13 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
     if (options.isEmpty) {
       return _buildTextInput();
     }
-    
+
     final sentence = _currentQ.promptText;
-    final displaySentence = sentence.replaceAll('___', _selected != null ? ' [ ${options[_selected!]} ] ' : ' _______ ');
-    
+    final displaySentence = sentence.replaceAll(
+      '___',
+      _selected != null ? ' [ ${options[_selected!]} ] ' : ' _______ ',
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -992,7 +1044,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
               label: Text(
                 optionText,
                 style: GoogleFonts.inter(
-                  color: isSelected ? Colors.white : FluentianColors.textPrimary,
+                  color: isSelected
+                      ? Colors.white
+                      : FluentianColors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1002,7 +1056,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                   : null,
               selectedColor: FluentianColors.primary,
               backgroundColor: Colors.grey.shade100,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             );
           }),
         ),
@@ -1026,7 +1082,10 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
               ? Center(
                   child: Text(
                     'Tap words below to translate',
-                    style: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 14),
+                    style: GoogleFonts.inter(
+                      color: Colors.grey.shade400,
+                      fontSize: 14,
+                    ),
                   ),
                 )
               : Wrap(
@@ -1044,7 +1103,10 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                             }
                           : null,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: FluentianColors.primary,
                           borderRadius: BorderRadius.circular(10),
@@ -1080,7 +1142,10 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                     }
                   : null,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -1109,20 +1174,33 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
         TextField(
           controller: _textController,
           enabled: _state == _AnswerState.unanswered,
-          style: GoogleFonts.inter(fontSize: 16, color: FluentianColors.textPrimary, fontWeight: FontWeight.w600),
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: FluentianColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
           decoration: InputDecoration(
             hintText: 'Type translation here...',
-            hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontWeight: FontWeight.normal),
+            hintStyle: GoogleFonts.inter(
+              color: Colors.grey.shade400,
+              fontWeight: FontWeight.normal,
+            ),
             filled: true,
             fillColor: Colors.grey.shade50,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey.shade200),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: FluentianColors.primary, width: 2),
+              borderSide: const BorderSide(
+                color: FluentianColors.primary,
+                width: 2,
+              ),
             ),
           ),
           onChanged: (_) {
@@ -1144,7 +1222,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
               final isMatched = _matches.containsKey(left);
               final rightMatched = _matches[left];
               final isSelected = _selectedLeft == left;
-              
+
               Color bgCol = Colors.white;
               Color borderCol = Colors.grey.shade200;
               Color textCol = FluentianColors.textPrimary;
@@ -1154,9 +1232,15 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                 // Graded state
                 if (isMatched && rightMatched != null) {
                   final correct = _isPairCorrect(left, rightMatched);
-                  bgCol = correct ? FluentianColors.successTint : FluentianColors.errorTint;
-                  borderCol = correct ? FluentianColors.success : FluentianColors.error;
-                  textCol = correct ? FluentianColors.success : FluentianColors.error;
+                  bgCol = correct
+                      ? FluentianColors.successTint
+                      : FluentianColors.errorTint;
+                  borderCol = correct
+                      ? FluentianColors.success
+                      : FluentianColors.error;
+                  textCol = correct
+                      ? FluentianColors.success
+                      : FluentianColors.error;
                 }
               } else {
                 // Unanswered state
@@ -1195,18 +1279,24 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: bgCol,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: borderCol, width: isSelected || isMatched ? 2 : 1),
+                    border: Border.all(
+                      color: borderCol,
+                      width: isSelected || isMatched ? 2 : 1,
+                    ),
                     boxShadow: [
                       if (isSelected)
                         BoxShadow(
                           color: FluentianColors.primary.withOpacity(0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
-                        )
+                        ),
                     ],
                   ),
                   child: Center(
@@ -1257,7 +1347,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
               }
               final isMatched = leftMatched != null;
               final isSelected = _selectedRight == right;
-              
+
               Color bgCol = Colors.white;
               Color borderCol = Colors.grey.shade200;
               Color textCol = FluentianColors.textPrimary;
@@ -1267,9 +1357,15 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                 // Graded state
                 if (isMatched && leftMatched != null) {
                   final correct = _isPairCorrect(leftMatched, right);
-                  bgCol = correct ? FluentianColors.successTint : FluentianColors.errorTint;
-                  borderCol = correct ? FluentianColors.success : FluentianColors.error;
-                  textCol = correct ? FluentianColors.success : FluentianColors.error;
+                  bgCol = correct
+                      ? FluentianColors.successTint
+                      : FluentianColors.errorTint;
+                  borderCol = correct
+                      ? FluentianColors.success
+                      : FluentianColors.error;
+                  textCol = correct
+                      ? FluentianColors.success
+                      : FluentianColors.error;
                 }
               } else {
                 // Unanswered state
@@ -1308,18 +1404,24 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: bgCol,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: borderCol, width: isSelected || isMatched ? 2 : 1),
+                    border: Border.all(
+                      color: borderCol,
+                      width: isSelected || isMatched ? 2 : 1,
+                    ),
                     boxShadow: [
                       if (isSelected)
                         BoxShadow(
                           color: FluentianColors.primary.withOpacity(0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
-                        )
+                        ),
                     ],
                   ),
                   child: Center(
@@ -1378,7 +1480,7 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
           ),
         ),
         const SizedBox(height: 24),
-        
+
         // Native speaking audio player card
         if ((_currentQ.audioUrl != null && _currentQ.audioUrl!.isNotEmpty) ||
             _currentQ.textToSpeak.trim().isNotEmpty)
@@ -1389,7 +1491,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
               decoration: BoxDecoration(
                 color: FluentianColors.primaryTint,
                 borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: FluentianColors.primary.withValues(alpha: 0.15)),
+                border: Border.all(
+                  color: FluentianColors.primary.withValues(alpha: 0.15),
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -1404,7 +1508,9 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                           ),
                         )
                       : Icon(
-                          _audioPlaying ? Icons.pause_rounded : Icons.volume_up_rounded,
+                          _audioPlaying
+                              ? Icons.pause_rounded
+                              : Icons.volume_up_rounded,
                           color: FluentianColors.primary,
                           size: 20,
                         ),
@@ -1413,8 +1519,8 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                     _audioLoading
                         ? 'Loading...'
                         : _audioPlaying
-                            ? 'Playing...'
-                            : 'Listen to speaker',
+                        ? 'Playing...'
+                        : 'Listen to speaker',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       color: FluentianColors.primary,
@@ -1431,7 +1537,8 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
         Column(
           children: [
             GestureDetector(
-              onTap: isAnalyzing || isResult || _state != _AnswerState.unanswered
+              onTap:
+                  isAnalyzing || isResult || _state != _AnswerState.unanswered
                   ? null
                   : () {
                       if (isRecording) {
@@ -1464,10 +1571,12 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                       color: isRecording
                           ? FluentianColors.error
                           : isAnalyzing
-                              ? FluentianColors.primary
-                              : Colors.white,
+                          ? FluentianColors.primary
+                          : Colors.white,
                       border: Border.all(
-                        color: isRecording ? FluentianColors.error : FluentianColors.primary,
+                        color: isRecording
+                            ? FluentianColors.error
+                            : FluentianColors.primary,
                         width: 3,
                       ),
                     ),
@@ -1480,9 +1589,13 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                             ),
                           )
                         : Icon(
-                            isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                            isRecording
+                                ? Icons.stop_rounded
+                                : Icons.mic_rounded,
                             size: 30,
-                            color: isRecording ? Colors.white : FluentianColors.primary,
+                            color: isRecording
+                                ? Colors.white
+                                : FluentianColors.primary,
                           ),
                   ),
                 ],
@@ -1493,10 +1606,10 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
               isRecording
                   ? 'Recording... Tap to stop'
                   : isAnalyzing
-                      ? 'Analyzing voice pronunciation...'
-                      : isResult
-                          ? 'Voice Analyzed'
-                          : 'Tap to speak',
+                  ? 'Analyzing voice pronunciation...'
+                  : isResult
+                  ? 'Voice Analyzed'
+                  : 'Tap to speak',
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -1521,7 +1634,11 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.stars_rounded, color: FluentianColors.primary, size: 24),
+                    const Icon(
+                      Icons.stars_rounded,
+                      color: FluentianColors.primary,
+                      size: 24,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Result: ${_pronunciationScore.toInt()}% Match',
@@ -1534,13 +1651,17 @@ class _McqScreenState extends State<McqScreen> with SingleTickerProviderStateMix
                   ],
                 ),
                 const SizedBox(height: 16),
-                _MetricRow('Pronunciation', _pronunciationScore / 100, FluentianColors.info),
+                _MetricRow(
+                  'Pronunciation',
+                  _pronunciationScore / 100,
+                  FluentianColors.info,
+                ),
                 _MetricRow('Fluency', 0.90, FluentianColors.success),
                 _MetricRow('Accuracy', 0.84, FluentianColors.accent),
               ],
             ),
           ),
-        ]
+        ],
       ],
     );
   }

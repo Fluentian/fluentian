@@ -188,12 +188,35 @@ class UnitDetailScreen extends StatelessWidget {
 
       IconData icon;
       switch (l.lessonKind) {
-        case 'dialogue': icon = Iconsax.message5; break;
-        case 'grammar': icon = Iconsax.book_14; break;
-        case 'speaking': icon = Iconsax.microphone_24; break;
+        case 'dialogue':
+          icon = Iconsax.message5;
+          break;
+        case 'grammar':
+        case 'grammar_explainer':
+          icon = Iconsax.book_14;
+          break;
+        case 'speaking':
+        case 'pronunciation':
+        case 'roleplay_simulation':
+          icon = Iconsax.microphone_24;
+          break;
+        case 'listening':
+          icon = Iconsax.microphone_24;
+          break;
+        case 'reading':
+        case 'writing':
+          icon = Iconsax.document_text_14;
+          break;
+        case 'exam_drill':
         case 'quiz':
-        case 'review': icon = Iconsax.document_text_14; break;
-        default: icon = Iconsax.category_24;
+        case 'review':
+          icon = Iconsax.document_text_14;
+          break;
+        case 'cultural_bridge':
+          icon = Iconsax.book;
+          break;
+        default:
+          icon = Iconsax.category_24;
       }
 
       nodes.add(_LessonNode(
