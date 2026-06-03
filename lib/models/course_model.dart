@@ -68,6 +68,7 @@ class UnitModel {
         .map((l) => LessonModel.fromJson(l as Map<String, dynamic>))
         .toList(),
   );
+}
 
 class LessonModel {
   final String id;
@@ -188,17 +189,34 @@ class BlockModel {
       ? blockPayload['tts_language'].toString()
       : 'fr-FR';
 
-  String get textToSpeak =>
-      blockPayload['tts_text']?.toString() ??
-      blockPayload['word']?.toString() ??
-      blockPayload['target']?.toString() ??
-      blockPayload['fr']?.toString() ??
-      blockPayload['example']?.toString() ??
-      blockPayload['rule']?.toString() ??
-      blockPayload['title']?.toString() ??
-      blockPayload['content']?.toString() ??
-      blockPayload['text']?.toString() ??
-      '';
+  String get textToSpeak {
+    final explicit = _firstString(blockPayload, [
+      'tts_text',
+      'audio_text',
+      'speak_text',
+    ]);
+    if (explicit.isNotEmpty) return explicit;
+
+    final frenchText = _firstString(blockPayload, [
+      'target',
+      'fr',
+      'word',
+      'phrase',
+      'sentence',
+      'example_fr',
+    ]);
+    if (frenchText.isNotEmpty) return frenchText;
+
+    final examples = blockPayload['examples'];
+    if (examples is List && examples.isNotEmpty) {
+      final first = examples.first;
+      if (first is Map) {
+        return first['fr']?.toString().trim() ?? '';
+      }
+    }
+
+    return '';
+  }
 }
 
 class QuestionModel {
@@ -234,8 +252,7 @@ class QuestionModel {
     createdAt: DateTime.parse(json['created_at'] as String),
   );
 
-  bool get isMcq =>
-      questionKind == 'mcq_single' || questionKind == 'mcq_multi';
+  bool get isMcq => questionKind == 'mcq_single' || questionKind == 'mcq_multi';
 
   bool get isOpenAnswer =>
       questionKind == 'fill_blank' ||
@@ -274,8 +291,8 @@ class QuestionModel {
 
   /// For MCQ — returns the correct answer string from grading_payload.
   String get mcqCorrectAnswer {
-    final fromGrading = gradingPayload['correct_answer'] ??
-        promptPayload['mcqCorrectAnswer'];
+    final fromGrading =
+        gradingPayload['correct_answer'] ?? promptPayload['mcqCorrectAnswer'];
     if (fromGrading != null && fromGrading.toString().isNotEmpty) {
       return fromGrading.toString();
     }
@@ -323,10 +340,30 @@ class QuestionModel {
       ? promptPayload['tts_language'].toString()
       : 'fr-FR';
 
-  String get textToSpeak =>
-      promptPayload['tts_text']?.toString() ??
-      promptPayload['text']?.toString() ??
-      promptText;
+  String get textToSpeak {
+    final explicit = _firstString(promptPayload, [
+      'tts_text',
+      'audio_text',
+      'speak_text',
+    ]);
+    if (explicit.isNotEmpty) return explicit;
+
+    final targetText = _firstString(promptPayload, [
+      'target',
+      'fr',
+      'sentence',
+      'phrase',
+      'dictation_text',
+      'listening_text',
+    ]);
+    if (targetText.isNotEmpty) return targetText;
+
+    if (questionKind == 'translation' || questionKind == 'reorder') {
+      return mcqCorrectAnswer;
+    }
+
+    return '';
+  }
 
   /// For MCQ Multi questions — returns list of correct options.
   List<String> get mcqMultiCorrectAnswers {
@@ -351,4 +388,12 @@ class QuestionModel {
     }
     return [];
   }
+}
+
+String _firstString(Map<String, dynamic> payload, List<String> keys) {
+  for (final key in keys) {
+    final value = payload[key]?.toString().trim();
+    if (value != null && value.isNotEmpty) return value;
+  }
+  return '';
 }
