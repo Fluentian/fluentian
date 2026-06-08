@@ -23,7 +23,7 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   just_audio: ^0.9.36
   flutter_tts: ^4.2.3
-
+  video_player: ^2.8.6
 dev_dependencies:
   flutter_test:
     sdk: flutter

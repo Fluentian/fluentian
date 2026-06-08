@@ -13,6 +13,7 @@ import 'lesson_list_screen.dart';
 import 'lesson_detail_screen.dart';
 import 'social_screen.dart';
 import 'opportunity_screen.dart';
+import 'explore_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final screens = [
       _HomeContent(),
       const SocialScreen(),
+      const ExploreScreen(),
       const OpportunityScreen(),
       const ProfileScreen(),
     ];

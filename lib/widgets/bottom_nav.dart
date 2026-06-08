@@ -15,6 +15,7 @@ class FluentianBottomNav extends StatelessWidget {
   static const _tabs = [
     _NavItem(Icons.home_rounded, 'Home'),
     _NavItem(Icons.group_rounded, 'Social'),
+    _NavItem(Icons.explore_rounded, 'Explore'),
     _NavItem(Icons.public_rounded, 'Board'),
     _NavItem(Icons.person_rounded, 'Profile'),
   ];
