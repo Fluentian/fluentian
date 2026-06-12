@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "461458509107",
+    "project_id": "fluentian-c8d03",
+    "storage_bucket": "fluentian-c8d03.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:461458509107:android:399650f30b672d4e7b0246",
+        "android_client_info": {
+          "package_name": "com.example.fluentian"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPSL7iDJtmh38Tvs_zfG7EQznhniHrdXc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
