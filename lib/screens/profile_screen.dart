@@ -37,6 +37,8 @@ class ProfileScreen extends StatelessWidget {
     
     final streakVal = stats?.streakDays ?? user.streakDays;
     final xpVal = stats?.totalXp ?? user.xpTotal;
+    final weeklyXpVal = stats?.weeklyXp ?? 0;
+    final heartsVal = stats?.hearts ?? user.hearts;
     final lessonsVal = stats?.lessonsCompleted ?? 0;
     final unitsVal = stats?.unitsCompleted ?? 0;
 
@@ -151,8 +153,14 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Skills breakdown
-            _buildSkillsCard(lessonsVal),
+            // Learning summary
+            _buildLearningSummaryCard(
+              totalXp: xpVal,
+              weeklyXp: weeklyXpVal,
+              hearts: heartsVal,
+              lessonsCompleted: lessonsVal,
+              unitsCompleted: unitsVal,
+            ),
 
             const SizedBox(height: 16),
 
@@ -419,18 +427,20 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSkillsCard(int lessonsCompleted) {
-    final baseMastery = lessonsCompleted > 0 ? (lessonsCompleted / 10).clamp(0.1, 1.0) : 0.05;
-
-    final skills = [
-      _Skill('Grammar', (baseMastery * 1.2).clamp(0.05, 0.95), Iconsax.book_1),
-      _Skill('Vocabulary', (baseMastery * 1.1).clamp(0.05, 0.95), Iconsax.bookmark),
-      _Skill('Listening', (baseMastery * 0.9).clamp(0.05, 0.95), Iconsax.volume_high),
-      _Skill('Speaking', (baseMastery * 0.7).clamp(0.05, 0.95), Iconsax.microphone_2),
-      _Skill('Reading', (baseMastery * 1.0).clamp(0.05, 0.95), Iconsax.document_text),
-      _Skill('Writing', (baseMastery * 0.5).clamp(0.05, 0.95), Iconsax.pen_tool),
+  Widget _buildLearningSummaryCard({
+    required int totalXp,
+    required int weeklyXp,
+    required int hearts,
+    required int lessonsCompleted,
+    required int unitsCompleted,
+  }) {
+    final rows = [
+      _SummaryRow(Icons.bolt_rounded, 'Total XP', '$totalXp XP'),
+      _SummaryRow(Icons.calendar_today_rounded, 'Last 7 days', '$weeklyXp XP'),
+      _SummaryRow(Icons.favorite_rounded, 'Hearts', '$hearts/5'),
+      _SummaryRow(Icons.check_circle_rounded, 'Lessons completed', '$lessonsCompleted'),
+      _SummaryRow(Iconsax.book5, 'Units completed', '$unitsCompleted'),
     ];
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -442,7 +452,7 @@ class ProfileScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Skill mastery',
+            'Learning summary',
             style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -450,21 +460,20 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ...skills.map(
-            (s) => Padding(
+          ...rows.map(
+            (row) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
                   Icon(
-                    s.iconData,
+                    row.iconData,
                     size: 18,
-                    color: FluentianColors.textSecondary,
+                    color: FluentianColors.primary,
                   ),
                   const SizedBox(width: 10),
-                  SizedBox(
-                    width: 90,
+                  Expanded(
                     child: Text(
-                      s.name,
+                      row.label,
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -472,23 +481,12 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: LinearProgressIndicator(
-                        value: s.value,
-                        backgroundColor: FluentianColors.primary.withValues(alpha: 0.1),
-                        valueColor: const AlwaysStoppedAnimation(FluentianColors.primary),
-                        minHeight: 6,
-                      ),
-                    ),
-                  ),
                   const SizedBox(width: 12),
                   Text(
-                    '${(s.value * 100).toInt()}%',
+                    row.value,
                     style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                       color: FluentianColors.primary,
                     ),
                   ),
@@ -505,7 +503,6 @@ class ProfileScreen extends StatelessWidget {
     final badges = [
       _Badge(Iconsax.flash_15, 'First streak', streakDays >= 1),
       _Badge(Iconsax.message5, 'First lesson', lessonsCompleted >= 1),
-      _Badge(Iconsax.radar5, '100% accuracy', lessonsCompleted >= 2),
       _Badge(Iconsax.book5, 'Unit complete', unitsCompleted >= 1),
       _Badge(Iconsax.cup5, '30-day streak', streakDays >= 30),
       _Badge(Iconsax.star5, 'Super Star', lessonsCompleted >= 10),
@@ -591,11 +588,11 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _Skill {
-  final String name;
-  final double value;
+class _SummaryRow {
   final IconData iconData;
-  const _Skill(this.name, this.value, this.iconData);
+  final String label;
+  final String value;
+  const _SummaryRow(this.iconData, this.label, this.value);
 }
 
 class _Badge {

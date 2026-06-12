@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
+import '../services/notifications_api.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/bottom_nav.dart';
@@ -14,6 +15,7 @@ import 'lesson_detail_screen.dart';
 import 'social_screen.dart';
 import 'opportunity_screen.dart';
 import 'explore_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -113,6 +115,57 @@ class _HomeContent extends StatelessWidget {
                             color: FluentianColors.textPrimary,
                           ),
                         ),
+                      ),
+                      FutureBuilder<int>(
+                        future: NotificationsApi.instance.getUnreadCount(),
+                        builder: (context, snapshot) {
+                          final unread = snapshot.data ?? 0;
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              IconButton(
+                                tooltip: 'Notifications',
+                                onPressed: () async {
+                                  await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const NotificationsScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.notifications_none_rounded,
+                                  color: FluentianColors.textPrimary,
+                                ),
+                              ),
+                              if (unread > 0)
+                                Positioned(
+                                  right: 6,
+                                  top: 6,
+                                  child: Container(
+                                    constraints: const BoxConstraints(
+                                      minWidth: 18,
+                                      minHeight: 18,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                                    decoration: const BoxDecoration(
+                                      color: FluentianColors.error,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        unread > 9 ? '9+' : '$unread',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                       ),
                       StatChip(
                         emoji: '🔥',
