@@ -68,7 +68,7 @@ class ApiClient {
   // ── Configuration ────────────────────────────────────
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.fluentianapp.binovatechnologies.com/api/v1',
+    defaultValue: 'http://192.168.1.5:8000/api/v1', // Local testing IP
   );
   static final Uri _baseUri = Uri.parse(_baseUrl);
 
@@ -272,6 +272,13 @@ class ApiClient {
       throw const NetworkException();
     } on HttpException {
       throw const NetworkException('Unable to reach server.');
+    } on http.ClientException {
+      throw const NetworkException('Connection refused. Is the backend running?');
+    } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        throw const NetworkException('Request timed out. Please try again.');
+      }
+      rethrow;
     }
   }
 

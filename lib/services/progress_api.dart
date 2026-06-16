@@ -44,8 +44,16 @@ class ProgressApi {
     return UserStatsModel.fromJson(json);
   }
 
+  Future<List<EnrollmentModel>> getMyEnrollments() async {
+    final items = await _client.getList('/progress/me/enrollments');
+    return items
+        .map((e) => EnrollmentModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   /// Enroll the current user in a course.
-  Future<void> enrollInCourse(String courseId) async {
-    await _client.post('/progress/enroll/$courseId', {});
+  Future<EnrollmentModel> enrollInCourse(String courseId) async {
+    final json = await _client.post('/progress/enroll/$courseId', {});
+    return EnrollmentModel.fromJson(json);
   }
 }
