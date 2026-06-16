@@ -318,6 +318,46 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateSettings(Map<String, dynamic> data) async {
+    final previous = _user;
+    if (previous != null) {
+      _user = previous.copyWith(
+        dailyGoalMinutes: data['daily_goal_minutes'] as int?,
+        notificationsEnabled: data['notifications_enabled'] as bool?,
+        autoplayAudio: data['autoplay_audio'] as bool?,
+        soundEnabled: data['sound_enabled'] as bool?,
+        learningReminderEnabled:
+            data['learning_reminder_enabled'] as bool?,
+        reminderTime: data['reminder_time'] as String?,
+        phoneticHintsEnabled:
+            data['phonetic_hints_enabled'] as bool?,
+        speakingExercisesEnabled:
+            data['speaking_exercises_enabled'] as bool?,
+        highContrastEnabled:
+            data['high_contrast_enabled'] as bool?,
+        reduceAnimationsEnabled:
+            data['reduce_animations_enabled'] as bool?,
+        hapticFeedbackEnabled:
+            data['haptic_feedback_enabled'] as bool?,
+        ttsSpeed: data['tts_speed'] as double?,
+        fontScale: data['font_scale'] as int?,
+      );
+      notifyListeners();
+    }
+    try {
+      final updated = await _authApi.updateProfile(data);
+      _user = updated;
+      await _apiClient.saveUser(updated);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _user = previous;
+      notifyListeners();
+      if (kDebugMode) debugPrint('Update settings error: $e');
+      return false;
+    }
+  }
+
   Future<void> setIntroSeen(bool value) async {
     _hasSeenIntro = value;
     notifyListeners();

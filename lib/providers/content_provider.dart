@@ -14,12 +14,14 @@ class ContentProvider extends ChangeNotifier {
   List<CourseModel> _courses = [];
   final Map<String, LessonDetailModel> _lessonCache = {};
   final Map<String, LessonProgressModel> _progressByLesson = {};
+  final Set<String> _enrolledCourseIds = {};
   UserStatsModel? _stats;
 
   ContentStatus get status => _status;
   String? get error => _error;
   List<CourseModel> get courses => _courses;
   UserStatsModel? get stats => _stats;
+  Set<String> get enrolledCourseIds => Set.unmodifiable(_enrolledCourseIds);
   bool get isLoading => _status == ContentStatus.loading;
 
   final _contentApi = ContentApi.instance;
@@ -34,9 +36,17 @@ class ContentProvider extends ChangeNotifier {
       final results = await Future.wait([
         _contentApi.getCourses(),
         _progressApi.getMyStats(),
+        _progressApi.getMyEnrollments(),
       ]);
       _courses = results[0] as List<CourseModel>;
       _stats = results[1] as UserStatsModel;
+      _enrolledCourseIds
+        ..clear()
+        ..addAll(
+          (results[2] as List<EnrollmentModel>)
+              .where((e) => e.isActive)
+              .map((e) => e.courseId),
+        );
       _status = ContentStatus.loaded;
     } on ApiException catch (e) {
       _error = e.userMessage;
@@ -87,6 +97,33 @@ class ContentProvider extends ChangeNotifier {
   bool isLessonCompleted(String lessonId) =>
       _progressByLesson[lessonId]?.completed ?? false;
 
+  bool isCourseEnrolled(String courseId) => _enrolledCourseIds.contains(courseId);
+
+  Future<bool> enrollInCourse(String courseId) async {
+    try {
+      final enrollment = await _progressApi.enrollInCourse(courseId);
+      if (enrollment.isActive) {
+        _enrolledCourseIds.add(enrollment.courseId);
+      }
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      if (e.statusCode == 409) {
+        _enrolledCourseIds.add(courseId);
+        notifyListeners();
+        return true;
+      }
+      _error = e.userMessage;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      if (kDebugMode) debugPrint('enrollInCourse error: $e');
+      _error = 'Could not enroll in this course.';
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Get mastery score for a lesson (0.0–1.0).
   double getLessonMastery(String lessonId) =>
       _progressByLesson[lessonId]?.masteryScore ?? 0.0;
@@ -114,6 +151,17 @@ class ContentProvider extends ChangeNotifier {
       }
     }
     return incomplete;
+  }
+
+  LessonModel? firstLessonByKind(String lessonKind) {
+    for (final course in _courses) {
+      for (final unit in course.units) {
+        for (final lesson in unit.lessons) {
+          if (lesson.lessonKind == lessonKind) return lesson;
+        }
+      }
+    }
+    return null;
   }
 
   /// Submit lesson completion and refresh stats.

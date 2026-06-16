@@ -63,6 +63,31 @@ class UserStatsModel {
       );
 }
 
+class EnrollmentModel {
+  final String id;
+  final String userId;
+  final String courseId;
+  final DateTime enrolledAt;
+  final bool isActive;
+
+  const EnrollmentModel({
+    required this.id,
+    required this.userId,
+    required this.courseId,
+    required this.enrolledAt,
+    required this.isActive,
+  });
+
+  factory EnrollmentModel.fromJson(Map<String, dynamic> json) =>
+      EnrollmentModel(
+        id: json['id'] as String,
+        userId: json['user_id'] as String,
+        courseId: json['course_id'] as String,
+        enrolledAt: DateTime.parse(json['enrolled_at'] as String),
+        isActive: json['is_active'] as bool? ?? true,
+      );
+}
+
 class CompleteLessonResult {
   final int xpEarned;
   final int newXpTotal;
