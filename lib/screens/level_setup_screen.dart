@@ -4,6 +4,7 @@ import '../core/theme.dart';
 import '../core/constants.dart';
 import '../widgets/common_widgets.dart';
 import 'goal_setup_screen.dart';
+import 'placement_test_screen.dart';
 
 class LevelSetupScreen extends StatefulWidget {
   const LevelSetupScreen({super.key});
@@ -84,7 +85,11 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
                     const SizedBox(height: 16),
                     Center(
                       child: GestureDetector(
-                        onTap: () {},
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PlacementTestScreen(),
+                          ),
+                        ),
                         child: Text(
                           'Take placement test instead',
                           style: GoogleFonts.inter(

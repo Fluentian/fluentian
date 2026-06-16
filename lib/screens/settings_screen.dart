@@ -1,359 +1,383 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
-import '../widgets/common_widgets.dart';
+import '../providers/auth_provider.dart';
+import '../services/local_push_service.dart';
+import 'auth/sign_in_screen.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool _reminder = true;
-  bool _phoneticHints = true;
-  bool _speaking = true;
-  bool _autoPlay = true;
-  bool _highContrast = false;
-  bool _reduceAnim = false;
-  bool _haptic = true;
-  bool _streakNotif = true;
-  bool _reviewNotif = true;
-  bool _badgeNotif = true;
-  bool _msgNotif = true;
-  int _fontIndex = 1; // 0=small, 1=medium, 2=large
-  double _ttsSpeed = 1.0;
-  double _micSensitivity = 0.7;
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final user = auth.user;
+
+    if (user == null) {
+      return const Scaffold(
+        backgroundColor: FluentianColors.pageBg,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(
+          'Settings',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+        ),
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Profile mini header
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: FluentianColors.primaryTint,
-                      border: Border.all(
-                        color: FluentianColors.primary,
-                        width: 2,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'S',
-                        style: GoogleFonts.inter(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: FluentianColors.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Sara Tesfaye',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: FluentianColors.textPrimary,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {},
-                        child: Text(
-                          'Edit profile →',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: FluentianColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Group 1 — Learning
-            _SettingsGroup(
-              title: 'Learning',
-              children: [
-                SettingsRow(
-                  icon: Icons.language_rounded,
-                  label: 'Interface language',
-                  trailing: '🇬🇧 English',
-                  onTap: () {},
-                ),
-                SettingsRow(
-                  icon: Icons.track_changes_rounded,
-                  label: 'Daily goal',
-                  trailing: '50 XP / day',
-                  onTap: () {},
-                ),
-                ToggleRow(
-                  icon: Icons.notifications_rounded,
-                  label: 'Learning reminder',
-                  value: _reminder,
-                  onChanged: (v) => setState(() => _reminder = v),
-                ),
-                ToggleRow(
-                  icon: Icons.text_fields_rounded,
-                  label: 'Show phonetic hints',
-                  value: _phoneticHints,
-                  onChanged: (v) => setState(() => _phoneticHints = v),
-                ),
-                ToggleRow(
-                  icon: Icons.mic_rounded,
-                  label: 'Speaking exercises',
-                  value: _speaking,
-                  onChanged: (v) => setState(() => _speaking = v),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Group 2 — Audio & voice
-            _SettingsGroup(
-              title: 'Audio & voice',
-              children: [
-                ToggleRow(
-                  icon: Icons.play_circle_rounded,
-                  label: 'Auto-play audio',
-                  value: _autoPlay,
-                  onChanged: (v) => setState(() => _autoPlay = v),
-                ),
-                _SliderRow(
-                  label: 'TTS playback speed',
-                  value: _ttsSpeed,
-                  min: 0.5,
-                  max: 2.0,
-                  displayValue: '${_ttsSpeed.toStringAsFixed(1)}×',
-                  onChanged: (v) => setState(() => _ttsSpeed = v),
-                ),
-                _SliderRow(
-                  label: 'Microphone sensitivity',
-                  value: _micSensitivity,
-                  min: 0.0,
-                  max: 1.0,
-                  displayValue: '${(_micSensitivity * 100).toInt()}%',
-                  onChanged: (v) => setState(() => _micSensitivity = v),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Group 3 — Accessibility
-            _SettingsGroup(
-              title: 'Accessibility',
-              children: [
-                _FontSizeSelector(
-                  index: _fontIndex,
-                  onChanged: (i) => setState(() => _fontIndex = i),
-                ),
-                ToggleRow(
-                  icon: Icons.contrast_rounded,
-                  label: 'High contrast mode',
-                  value: _highContrast,
-                  onChanged: (v) => setState(() => _highContrast = v),
-                ),
-                ToggleRow(
-                  icon: Icons.animation_rounded,
-                  label: 'Reduce animations',
-                  value: _reduceAnim,
-                  onChanged: (v) => setState(() => _reduceAnim = v),
-                ),
-                ToggleRow(
-                  icon: Icons.vibration_rounded,
-                  label: 'Haptic feedback',
-                  value: _haptic,
-                  onChanged: (v) => setState(() => _haptic = v),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Group 4 — Notifications
-            _SettingsGroup(
-              title: 'Notifications',
-              children: [
-                ToggleRow(
-                  customIconData: Iconsax.flash_1,
-                  label: 'Streak reminder',
-                  value: _streakNotif,
-                  onChanged: (v) => setState(() => _streakNotif = v),
-                ),
-                ToggleRow(
-                  customIconData: Iconsax.book,
-                  label: 'Review due',
-                  value: _reviewNotif,
-                  onChanged: (v) => setState(() => _reviewNotif = v),
-                ),
-                ToggleRow(
-                  customIconData: Iconsax.cup,
-                  label: 'Badges',
-                  value: _badgeNotif,
-                  onChanged: (v) => setState(() => _badgeNotif = v),
-                ),
-                ToggleRow(
-                  customIconData: Iconsax.message,
-                  label: 'Messages',
-                  value: _msgNotif,
-                  onChanged: (v) => setState(() => _msgNotif = v),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Group 5 — Account
-            _SettingsGroup(
-              title: 'Account',
-              children: [
-                SettingsRow(
-                  icon: Icons.star_rounded,
-                  label: 'Subscription status',
-                  trailingWidget: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: FluentianColors.primaryTint,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Text(
-                      'Free plan',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: FluentianColors.primary,
-                      ),
-                    ),
-                  ),
-                  onTap: () {},
-                ),
-                SettingsRow(
-                  icon: Icons.lock_rounded,
-                  label: 'Privacy settings',
-                  onTap: () {},
-                ),
-                SettingsRow(
-                  icon: Icons.download_rounded,
-                  label: 'Download for offline',
-                  onTap: () {},
-                ),
-                SettingsRow(
-                  icon: Icons.help_rounded,
-                  label: 'Help & support',
-                  onTap: () {},
-                ),
-                SettingsRow(
-                  icon: Icons.star_border_rounded,
-                  label: 'Rate Fluentian ⭐',
-                  onTap: () {},
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Danger zone
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: FluentianColors.errorTint,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: FluentianColors.error.withValues(alpha: 0.2),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+        children: [
+          _AccountHeader(onEdit: () => _showProfileEditor(context)),
+          const SizedBox(height: 16),
+          _SettingsGroup(
+            title: 'Learning',
+            children: [
+              _DailyGoalRow(
+                minutes: user.dailyGoalMinutes,
+                onChanged: (minutes) => _save(
+                  context,
+                  {'daily_goal_minutes': minutes},
                 ),
               ),
-              child: Column(
-                children: [
-                  InkWell(
-                    onTap: () {},
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.logout_rounded,
-                            size: 18,
-                            color: FluentianColors.textSecondary,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Sign out',
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              color: FluentianColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const Divider(),
-                  InkWell(
-                    onTap: () {},
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.delete_forever_rounded,
-                            size: 18,
-                            color: FluentianColors.error,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Delete account',
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              color: FluentianColors.error,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+              _SwitchRow(
+                icon: Icons.text_fields_rounded,
+                label: 'Phonetic hints',
+                value: user.phoneticHintsEnabled,
+                onChanged: (value) => _save(
+                  context,
+                  {'phonetic_hints_enabled': value},
+                ),
+              ),
+              _SwitchRow(
+                icon: Icons.mic_rounded,
+                label: 'Speaking exercises',
+                value: user.speakingExercisesEnabled,
+                onChanged: (value) => _save(
+                  context,
+                  {'speaking_exercises_enabled': value},
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _SettingsGroup(
+            title: 'Audio',
+            children: [
+              _SwitchRow(
+                icon: Icons.play_circle_rounded,
+                label: 'Auto-play lesson audio',
+                value: user.autoplayAudio,
+                onChanged: (value) => _save(context, {'autoplay_audio': value}),
+              ),
+              _SwitchRow(
+                icon: Icons.volume_up_rounded,
+                label: 'Sound effects',
+                value: user.soundEnabled,
+                onChanged: (value) => _save(context, {'sound_enabled': value}),
+              ),
+              _SliderRow(
+                icon: Icons.speed_rounded,
+                label: 'TTS speed',
+                value: user.ttsSpeed.clamp(0.6, 1.6),
+                min: 0.6,
+                max: 1.6,
+                displayValue: '${user.ttsSpeed.toStringAsFixed(1)}x',
+                onChanged: (value) => _save(
+                  context,
+                  {'tts_speed': double.parse(value.toStringAsFixed(1))},
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _SettingsGroup(
+            title: 'Notifications',
+            children: [
+              _SwitchRow(
+                icon: Icons.notifications_rounded,
+                label: 'Learning announcements',
+                value: user.notificationsEnabled,
+                onChanged: (value) => _save(
+                  context,
+                  {'notifications_enabled': value},
+                ),
+              ),
+              _SwitchRow(
+                icon: Icons.alarm_rounded,
+                label: 'Daily reminder',
+                value: user.learningReminderEnabled,
+                onChanged: (value) => _save(
+                  context,
+                  {'learning_reminder_enabled': value},
+                ),
+              ),
+              _TimeRow(
+                time: user.reminderTime,
+                enabled: user.learningReminderEnabled,
+                onTap: () => _pickReminderTime(context, user.reminderTime),
+              ),
+              _RowShell(
+                icon: Icons.send_to_mobile_rounded,
+                label: 'Test notification',
+                onTap: () => _emitTestNotification(context),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: FluentianColors.textSecondary,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _SettingsGroup(
+            title: 'Accessibility',
+            children: [
+              _FontScaleRow(
+                value: user.fontScale,
+                onChanged: (value) => _save(context, {'font_scale': value}),
+              ),
+              _SwitchRow(
+                icon: Icons.contrast_rounded,
+                label: 'High contrast',
+                value: user.highContrastEnabled,
+                onChanged: (value) => _save(
+                  context,
+                  {'high_contrast_enabled': value},
+                ),
+              ),
+              _SwitchRow(
+                icon: Icons.motion_photos_pause_rounded,
+                label: 'Reduce animations',
+                value: user.reduceAnimationsEnabled,
+                onChanged: (value) => _save(
+                  context,
+                  {'reduce_animations_enabled': value},
+                ),
+              ),
+              _SwitchRow(
+                icon: Icons.vibration_rounded,
+                label: 'Haptic feedback',
+                value: user.hapticFeedbackEnabled,
+                onChanged: (value) => _save(
+                  context,
+                  {'haptic_feedback_enabled': value},
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _DangerAction(
+            isLoading: auth.isLoading,
+            onSignOut: () async {
+              await auth.logout();
+              if (context.mounted) {
+                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const SignInScreen()),
+                  (route) => false,
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _save(BuildContext context, Map<String, dynamic> data) async {
+    final ok = await context.read<AuthProvider>().updateSettings(data);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not save setting.')),
+      );
+    }
+  }
+
+  Future<void> _pickReminderTime(BuildContext context, String current) async {
+    final parts = current.split(':');
+    final initial = TimeOfDay(
+      hour: int.tryParse(parts.first) ?? 8,
+      minute: parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0,
+    );
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+    );
+    if (picked == null || !context.mounted) return;
+    final value =
+        '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+    await _save(context, {'reminder_time': value});
+  }
+
+  Future<void> _emitTestNotification(BuildContext context) async {
+    await LocalPushService.instance.showTestNotification();
+  }
+
+  Future<void> _showProfileEditor(BuildContext context) async {
+    final auth = context.read<AuthProvider>();
+    final user = auth.user;
+    if (user == null) return;
+
+    final nameController = TextEditingController(text: user.displayName);
+    final goalController = TextEditingController(text: user.learningGoal ?? '');
+    final bioController = TextEditingController(text: user.bio ?? '');
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Edit profile',
+                style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: FluentianColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Display name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: goalController,
+                decoration: const InputDecoration(
+                  labelText: 'Learning goal',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: bioController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Bio',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final ok = await auth.updateProfile({
+                      'display_name': nameController.text.trim(),
+                      'learning_goal': goalController.text.trim(),
+                      'bio': bioController.text.trim(),
+                    });
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    if (!ok) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Could not save profile.')),
+                      );
+                    }
+                  },
+                  child: const Text('Save profile'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    nameController.dispose();
+    goalController.dispose();
+    bioController.dispose();
+  }
+}
+
+class _AccountHeader extends StatelessWidget {
+  final VoidCallback onEdit;
+
+  const _AccountHeader({required this.onEdit});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().user!;
+    final initial = user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U';
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: _panelDecoration(),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: FluentianColors.primaryTint,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                initial,
+                style: GoogleFonts.inter(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: FluentianColors.primary,
+                ),
               ),
             ),
-
-            const SizedBox(height: 32),
-          ],
-        ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: FluentianColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  user.email,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: FluentianColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Edit profile',
+            onPressed: onEdit,
+            icon: const Icon(Icons.edit_rounded),
+          ),
+        ],
       ),
     );
   }
@@ -362,6 +386,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 class _SettingsGroup extends StatelessWidget {
   final String title;
   final List<Widget> children;
+
   const _SettingsGroup({required this.title, required this.children});
 
   @override
@@ -375,24 +400,19 @@ class _SettingsGroup extends StatelessWidget {
             title,
             style: GoogleFonts.inter(
               fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w800,
               color: FluentianColors.textSecondary,
-              letterSpacing: 0.5,
             ),
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-          ),
+          decoration: _panelDecoration(),
           child: Column(
-            children: List.generate(children.length * 2 - 1, (i) {
-              if (i.isOdd)
+            children: List.generate(children.length * 2 - 1, (index) {
+              if (index.isOdd) {
                 return Divider(height: 1, color: FluentianColors.divider);
-              return children[i ~/ 2];
+              }
+              return children[index ~/ 2];
             }),
           ),
         ),
@@ -401,11 +421,163 @@ class _SettingsGroup extends StatelessWidget {
   }
 }
 
+class _DailyGoalRow extends StatelessWidget {
+  final int minutes;
+  final ValueChanged<int> onChanged;
+
+  const _DailyGoalRow({required this.minutes, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    const options = [5, 10, 15, 20, 30, 40];
+    return _RowShell(
+      icon: Icons.track_changes_rounded,
+      label: 'Daily goal',
+      trailing: DropdownButton<int>(
+        value: options.contains(minutes) ? minutes : 15,
+        underline: const SizedBox.shrink(),
+        items: options
+            .map(
+              (value) => DropdownMenuItem(
+                value: value,
+                child: Text('$value min'),
+              ),
+            )
+            .toList(),
+        onChanged: (value) {
+          if (value != null) onChanged(value);
+        },
+      ),
+    );
+  }
+}
+
+class _TimeRow extends StatelessWidget {
+  final String time;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _TimeRow({
+    required this.time,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _RowShell(
+      icon: Icons.schedule_rounded,
+      label: 'Reminder time',
+      enabled: enabled,
+      onTap: enabled ? onTap : null,
+      trailing: Text(
+        time,
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: enabled
+              ? FluentianColors.primary
+              : FluentianColors.textSecondary,
+        ),
+      ),
+    );
+  }
+}
+
+class _FontScaleRow extends StatelessWidget {
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  const _FontScaleRow({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final labels = ['Small', 'Medium', 'Large'];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.format_size_rounded, color: FluentianColors.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Font size',
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: FluentianColors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<int>(
+              showSelectedIcon: false,
+              segments: List.generate(
+                labels.length,
+                (index) => ButtonSegment(
+                  value: index,
+                  label: Text(labels[index]),
+                ),
+              ),
+              selected: {value.clamp(0, 2)},
+              onSelectionChanged: (selected) => onChanged(selected.first),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SwitchRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _SwitchRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      secondary: Icon(icon, color: FluentianColors.primary),
+      title: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 15,
+          color: FluentianColors.textPrimary,
+        ),
+      ),
+      value: value,
+      activeColor: FluentianColors.primary,
+      onChanged: onChanged,
+    );
+  }
+}
+
 class _SliderRow extends StatelessWidget {
-  final String label, displayValue;
-  final double value, min, max;
+  final IconData icon;
+  final String label;
+  final double value;
+  final double min;
+  final double max;
+  final String displayValue;
   final ValueChanged<double> onChanged;
+
   const _SliderRow({
+    required this.icon,
     required this.label,
     required this.value,
     required this.min,
@@ -417,46 +589,38 @@ class _SliderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  color: FluentianColors.textPrimary,
+              Icon(icon, color: FluentianColors.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: FluentianColors.textPrimary,
+                  ),
                 ),
               ),
-              const Spacer(),
               Text(
                 displayValue,
                 style: GoogleFonts.inter(
                   fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w800,
                   color: FluentianColors.primary,
                 ),
               ),
             ],
           ),
-          SliderTheme(
-            data: SliderThemeData(
-              activeTrackColor: FluentianColors.primary,
-              inactiveTrackColor: FluentianColors.primary.withValues(
-                alpha: 0.15,
-              ),
-              thumbColor: FluentianColors.primary,
-              overlayColor: FluentianColors.primary.withValues(alpha: 0.1),
-              trackHeight: 4,
-            ),
-            child: Slider(
-              value: value,
-              min: min,
-              max: max,
-              onChanged: onChanged,
-            ),
+          Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: ((max - min) * 10).round(),
+            onChanged: onChanged,
           ),
         ],
       ),
@@ -464,63 +628,97 @@ class _SliderRow extends StatelessWidget {
   }
 }
 
-class _FontSizeSelector extends StatelessWidget {
-  final int index;
-  final ValueChanged<int> onChanged;
-  const _FontSizeSelector({required this.index, required this.onChanged});
+class _RowShell extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Widget trailing;
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  const _RowShell({
+    required this.icon,
+    required this.label,
+    required this.trailing,
+    this.enabled = true,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Text(
-            'Font size',
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              color: FluentianColors.textPrimary,
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: enabled
+                  ? FluentianColors.primary
+                  : FluentianColors.textSecondary,
             ),
-          ),
-          const Spacer(),
-          Container(
-            decoration: BoxDecoration(
-              color: FluentianColors.pageBg,
-              borderRadius: BorderRadius.circular(8),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  color: enabled
+                      ? FluentianColors.textPrimary
+                      : FluentianColors.textSecondary,
+                ),
+              ),
             ),
-            child: Row(
-              children: List.generate(3, (i) {
-                final sizes = [13.0, 16.0, 20.0];
-                return GestureDetector(
-                  onTap: () => onChanged(i),
-                  child: Container(
-                    width: 40,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: index == i
-                          ? FluentianColors.primary
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'A',
-                        style: GoogleFonts.inter(
-                          fontSize: sizes[i],
-                          fontWeight: FontWeight.w600,
-                          color: index == i
-                              ? Colors.white
-                              : FluentianColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ),
-        ],
+            trailing,
+          ],
+        ),
       ),
     );
   }
 }
+
+class _DangerAction extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback onSignOut;
+
+  const _DangerAction({required this.isLoading, required this.onSignOut});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: isLoading ? null : onSignOut,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: FluentianColors.errorTint,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: FluentianColors.error.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.logout_rounded, color: FluentianColors.error),
+            const SizedBox(width: 12),
+            Text(
+              isLoading ? 'Signing out...' : 'Sign out',
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: FluentianColors.error,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+BoxDecoration _panelDecoration() => BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+      boxShadow: [FluentianShadows.subtle],
+    );

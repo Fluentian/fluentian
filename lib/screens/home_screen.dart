@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
+import '../models/course_model.dart';
 import '../services/notifications_api.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
@@ -12,9 +13,7 @@ import '../widgets/bottom_nav.dart';
 import 'profile_screen.dart';
 import 'lesson_list_screen.dart';
 import 'lesson_detail_screen.dart';
-import 'social_screen.dart';
 import 'opportunity_screen.dart';
-import 'explore_screen.dart';
 import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,8 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final screens = [
       _HomeContent(),
-      const SocialScreen(),
-      const ExploreScreen(),
       const OpportunityScreen(),
       const ProfileScreen(),
     ];
@@ -208,6 +205,7 @@ class _HomeContent extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
@@ -266,6 +264,31 @@ class _HomeContent extends StatelessWidget {
                   ),
 
                 const SizedBox(height: 24),
+
+                if (content.courses.isNotEmpty) ...[
+                  _EnrollmentCard(course: content.courses.first),
+                  const SizedBox(height: 24),
+                ],
+
+                Builder(
+                  builder: (context) {
+                    final assessment = content.firstLessonByKind('exam_drill');
+                    if (assessment == null) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                LessonDetailScreen(lessonId: assessment.id),
+                          ),
+                        ),
+                        icon: const Icon(Icons.assignment_turned_in_rounded),
+                        label: const Text('Take final assessment'),
+                      ),
+                    );
+                  },
+                ),
 
                 // Continue learning
                 SectionHeader(
@@ -348,6 +371,7 @@ class _HomeContent extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -502,6 +526,7 @@ class _HomeContent extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -524,6 +549,7 @@ class _HomeContent extends StatelessWidget {
                     ),
                   ),
                   Column(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
@@ -626,6 +652,128 @@ class _LessonCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _EnrollmentCard extends StatefulWidget {
+  final CourseModel course;
+
+  const _EnrollmentCard({required this.course});
+
+  @override
+  State<_EnrollmentCard> createState() => _EnrollmentCardState();
+}
+
+class _EnrollmentCardState extends State<_EnrollmentCard> {
+  bool _isEnrolling = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = context.watch<ContentProvider>();
+    final enrolled = content.isCourseEnrolled(widget.course.id);
+    final totalLessons = widget.course.units.fold<int>(
+      0,
+      (sum, unit) => sum + unit.lessons.length,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+          boxShadow: [FluentianShadows.subtle],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: FluentianColors.primaryTint,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.flag_rounded,
+                color: FluentianColors.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.course.code.replaceAll('_', ' '),
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: FluentianColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Stage 1 · $totalLessons lessons · ${widget.course.levelMin.toUpperCase()}-${widget.course.levelMax.toUpperCase()}',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: FluentianColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton(
+              onPressed: _isEnrolling
+                  ? null
+                  : () async {
+                      if (enrolled) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const LessonListScreen(),
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() => _isEnrolling = true);
+                      final ok = await context
+                          .read<ContentProvider>()
+                          .enrollInCourse(widget.course.id);
+                      if (mounted) {
+                        setState(() => _isEnrolling = false);
+                        if (!ok) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                content.error ?? 'Could not enroll.',
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(100, 44), // Fix infinite width from theme
+                backgroundColor: enrolled
+                    ? FluentianColors.primary
+                    : FluentianColors.success,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                _isEnrolling ? '...' : enrolled ? 'Continue' : 'Enroll',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

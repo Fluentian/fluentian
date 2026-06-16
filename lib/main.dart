@@ -9,6 +9,7 @@ import 'screens/home_screen.dart';
 import 'screens/auth/sign_in_screen.dart';
 import 'screens/level_setup_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'services/local_push_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +53,11 @@ class _AppRootState extends State<_AppRoot> {
   @override
   void initState() {
     super.initState();
+    // Start background polling for native notifications
+    LocalPushService.instance.initialize().then((_) {
+      LocalPushService.instance.startPolling();
+    });
+    
     // Initialize auth on startup (restores tokens or clears stale ones)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AuthProvider>().initialize();

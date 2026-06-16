@@ -588,7 +588,7 @@ class _McqScreenState extends State<McqScreen>
           : _correctCount / widget.questions.length;
       final timeSeconds = DateTime.now().difference(_startTime).inSeconds;
 
-      await context.read<ContentProvider>().completeLesson(
+      final result = await context.read<ContentProvider>().completeLesson(
         lessonId: widget.lessonId,
         score: score,
         answers: _answers,
@@ -598,7 +598,17 @@ class _McqScreenState extends State<McqScreen>
       if (!mounted) return;
       Navigator.pop(context); // close sheet
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LessonCompleteScreen()),
+        MaterialPageRoute(
+          builder: (_) => LessonCompleteScreen(
+            lessonId: widget.lessonId,
+            xpEarned: result?.xpEarned ?? 0,
+            newXpTotal: result?.newXpTotal ?? 0,
+            accuracy: score,
+            timeSeconds: timeSeconds,
+            correctCount: _correctCount,
+            totalQuestions: widget.questions.length,
+          ),
+        ),
       );
     }
   }

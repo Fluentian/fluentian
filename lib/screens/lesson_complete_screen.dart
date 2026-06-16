@@ -1,307 +1,250 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:confetti/confetti.dart';
-import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../providers/auth_provider.dart';
+import '../services/learning_api.dart';
 import '../widgets/common_widgets.dart';
 
 class LessonCompleteScreen extends StatefulWidget {
-  const LessonCompleteScreen({super.key});
+  final String lessonId;
+  final int xpEarned;
+  final int newXpTotal;
+  final double accuracy;
+  final int timeSeconds;
+  final int correctCount;
+  final int totalQuestions;
+
+  const LessonCompleteScreen({
+    super.key,
+    required this.lessonId,
+    required this.xpEarned,
+    required this.newXpTotal,
+    required this.accuracy,
+    required this.timeSeconds,
+    required this.correctCount,
+    required this.totalQuestions,
+  });
+
   @override
   State<LessonCompleteScreen> createState() => _LessonCompleteScreenState();
 }
 
-class _LessonCompleteScreenState extends State<LessonCompleteScreen>
-    with TickerProviderStateMixin {
-  late ConfettiController _confettiCtrl;
-  late AnimationController _xpCtrl;
-  late AnimationController _checkCtrl;
-  late Animation<int> _xpCounter;
-  late Animation<double> _checkScale;
-  bool _showMilestone = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _confettiCtrl = ConfettiController(duration: const Duration(seconds: 3))
-      ..play();
-
-    _checkCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _checkScale = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _checkCtrl, curve: Curves.elasticOut));
-    _checkCtrl.forward();
-
-    _xpCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-    _xpCounter = IntTween(
-      begin: 0,
-      end: 20,
-    ).animate(CurvedAnimation(parent: _xpCtrl, curve: Curves.easeOut));
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) _xpCtrl.forward();
-    });
-
-    Future.delayed(const Duration(milliseconds: 2000), () {
-      if (mounted) setState(() => _showMilestone = true);
-    });
-  }
-
-  @override
-  void dispose() {
-    _confettiCtrl.dispose();
-    _xpCtrl.dispose();
-    _checkCtrl.dispose();
-    super.dispose();
-  }
+class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
+  bool _feedbackSent = false;
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().user;
+    final previousXp = (widget.newXpTotal - widget.xpEarned).clamp(0, 1 << 31);
+    final accuracyPercent = (widget.accuracy * 100).round();
+
     return Scaffold(
       backgroundColor: FluentianColors.white,
-      body: Stack(
-        children: [
-          // Confetti
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiCtrl,
-              blastDirectionality: BlastDirectionality.explosive,
-              shouldLoop: false,
-              numberOfParticles: 30,
-              maxBlastForce: 20,
-              minBlastForce: 5,
-              emissionFrequency: 0.05,
-              colors: const [
-                FluentianColors.primary,
-                FluentianColors.accent,
-                FluentianColors.primaryLight,
-                FluentianColors.success,
-                Colors.white,
-              ],
-            ),
-          ),
-
-          SafeArea(
-            child: Column(
-              children: [
-                // Milestone banner
-                AnimatedOpacity(
-                  opacity: _showMilestone ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 400),
-                  child: AnimatedSlide(
-                    offset: Offset(0, _showMilestone ? 0 : -1),
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeOut,
-                    child: Container(
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: FluentianColors.accentTint,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: FluentianColors.accent.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Iconsax.cup,
-                            color: FluentianColors.primary,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'New badge earned! — First Dialogue',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: FluentianColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              const Spacer(),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: FluentianColors.successTint,
                 ),
-
-                const Spacer(),
-
-                // Checkmark animation
-                AnimatedBuilder(
-                  animation: _checkCtrl,
-                  builder: (_, __) => Transform.scale(
-                    scale: _checkScale.value,
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: FluentianColors.successTint,
-                        boxShadow: [
-                          BoxShadow(
-                            color: FluentianColors.success.withValues(
-                              alpha: 0.2,
-                            ),
-                            blurRadius: 20,
-                            spreadRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.check_rounded,
-                        size: 40,
-                        color: FluentianColors.success,
-                      ),
-                    ),
-                  ),
+                child: const Icon(
+                  Icons.check_rounded,
+                  size: 42,
+                  color: FluentianColors.success,
                 ),
-
-                const SizedBox(height: 24),
-                Text(
-                  'Lesson complete! 🎉',
-                  style: GoogleFonts.inter(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    color: FluentianColors.textPrimary,
-                  ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Lesson complete',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: FluentianColors.textPrimary,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  "You're on fire, Sara!",
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: FluentianColors.textSecondary,
-                  ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                user == null
+                    ? 'Nice work.'
+                    : 'Nice work, ${user.displayName}.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  color: FluentianColors.textSecondary,
                 ),
-
-                const SizedBox(height: 32),
-
-                // XP reward card
-                Container(
-                  width: 200,
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  decoration: BoxDecoration(
-                    gradient: FluentianColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: FluentianColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      AnimatedBuilder(
-                        animation: _xpCtrl,
-                        builder: (_, __) => Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.bolt_rounded,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                            Text(
-                              '+${_xpCounter.value} XP',
-                              style: GoogleFonts.inter(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: 360 / 500,
-                            backgroundColor: Colors.white.withValues(
-                              alpha: 0.2,
-                            ),
-                            valueColor: AlwaysStoppedAnimation(
-                              Colors.white.withValues(alpha: 0.8),
-                            ),
-                            minHeight: 4,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '340 → 360 XP',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
-                  ),
+              ),
+              const SizedBox(height: 28),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: FluentianColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-
-                const SizedBox(height: 32),
-
-                // Stats row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                child: Column(
                   children: [
-                    _StatColumn('92%', 'Accuracy'),
-                    _StatColumn('4:32', 'Time'),
-                    _StatColumn('11/12', 'Correct'),
+                    Text(
+                      '+${widget.xpEarned} XP',
+                      style: GoogleFonts.inter(
+                        fontSize: 44,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '$previousXp -> ${widget.newXpTotal} total XP',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
                   ],
                 ),
-
-                const Spacer(),
-
-                // Buttons
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: FluentianButton(
-                    text: 'Continue →',
-                    onPressed: () =>
-                        Navigator.of(context).popUntil((r) => r.isFirst),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _StatColumn('$accuracyPercent%', 'Accuracy'),
+                  _StatColumn(_formatTime(widget.timeSeconds), 'Time'),
+                  _StatColumn(
+                    '${widget.correctCount}/${widget.totalQuestions}',
+                    'Correct',
+                  ),
+                ],
+              ),
+              const Spacer(),
+              if (!_feedbackSent)
+                TextButton.icon(
+                  onPressed: _showFeedbackSheet,
+                  icon: const Icon(Icons.rate_review_rounded),
+                  label: const Text('Leave lesson feedback'),
+                )
+              else
+                Text(
+                  'Feedback sent. Thank you.',
+                  style: GoogleFonts.inter(
+                    color: FluentianColors.success,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'Review 1 mistake',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: FluentianColors.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
+              const SizedBox(height: 12),
+              FluentianButton(
+                text: 'Continue',
+                onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
+  }
+
+  Future<void> _showFeedbackSheet() async {
+    int rating = 5;
+    final controller = TextEditingController();
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'How was this lesson?',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: List.generate(5, (index) {
+                      final value = index + 1;
+                      return IconButton(
+                        onPressed: () => setSheetState(() => rating = value),
+                        icon: Icon(
+                          value <= rating
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: FluentianColors.accent,
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: controller,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      hintText: 'What should we improve?',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await LearningApi.instance.submitLessonFeedback(
+                          lessonId: widget.lessonId,
+                          rating: rating,
+                          category: 'lesson',
+                          comment: controller.text.trim().isEmpty
+                              ? null
+                              : controller.text.trim(),
+                        );
+                        if (mounted) {
+                          setState(() => _feedbackSent = true);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text('Send feedback'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    controller.dispose();
+  }
+
+  String _formatTime(int seconds) {
+    final minutes = seconds ~/ 60;
+    final rest = seconds % 60;
+    return '$minutes:${rest.toString().padLeft(2, '0')}';
   }
 }
 
 class _StatColumn extends StatelessWidget {
-  final String value, label;
+  final String value;
+  final String label;
+
   const _StatColumn(this.value, this.label);
 
   @override
@@ -311,8 +254,8 @@ class _StatColumn extends StatelessWidget {
         Text(
           value,
           style: GoogleFonts.inter(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
             color: FluentianColors.textPrimary,
           ),
         ),

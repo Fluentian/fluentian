@@ -191,7 +191,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   onPressed: () async {
                     if (quizQuestions.isEmpty) {
                       setState(() => _isLoading = true);
-                      await context.read<ContentProvider>().completeLesson(
+                      final result = await context.read<ContentProvider>().completeLesson(
                         lessonId: _lesson!.id,
                         score: 1.0,
                         answers: [],
@@ -200,7 +200,15 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       if (mounted) {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                            builder: (_) => const LessonCompleteScreen(),
+                            builder: (_) => LessonCompleteScreen(
+                              lessonId: _lesson!.id,
+                              xpEarned: result?.xpEarned ?? _lesson!.xpReward,
+                              newXpTotal: result?.newXpTotal ?? 0,
+                              accuracy: 1.0,
+                              timeSeconds: 5,
+                              correctCount: 0,
+                              totalQuestions: 0,
+                            ),
                           ),
                         );
                       }

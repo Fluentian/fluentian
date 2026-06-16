@@ -2,584 +2,325 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
-import '../core/theme.dart';
 import '../core/constants.dart';
-import '../widgets/common_widgets.dart';
+import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
-import 'auth/sign_in_screen.dart';
 import 'settings_screen.dart';
-import 'paywall_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final contentProvider = context.watch<ContentProvider>();
-    final user = authProvider.user;
-    final stats = contentProvider.stats;
+    final auth = context.watch<AuthProvider>();
+    final content = context.watch<ContentProvider>();
+    final user = auth.user;
+    final stats = content.stats;
 
     if (user == null) {
       return const Scaffold(
         backgroundColor: FluentianColors.pageBg,
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
+    final xp = stats?.totalXp ?? user.xpTotal;
+    final weeklyXp = stats?.weeklyXp ?? 0;
+    final streak = stats?.streakDays ?? user.streakDays;
+    final hearts = stats?.hearts ?? user.hearts;
+    final lessons = stats?.lessonsCompleted ?? 0;
+    final units = stats?.unitsCompleted ?? 0;
+    final levelName = CEFRLevel.getFriendlyName(user.currentLevel);
     final initial = user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U';
-    final name = user.displayName;
-    final username = '@${user.username}';
-    final currentLevel = CEFRLevel.getFriendlyName(user.currentLevel);
-    
-    final streakVal = stats?.streakDays ?? user.streakDays;
-    final xpVal = stats?.totalXp ?? user.xpTotal;
-    final weeklyXpVal = stats?.weeklyXp ?? 0;
-    final heartsVal = stats?.hearts ?? user.hearts;
-    final lessonsVal = stats?.lessonsCompleted ?? 0;
-    final unitsVal = stats?.unitsCompleted ?? 0;
+    final nextLevelXp = 500;
+    final xpProgress = nextLevelXp == 0 ? 0.0 : (xp % nextLevelXp) / nextLevelXp;
 
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Hero section
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-                boxShadow: [FluentianShadows.subtle],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: FluentianColors.primary,
-                        width: 3,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: _panelDecoration(),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: FluentianColors.primaryTint,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: FluentianColors.primary.withValues(alpha: 0.25),
+                          width: 2,
+                        ),
                       ),
-                      color: FluentianColors.primaryTint,
-                    ),
-                    child: Center(
-                      child: Text(
-                        initial,
-                        style: GoogleFonts.inter(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: FluentianColors.primary,
+                      child: Center(
+                        child: Text(
+                          initial,
+                          style: GoogleFonts.inter(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w800,
+                            color: FluentianColors.primary,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    name,
-                    style: GoogleFonts.inter(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: FluentianColors.textPrimary,
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: FluentianColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '@${user.username}',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: FluentianColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              _Pill(
+                                icon: Iconsax.teacher,
+                                text: levelName,
+                                color: FluentianColors.primary,
+                              ),
+                              _Pill(
+                                icon: Icons.favorite_rounded,
+                                text: '$hearts/5 hearts',
+                                color: FluentianColors.error,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Text(
-                    username,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: FluentianColors.textSecondary,
+                    IconButton(
+                      tooltip: 'Settings',
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                      ),
+                      icon: const Icon(Icons.settings_rounded),
                     ),
-                  ),
-                  const SizedBox(height: 8),
+                  ],
+                ),
+                if ((user.learningGoal ?? '').trim().isNotEmpty) ...[
+                  const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: FluentianColors.darkNav,
-                      borderRadius: BorderRadius.circular(50),
+                      color: FluentianColors.primaryTint,
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      currentLevel,
+                      user.learningGoal!,
                       style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: FluentianColors.primaryLight,
+                        fontSize: 13,
+                        height: 1.35,
+                        color: FluentianColors.textPrimary,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      StatChip(
-                        emoji: '🔥',
-                        value: '$streakVal days',
-                        color: FluentianColors.accent,
-                        bgColor: FluentianColors.accentTint,
-                      ),
-                      const SizedBox(width: 8),
-                      StatChip(
-                        icon: Icons.bolt_rounded,
-                        value: '$xpVal XP',
-                        color: FluentianColors.primary,
-                        bgColor: FluentianColors.primaryTint,
-                      ),
-                      const SizedBox(width: 8),
-                      StatChip(
-                        icon: Icons.check_circle_rounded,
-                        value: '$lessonsVal lessons',
-                        color: FluentianColors.success,
-                        bgColor: FluentianColors.successTint,
-                      ),
-                    ],
                   ),
                 ],
-              ),
+              ],
             ),
-
-            const SizedBox(height: 16),
-
-            // Streak calendar
-            _buildStreakCalendar(streakVal),
-
-            const SizedBox(height: 16),
-
-            // Learning summary
-            _buildLearningSummaryCard(
-              totalXp: xpVal,
-              weeklyXp: weeklyXpVal,
-              hearts: heartsVal,
-              lessonsCompleted: lessonsVal,
-              unitsCompleted: unitsVal,
-            ),
-
-            const SizedBox(height: 16),
-
-            // Badges
-            _buildBadgesCard(streakVal, lessonsVal, unitsVal),
-
-            const SizedBox(height: 20),
-
-            // Upgrade banner (Premium UI)
-            GestureDetector(
-              onTap: () => Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const PaywallScreen())),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF818CF8), Color(0xFFC084FC), Color(0xFFF472B6)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: FluentianColors.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'PRO PLAN',
-                                style: GoogleFonts.inter(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  color: FluentianColors.primary,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Master French Faster',
-                              style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: FluentianColors.textPrimary),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Unlock unlimited hearts and exclusive cultural deep-dives.',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: FluentianColors.textSecondary,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          gradient: FluentianColors.proGradient,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFC084FC).withOpacity(0.4),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 28),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Settings link
-            GestureDetector(
-              onTap: () => Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.black.withValues(alpha: 0.06),
-                  ),
-                ),
-                child: Row(
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: _panelDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    const Icon(
-                      Icons.settings_rounded,
-                      size: 20,
-                      color: FluentianColors.textSecondary,
-                    ),
-                    const SizedBox(width: 12),
                     Text(
-                      'Settings',
+                      'Level progress',
                       style: GoogleFonts.inter(
-                        fontSize: 15,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
                         color: FluentianColors.textPrimary,
                       ),
                     ),
                     const Spacer(),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: FluentianColors.textSecondary.withValues(
-                        alpha: 0.5,
+                    Text(
+                      '${(xpProgress * 100).round()}%',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: FluentianColors.primary,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            TextButton(
-              onPressed: () async {
-                await authProvider.logout();
-                if (context.mounted) {
-                  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const SignInScreen()),
-                    (route) => false,
-                  );
-                }
-              },
-              child: Text(
-                'Sign out',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: FluentianColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStreakCalendar(int streakDays) {
-    final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    
-    // Highlight days representing the current streak at the end of the week
-    final weekHighlights = List.generate(7, (i) {
-      if (streakDays <= 0) return 0;
-      if (i >= 7 - streakDays) {
-        return (i == 6) ? 2 : 1; // 2 = today, 1 = completed
-      }
-      return 0;
-    });
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Streak history',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: FluentianColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: List.generate(
-              7,
-              (i) => Expanded(
-                child: Center(
-                  child: Text(
-                    days[i],
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: FluentianColors.textSecondary,
-                    ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: xpProgress,
+                    minHeight: 10,
+                    backgroundColor:
+                        FluentianColors.primary.withValues(alpha: 0.12),
+                    valueColor:
+                        const AlwaysStoppedAnimation(FluentianColors.primary),
                   ),
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: List.generate(7, (i) {
-              final d = weekHighlights[i];
-              return Expanded(
-                child: Center(
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: d == 1
-                          ? FluentianColors.primary
-                          : d == 2
-                          ? Colors.transparent
-                          : Colors.grey.shade200,
-                      border: d == 2
-                          ? Border.all(
-                              color: FluentianColors.primary,
-                              width: 2,
-                            )
-                          : d == 1
-                          ? Border.all(
-                              color: const Color(0xFFF59E0B),
-                              width: 1.5,
-                            )
-                          : null,
-                    ),
-                    child: d == 1
-                        ? const Icon(
-                            Icons.check_rounded,
-                            size: 14,
-                            color: Colors.white,
-                          )
-                        : d == 2
-                        ? const Icon(
-                            Icons.circle,
-                            size: 8,
-                            color: FluentianColors.primary,
-                          )
-                        : null,
+                const SizedBox(height: 8),
+                Text(
+                  '${xp % nextLevelXp} of $nextLevelXp XP toward the next milestone',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: FluentianColors.textSecondary,
                   ),
                 ),
-              );
-            }),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLearningSummaryCard({
-    required int totalXp,
-    required int weeklyXp,
-    required int hearts,
-    required int lessonsCompleted,
-    required int unitsCompleted,
-  }) {
-    final rows = [
-      _SummaryRow(Icons.bolt_rounded, 'Total XP', '$totalXp XP'),
-      _SummaryRow(Icons.calendar_today_rounded, 'Last 7 days', '$weeklyXp XP'),
-      _SummaryRow(Icons.favorite_rounded, 'Hearts', '$hearts/5'),
-      _SummaryRow(Icons.check_circle_rounded, 'Lessons completed', '$lessonsCompleted'),
-      _SummaryRow(Iconsax.book5, 'Units completed', '$unitsCompleted'),
-    ];
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Learning summary',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: FluentianColors.textPrimary,
+              ],
             ),
           ),
           const SizedBox(height: 16),
-          ...rows.map(
-            (row) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  Icon(
-                    row.iconData,
-                    size: 18,
-                    color: FluentianColors.primary,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      row.label,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: FluentianColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    row.value,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: FluentianColors.primary,
-                    ),
-                  ),
-                ],
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.45,
+            children: [
+              _MetricCard(
+                icon: Icons.bolt_rounded,
+                label: 'Total XP',
+                value: '$xp',
+                color: FluentianColors.primary,
               ),
+              _MetricCard(
+                icon: Icons.calendar_today_rounded,
+                label: 'Last 7 days',
+                value: '$weeklyXp XP',
+                color: FluentianColors.info,
+              ),
+              _MetricCard(
+                icon: Iconsax.flash_15,
+                label: 'Streak',
+                value: '$streak days',
+                color: FluentianColors.accent,
+              ),
+              _MetricCard(
+                icon: Icons.check_circle_rounded,
+                label: 'Lessons',
+                value: '$lessons done',
+                color: FluentianColors.success,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: _panelDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Learning summary',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: FluentianColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _SummaryLine(
+                  icon: Iconsax.book5,
+                  label: 'Units completed',
+                  value: '$units',
+                ),
+                _SummaryLine(
+                  icon: Icons.track_changes_rounded,
+                  label: 'Daily goal',
+                  value: '${user.dailyGoalMinutes} min',
+                ),
+                _SummaryLine(
+                  icon: Icons.notifications_rounded,
+                  label: 'Daily reminder',
+                  value: user.learningReminderEnabled
+                      ? user.reminderTime
+                      : 'Off',
+                ),
+              ],
             ),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+            icon: const Icon(Icons.manage_accounts_rounded),
+            label: const Text('Edit profile and settings'),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildBadgesCard(int streakDays, int lessonsCompleted, int unitsCompleted) {
-    final badges = [
-      _Badge(Iconsax.flash_15, 'First streak', streakDays >= 1),
-      _Badge(Iconsax.message5, 'First lesson', lessonsCompleted >= 1),
-      _Badge(Iconsax.book5, 'Unit complete', unitsCompleted >= 1),
-      _Badge(Iconsax.cup5, '30-day streak', streakDays >= 30),
-      _Badge(Iconsax.star5, 'Super Star', lessonsCompleted >= 10),
-    ];
+class _MetricCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
 
+  const _MetricCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-      ),
+      padding: const EdgeInsets.all(14),
+      decoration: _panelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 8),
           Text(
-            'Badges',
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
               color: FluentianColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 80,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: badges.length,
-              itemBuilder: (_, i) {
-                final b = badges[i];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: AnimatedOpacity(
-                    opacity: b.earned ? 1.0 : 0.3,
-                    duration: const Duration(milliseconds: 200),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: b.earned
-                                ? FluentianColors.primaryTint
-                                : Colors.grey.shade100,
-                            border: Border.all(
-                              color: b.earned
-                                  ? FluentianColors.primary.withValues(
-                                      alpha: 0.3,
-                                    )
-                                  : Colors.grey.shade300,
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              b.iconData,
-                              size: 24,
-                              color: b.earned
-                                  ? FluentianColors.primary
-                                  : Colors.grey.shade400,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          b.name,
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            color: FluentianColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: FluentianColors.textSecondary,
             ),
           ),
         ],
@@ -588,16 +329,89 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _SummaryRow {
-  final IconData iconData;
+class _SummaryLine extends StatelessWidget {
+  final IconData icon;
   final String label;
   final String value;
-  const _SummaryRow(this.iconData, this.label, this.value);
+
+  const _SummaryLine({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: FluentianColors.primary, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: FluentianColors.textPrimary,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: FluentianColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _Badge {
-  final String name;
-  final IconData iconData;
-  final bool earned;
-  const _Badge(this.iconData, this.name, this.earned);
+class _Pill extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  const _Pill({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 14),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+BoxDecoration _panelDecoration() => BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+      boxShadow: [FluentianShadows.subtle],
+    );

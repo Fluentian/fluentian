@@ -9,6 +9,11 @@ import '../providers/auth_provider.dart';
 class GoalSetupScreen extends StatefulWidget {
   final CEFRLevel level;
   const GoalSetupScreen({super.key, required this.level});
+
+  factory GoalSetupScreen.fromPlacement({required String levelCode}) {
+    return GoalSetupScreen(level: CEFRLevel.fromCode(levelCode));
+  }
+
   @override
   State<GoalSetupScreen> createState() => _GoalSetupScreenState();
 }
