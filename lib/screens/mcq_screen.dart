@@ -15,8 +15,14 @@ enum _RecordState { idle, recording, analyzing, result }
 class McqScreen extends StatefulWidget {
   final String lessonId;
   final List<QuestionModel> questions;
+  final int xpReward;
 
-  const McqScreen({super.key, required this.lessonId, required this.questions});
+  const McqScreen({
+    super.key,
+    required this.lessonId,
+    required this.questions,
+    required this.xpReward,
+  });
 
   @override
   State<McqScreen> createState() => _McqScreenState();
@@ -601,7 +607,7 @@ class _McqScreenState extends State<McqScreen>
         MaterialPageRoute(
           builder: (_) => LessonCompleteScreen(
             lessonId: widget.lessonId,
-            xpEarned: result?.xpEarned ?? 0,
+            xpEarned: result?.xpEarned ?? widget.xpReward,
             newXpTotal: result?.newXpTotal ?? 0,
             accuracy: score,
             timeSeconds: timeSeconds,

@@ -68,7 +68,7 @@ class ApiClient {
   // ── Configuration ────────────────────────────────────
   static const String _baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://192.168.1.5:8000/api/v1', // Local testing IP
+    defaultValue: 'http://192.168.1.10:8000/api/v1', // Local testing IP
   );
   static final Uri _baseUri = Uri.parse(_baseUrl);
 

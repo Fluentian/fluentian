@@ -189,7 +189,11 @@ class ContentProvider extends ChangeNotifier {
         createdAt: DateTime.now(),
       );
       // Refresh global stats
-      _stats = await _progressApi.getMyStats();
+      try {
+        _stats = await _progressApi.getMyStats();
+      } catch (e) {
+        if (kDebugMode) debugPrint('refresh stats after completion error: $e');
+      }
       notifyListeners();
       return result;
     } catch (e) {

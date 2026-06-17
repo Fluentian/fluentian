@@ -220,6 +220,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                           builder: (_) => McqScreen(
                             lessonId: _lesson!.id,
                             questions: quizQuestions,
+                            xpReward: _lesson!.xpReward,
                           ),
                         ),
                       );
