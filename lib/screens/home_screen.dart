@@ -14,6 +14,7 @@ import 'profile_screen.dart';
 import 'lesson_list_screen.dart';
 import 'lesson_detail_screen.dart';
 import 'opportunity_screen.dart';
+import 'explore_screen.dart';
 import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final screens = [
       _HomeContent(),
+      const ExploreScreen(),
       const OpportunityScreen(),
       const ProfileScreen(),
     ];

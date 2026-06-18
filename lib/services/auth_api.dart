@@ -132,4 +132,12 @@ class AuthApi {
     );
     return UserModel.fromJson(json);
   }
+
+  /// Update user settings fields.
+  Future<void> updateSettings(Map<String, dynamic> data) async {
+    await _client.patch(
+      '/users/me/settings',
+      data,
+    );
+  }
 }

@@ -236,7 +236,10 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
+        bool isSaving = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
           padding: EdgeInsets.fromLTRB(
             20,
             20,
@@ -284,7 +287,8 @@ class SettingsScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () async {
+                  onPressed: isSaving ? null : () async {
+                    setState(() => isSaving = true);
                     final ok = await auth.updateProfile({
                       'display_name': nameController.text.trim(),
                       'learning_goal': goalController.text.trim(),
@@ -298,11 +302,15 @@ class SettingsScreen extends StatelessWidget {
                       );
                     }
                   },
-                  child: const Text('Save profile'),
+                  child: isSaving 
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Save profile'),
                 ),
               ),
             ],
           ),
+        );
+          },
         );
       },
     );

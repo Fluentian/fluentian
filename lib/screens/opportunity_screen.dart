@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 import '../services/opportunities_api.dart';
 import 'opportunity_detail_screen.dart';
@@ -18,12 +19,12 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
 
   int _filterIndex = 0;
   final _filters = [
-    'All',
-    '🎓 Scholarships',
-    '💼 Jobs',
-    '🌍 Exchange',
-    '🎪 Events',
-    '🤝 Volunteer',
+    {'label': 'All', 'icon': Iconsax.category},
+    {'label': 'Scholarships', 'icon': Iconsax.teacher},
+    {'label': 'Jobs', 'icon': Iconsax.briefcase},
+    {'label': 'Exchange', 'icon': Iconsax.global},
+    {'label': 'Events', 'icon': Iconsax.calendar_1},
+    {'label': 'Volunteer', 'icon': Iconsax.heart},
   ];
 
   @override
@@ -55,103 +56,202 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
     if (_opportunities == null) return [];
     if (_filterIndex == 0) return _opportunities!;
     
-    final category = _filters[_filterIndex].split(' ').last.toLowerCase();
+    final category = (_filters[_filterIndex]['label'] as String).toLowerCase();
     return _opportunities!.where((o) => o.type.toLowerCase() == category).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: _fetchOpportunities,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Text(
-                  'Opportunity Board',
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: FluentianColors.textPrimary,
-                  ),
-                ),
-                const Spacer(),
-              ],
-            ),
-          ),
-
-          // Filter pills
-          SizedBox(
-            height: 36,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _filters.length,
-              itemBuilder: (_, i) => GestureDetector(
-                onTap: () => setState(() => _filterIndex = i),
-                child: Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: _filterIndex == i
-                        ? FluentianColors.primary
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(
-                      color: _filterIndex == i
-                          ? FluentianColors.primary
-                          : FluentianColors.border,
+    return Scaffold(
+      backgroundColor: FluentianColors.pageBg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: FluentianColors.accentTint,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Iconsax.briefcase,
+                      color: FluentianColors.accent,
+                      size: 22,
                     ),
                   ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _filters[i],
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: _filterIndex == i
-                          ? Colors.white
-                          : FluentianColors.textSecondary,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Opportunities',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: FluentianColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          'Find your next step',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: FluentianColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                ],
               ),
             ),
-          ),
 
-          const SizedBox(height: 16),
-
-          Expanded(
-            child: _isLoading 
-              ? const Center(child: CircularProgressIndicator())
-              : _error != null
-                ? Center(child: Text(_error!))
-                : _filteredOpportunities.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+            // Filter pills
+            SizedBox(
+              height: 40,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _filters.length,
+                itemBuilder: (_, i) {
+                  final isSelected = _filterIndex == i;
+                  final label = _filters[i]['label'] as String;
+                  final icon = _filters[i]['icon'] as IconData;
+                  
+                  return GestureDetector(
+                    onTap: () => setState(() => _filterIndex = i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: isSelected ? FluentianColors.accent : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected 
+                              ? FluentianColors.accent 
+                              : Colors.black.withValues(alpha: 0.05),
+                        ),
+                        boxShadow: isSelected ? [
+                          BoxShadow(
+                            color: FluentianColors.accent.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          )
+                        ] : [],
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.search_off_rounded, size: 64, color: Colors.grey.shade300),
-                          const SizedBox(height: 16),
+                          if (i != 0) ...[
+                            Icon(
+                              icon,
+                              size: 16,
+                              color: isSelected ? Colors.white : FluentianColors.textSecondary,
+                            ),
+                            const SizedBox(width: 6),
+                          ],
                           Text(
-                            'No opportunities found',
-                            style: GoogleFonts.inter(color: Colors.grey),
+                            label,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                              color: isSelected ? Colors.white : FluentianColors.textSecondary,
+                            ),
                           ),
                         ],
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _filteredOpportunities.length,
-                      itemBuilder: (context, i) {
-                        final o = _filteredOpportunities[i];
-                        return _OpportunityCard(opportunity: o);
-                      },
                     ),
-          ),
-        ],
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Expanded(
+              child: _isLoading 
+                ? const Center(
+                    child: CircularProgressIndicator(color: FluentianColors.accent)
+                  )
+                : _error != null
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Iconsax.warning_2, size: 48, color: FluentianColors.error),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Could not load opportunities',
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _error!,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(color: FluentianColors.textSecondary),
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: _fetchOpportunities,
+                              icon: const Icon(Iconsax.refresh),
+                              label: const Text('Try Again'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: FluentianColors.accent,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      color: FluentianColors.accent,
+                      onRefresh: _fetchOpportunities,
+                      child: _filteredOpportunities.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                              Icon(Iconsax.search_status, size: 64, color: Colors.grey.shade300),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No opportunities found',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: FluentianColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                            itemCount: _filteredOpportunities.length,
+                            itemBuilder: (context, i) {
+                              final o = _filteredOpportunities[i];
+                              return _OpportunityCard(opportunity: o);
+                            },
+                          ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -161,8 +261,32 @@ class _OpportunityCard extends StatelessWidget {
   final Opportunity opportunity;
   const _OpportunityCard({required this.opportunity});
 
+  IconData _getIconForType(String type) {
+    switch (type.toLowerCase()) {
+      case 'scholarships': return Iconsax.teacher;
+      case 'jobs': return Iconsax.briefcase;
+      case 'exchange': return Iconsax.global;
+      case 'events': return Iconsax.calendar_1;
+      case 'volunteer': return Iconsax.heart;
+      default: return Iconsax.document_text;
+    }
+  }
+
+  Color _getColorForType(String type) {
+    switch (type.toLowerCase()) {
+      case 'scholarships': return const Color(0xFF9C27B0); // Purple
+      case 'jobs': return const Color(0xFF0288D1); // Blue
+      case 'exchange': return const Color(0xFF009688); // Teal
+      case 'events': return const Color(0xFFF57C00); // Orange
+      case 'volunteer': return const Color(0xFFE91E63); // Pink
+      default: return FluentianColors.primary;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final typeColor = _getColorForType(opportunity.type);
+    
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -173,84 +297,152 @@ class _OpportunityCard extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.04),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: FluentianColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: typeColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getIconForType(opportunity.type),
+                              size: 14,
+                              color: typeColor,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              opportunity.type.toUpperCase(),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: typeColor,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: FluentianColors.success.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: FluentianColors.success,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Open',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: FluentianColors.success,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    opportunity.type.toUpperCase(),
+                  const SizedBox(height: 14),
+                  Text(
+                    opportunity.title,
                     style: GoogleFonts.inter(
-                      fontSize: 10,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: FluentianColors.primary,
+                      color: FluentianColors.textPrimary,
+                      height: 1.2,
                     ),
                   ),
-                ),
-                const Spacer(),
-                Text(
-                  'Ongoing',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: FluentianColors.textSecondary,
+                  const SizedBox(height: 8),
+                  Text(
+                    opportunity.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: FluentianColors.textSecondary,
+                      height: 1.4,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              opportunity.title,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: FluentianColors.textPrimary,
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              opportunity.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: FluentianColors.textSecondary,
-              ),
+            Container(
+              height: 1,
+              color: Colors.black.withValues(alpha: 0.04),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: FluentianColors.primary),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Details',
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Text(
+                    'Deadline: Flexible',
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: FluentianColors.primary,
+                      color: FluentianColors.textSecondary,
                     ),
                   ),
-                ),
-              ],
+                  const Spacer(),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'View details',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: FluentianColors.accent,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Iconsax.arrow_right_1,
+                        size: 16,
+                        color: FluentianColors.accent,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),

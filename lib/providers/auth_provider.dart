@@ -345,9 +345,8 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
     try {
-      final updated = await _authApi.updateProfile(data);
-      _user = updated;
-      await _apiClient.saveUser(updated);
+      await _authApi.updateSettings(data);
+      await _apiClient.saveUser(_user!);
       notifyListeners();
       return true;
     } catch (e) {

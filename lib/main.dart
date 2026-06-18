@@ -50,6 +50,7 @@ class _AppRoot extends StatefulWidget {
 }
 
 class _AppRootState extends State<_AppRoot> {
+  bool _hasLoadedData = false;
   @override
   void initState() {
     super.initState();
@@ -75,14 +76,18 @@ class _AppRootState extends State<_AppRoot> {
             break;
           case AuthStatus.authenticated:
             if (!auth.hasCompletedSetup) {
+              _hasLoadedData = false;
               child = const LevelSetupScreen(key: ValueKey('level_setup'));
             } else {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (context.mounted) {
-                  context.read<ContentProvider>().loadHomeData();
-                  context.read<ContentProvider>().loadLessonProgress();
-                }
-              });
+              if (!_hasLoadedData) {
+                _hasLoadedData = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (context.mounted) {
+                    context.read<ContentProvider>().loadHomeData();
+                    context.read<ContentProvider>().loadLessonProgress();
+                  }
+                });
+              }
               child = const HomeScreen(key: ValueKey('home'));
             }
             break;
