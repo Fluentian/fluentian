@@ -1,4 +1,5 @@
 import '../models/course_model.dart';
+import '../models/culture_story_model.dart';
 import 'api_client.dart';
 
 /// Calls the Fluentian backend content endpoints.
@@ -42,6 +43,18 @@ class ContentApi {
     final items = await _client.getList('/content/lessons/$lessonId/questions');
     return items
         .map((e) => QuestionModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Fetch published culture exploration stories for the Explore tab.
+  Future<List<CultureStoryModel>> getCultureStories() async {
+    final items = await _client.getList(
+      '/content/culture-stories',
+      auth: false,
+    );
+    return items
+        .map((e) => CultureStoryModel.fromJson(e as Map<String, dynamic>))
+        .where((story) => story.media.isNotEmpty && story.paragraphs.isNotEmpty)
         .toList();
   }
 }
