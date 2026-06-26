@@ -7,6 +7,7 @@ import '../models/course_model.dart';
 import '../providers/content_provider.dart';
 import '../services/tts_service.dart';
 import 'package:just_audio/just_audio.dart';
+import '../widgets/ai_tutor_sheet.dart';
 import 'mcq_screen.dart';
 import 'lesson_complete_screen.dart';
 
@@ -107,16 +108,18 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         ),
       ),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: blocks.isEmpty
-                  ? Center(
-                      child: Container(
-                        margin: const EdgeInsets.all(24),
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
+            Column(
+              children: [
+                Expanded(
+                  child: blocks.isEmpty
+                      ? Center(
+                          child: Container(
+                            margin: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: Colors.black.withValues(alpha: 0.05),
@@ -243,10 +246,27 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     ),
                   ),
                 ),
+                  ),
+                ),
               ),
+            ],
+          ),
+          Positioned(
+            right: 16,
+            bottom: 80,
+            child: FloatingActionButton(
+              backgroundColor: FluentianColors.primary,
+              onPressed: () {
+                AiTutorSheet.show(
+                  context,
+                  systemContext: 'You are a helpful language tutor. Help the user summarize the lesson "${_lesson!.title}". Keep the response short and friendly.',
+                  initialPrompt: 'Can you summarize this lesson and tell me what I will learn?',
+                );
+              },
+              child: const Icon(Icons.psychology_rounded, color: Colors.white),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -287,13 +307,31 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 if (block.ttsEnabled &&
                     block.textToSpeak.trim().isNotEmpty) ...[
                   const SizedBox(width: 8),
-                  IconButton(
-                    tooltip: 'Listen',
-                    icon: const Icon(
-                      Icons.volume_up_rounded,
-                      color: FluentianColors.primary,
-                    ),
-                    onPressed: () => _speakBlock(block),
+                  Column(
+                    children: [
+                      IconButton(
+                        tooltip: 'Listen',
+                        icon: const Icon(
+                          Icons.volume_up_rounded,
+                          color: FluentianColors.primary,
+                        ),
+                        onPressed: () => _speakBlock(block),
+                      ),
+                      IconButton(
+                        tooltip: 'Ask AI',
+                        icon: const Icon(
+                          Icons.psychology_rounded,
+                          color: FluentianColors.primary,
+                        ),
+                        onPressed: () {
+                          AiTutorSheet.show(
+                            context,
+                            systemContext: 'You are a language tutor. Explain the text or phrase clearly: "$text"',
+                            initialPrompt: 'Can you explain this phrase to me: "$text"?',
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ],
@@ -338,12 +376,30 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   ],
                 ),
               ),
-              IconButton(
-                icon: const Icon(
-                  Icons.volume_up_rounded,
-                  color: FluentianColors.primary,
-                ),
-                onPressed: () => _playBlockAudioOrTts(block),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.volume_up_rounded,
+                      color: FluentianColors.primary,
+                    ),
+                    onPressed: () => _playBlockAudioOrTts(block),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.psychology_rounded,
+                      color: FluentianColors.primary,
+                    ),
+                    onPressed: () {
+                      AiTutorSheet.show(
+                        context,
+                        systemContext: 'You are a language tutor. Explain the vocabulary word "$word" which means "$meaning". Give an example sentence.',
+                        initialPrompt: 'Can you give me an example sentence for the word "$word"?',
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

@@ -8,6 +8,7 @@ import '../models/course_model.dart';
 import '../models/progress_model.dart';
 import '../providers/content_provider.dart';
 import '../services/tts_service.dart';
+import '../widgets/ai_tutor_sheet.dart';
 import 'lesson_complete_screen.dart';
 
 enum _RecordState { idle, recording, analyzing, result }
@@ -16,12 +17,14 @@ class McqScreen extends StatefulWidget {
   final String lessonId;
   final List<QuestionModel> questions;
   final int xpReward;
+  final bool isSrsReview;
 
   const McqScreen({
     super.key,
     required this.lessonId,
     required this.questions,
     required this.xpReward,
+    this.isSrsReview = false,
   });
 
   @override
@@ -541,6 +544,28 @@ class _McqScreenState extends State<McqScreen>
                     ),
                   ],
                 ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () {
+                    final q = widget.questions[_currentIndex];
+                    AiTutorSheet.show(
+                      context,
+                      systemContext: 'You are a helpful language tutor. The user answered a question incorrectly. The question was: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Explain the grammar or vocabulary simply.',
+                      initialPrompt: 'Why was my answer wrong? The correct answer is "$correctAnswer". Please explain.',
+                    );
+                  },
+                  icon: const Icon(Icons.psychology_rounded, color: FluentianColors.primary),
+                  label: const Text(
+                    'Ask AI why',
+                    style: TextStyle(color: FluentianColors.primary, fontWeight: FontWeight.w600),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: FluentianColors.primary.withValues(alpha: 0.1),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
               ),
             ],
             const SizedBox(height: 20),
@@ -594,12 +619,30 @@ class _McqScreenState extends State<McqScreen>
           : _correctCount / widget.questions.length;
       final timeSeconds = DateTime.now().difference(_startTime).inSeconds;
 
-      final result = await context.read<ContentProvider>().completeLesson(
-        lessonId: widget.lessonId,
-        score: score,
-        answers: _answers,
-        timeSeconds: timeSeconds,
-      );
+      int finalXpEarned = widget.xpReward;
+      int finalNewXpTotal = 0;
+
+      if (widget.isSrsReview) {
+        final result = await context.read<ContentProvider>().completeSrsReview(
+          answers: _answers,
+          timeSeconds: timeSeconds,
+        );
+        if (result != null) {
+          finalXpEarned = result['xp_earned'] as int? ?? 0;
+          finalNewXpTotal = result['new_xp_total'] as int? ?? 0;
+        }
+      } else {
+        final result = await context.read<ContentProvider>().completeLesson(
+          lessonId: widget.lessonId,
+          score: score,
+          answers: _answers,
+          timeSeconds: timeSeconds,
+        );
+        if (result != null) {
+          finalXpEarned = result.xpEarned;
+          finalNewXpTotal = result.newXpTotal;
+        }
+      }
 
       if (!mounted) return;
       Navigator.pop(context); // close sheet
@@ -607,8 +650,8 @@ class _McqScreenState extends State<McqScreen>
         MaterialPageRoute(
           builder: (_) => LessonCompleteScreen(
             lessonId: widget.lessonId,
-            xpEarned: result?.xpEarned ?? widget.xpReward,
-            newXpTotal: result?.newXpTotal ?? 0,
+            xpEarned: finalXpEarned,
+            newXpTotal: finalNewXpTotal,
             accuracy: score,
             timeSeconds: timeSeconds,
             correctCount: _correctCount,

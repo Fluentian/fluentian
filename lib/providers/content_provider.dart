@@ -209,4 +209,41 @@ class ContentProvider extends ChangeNotifier {
       notifyListeners();
     } catch (_) {}
   }
+
+  /// Get due SRS questions
+  Future<List<QuestionModel>> getDueSrsQuestions() async {
+    try {
+      return await _contentApi.getDueSrsQuestions();
+    } catch (e) {
+      if (kDebugMode) debugPrint('getDueSrsQuestions error: $e');
+      return [];
+    }
+  }
+
+  /// Submit SRS review session
+  Future<Map<String, dynamic>?> completeSrsReview({
+    required List<AnswerPayload> answers,
+    required int timeSeconds,
+  }) async {
+    try {
+      final payload = answers.map((a) => {
+        'question_id': a.questionId,
+        'answer': a.answer,
+        'is_correct': a.isCorrect,
+      }).toList();
+      final result = await _contentApi.completeSrsReview(payload, timeSeconds);
+      
+      // Refresh global stats after SRS
+      try {
+        _stats = await _progressApi.getMyStats();
+      } catch (e) {
+        if (kDebugMode) debugPrint('refresh stats after SRS error: $e');
+      }
+      notifyListeners();
+      return result;
+    } catch (e) {
+      if (kDebugMode) debugPrint('completeSrsReview error: $e');
+      return null;
+    }
+  }
 }

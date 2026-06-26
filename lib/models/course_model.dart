@@ -224,6 +224,7 @@ class QuestionModel {
   final String lessonId;
   final String questionKind; // mcq, fill_blank, matching, true_false
   final int sequenceNo;
+  final int difficulty;
   final Map<String, dynamic> promptPayload;
   final Map<String, dynamic> gradingPayload;
   final DateTime createdAt;
@@ -233,6 +234,7 @@ class QuestionModel {
     required this.lessonId,
     required this.questionKind,
     required this.sequenceNo,
+    required this.difficulty,
     required this.promptPayload,
     required this.gradingPayload,
     required this.createdAt,
@@ -243,6 +245,7 @@ class QuestionModel {
     lessonId: json['lesson_id'] as String,
     questionKind: json['question_kind'] as String,
     sequenceNo: json['sequence_no'] as int,
+    difficulty: json['difficulty'] as int? ?? 1,
     promptPayload: Map<String, dynamic>.from(
       json['prompt_payload'] as Map? ?? {},
     ),

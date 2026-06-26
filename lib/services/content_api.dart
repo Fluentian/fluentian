@@ -57,4 +57,25 @@ class ContentApi {
         .where((story) => story.media.isNotEmpty && story.paragraphs.isNotEmpty)
         .toList();
   }
+
+  /// Fetch due SRS questions
+  Future<List<QuestionModel>> getDueSrsQuestions() async {
+    final items = await _client.getList('/content/review');
+    return items
+        .map((e) => QuestionModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Submit SRS review session
+  Future<Map<String, dynamic>> completeSrsReview(
+    List<Map<String, dynamic>> answers,
+    int timeSeconds,
+  ) async {
+    final payload = {
+      'answers': answers,
+      'time_seconds': timeSeconds,
+    };
+    final response = await _client.post('/content/review/complete', payload);
+    return response as Map<String, dynamic>;
+  }
 }

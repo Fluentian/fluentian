@@ -16,6 +16,7 @@ import 'lesson_detail_screen.dart';
 import 'opportunity_screen.dart';
 import 'explore_screen.dart';
 import 'notifications_screen.dart';
+import 'srs_review_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -266,6 +267,73 @@ class _HomeContent extends StatelessWidget {
                   ),
 
                 const SizedBox(height: 24),
+
+                // SRS Daily Review Banner
+                FutureBuilder<List<QuestionModel>>(
+                  future: content.getDueSrsQuestions(),
+                  builder: (context, snapshot) {
+                    final dueQuestions = snapshot.data;
+                    if (dueQuestions != null && dueQuestions.isNotEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const SrsReviewScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 24),
+                            decoration: BoxDecoration(
+                              color: FluentianColors.accentTint,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: FluentianColors.accent.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.psychology_rounded, color: FluentianColors.accent, size: 32),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Daily Review Time!',
+                                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: FluentianColors.textPrimary),
+                                      ),
+                                      Text(
+                                        '${dueQuestions.length} questions ready for you',
+                                        style: GoogleFonts.inter(fontSize: 13, color: FluentianColors.textSecondary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const SrsReviewScreen(),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: FluentianColors.accent,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: const Text('Review', style: TextStyle(fontWeight: FontWeight.w600)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
 
                 if (content.courses.isNotEmpty) ...[
                   _EnrollmentCard(course: content.courses.first),
