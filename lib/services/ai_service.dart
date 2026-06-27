@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'dart:io' show Platform;
 
 class AiMessage {
   final String role;
@@ -19,10 +18,16 @@ class AiService {
   AiService._();
   static final AiService instance = AiService._();
 
-  // Android emulator uses 10.0.2.2 to access host localhost.
-  // iOS simulator uses localhost or 127.0.0.1.
+  static const String _configuredBaseUrl = String.fromEnvironment(
+    'AI_BASE_URL',
+    defaultValue: 'https://admin.fluentian.com',
+  );
+
   String get _baseUrl {
-    if (!kIsWeb && Platform.isAndroid) {
+    if (_configuredBaseUrl.trim().isNotEmpty) {
+      return _configuredBaseUrl.trim().replaceFirst(RegExp(r'/$'), '');
+    }
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:3000';
     }
     return 'http://localhost:3000';
@@ -47,7 +52,11 @@ class AiService {
         final data = jsonDecode(response.body);
         return data['text'] as String?;
       } else {
-        if (kDebugMode) debugPrint('AI Service error: ${response.statusCode} - ${response.body}');
+        if (kDebugMode) {
+          debugPrint(
+            'AI Service error: ${response.statusCode} - ${response.body}',
+          );
+        }
         return null;
       }
     } catch (e) {

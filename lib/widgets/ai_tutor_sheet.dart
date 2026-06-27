@@ -40,6 +40,7 @@ class AiTutorSheet extends StatefulWidget {
 
 class _AiTutorSheetState extends State<AiTutorSheet> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   final List<AiMessage> _messages = [];
   bool _isLoading = false;
 
@@ -51,13 +52,14 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
 
   Future<void> _sendMessage(String text, {bool isInitial = false}) async {
     final msg = text.trim();
-    if (msg.isEmpty) return;
+    if (msg.isEmpty || _isLoading) return;
 
     setState(() {
       _messages.add(AiMessage(role: 'user', content: msg));
       if (!isInitial) _controller.clear();
       _isLoading = true;
     });
+    _scrollToBottom();
 
     final aiResponse = await AiService.instance.generateText(
       messages: _messages,
@@ -73,17 +75,31 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
           _messages.add(
             AiMessage(
               role: 'assistant',
-              content: 'Sorry, I am having trouble connecting right now.',
+              content:
+                  'I am having trouble connecting right now. Try again in a moment.',
             ),
           );
         }
       });
+      _scrollToBottom();
     }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -128,6 +144,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
           const Divider(),
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.all(16),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
@@ -153,6 +170,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                       style: GoogleFonts.inter(
                         color: isUser ? Colors.white : FluentianColors.textPrimary,
                         fontSize: 15,
+                        height: 1.35,
                       ),
                     ),
                   ),
@@ -185,15 +203,18 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                         vertical: 10,
                       ),
                     ),
-                    onSubmitted: _sendMessage,
+                    onSubmitted: _isLoading ? null : _sendMessage,
                   ),
                 ),
                 const SizedBox(width: 8),
                 CircleAvatar(
-                  backgroundColor: FluentianColors.primary,
+                  backgroundColor: _isLoading
+                      ? Colors.grey.shade300
+                      : FluentianColors.primary,
                   child: IconButton(
                     icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-                    onPressed: () => _sendMessage(_controller.text),
+                    onPressed:
+                        _isLoading ? null : () => _sendMessage(_controller.text),
                   ),
                 ),
               ],
