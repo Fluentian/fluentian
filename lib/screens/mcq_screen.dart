@@ -544,6 +544,7 @@ class _McqScreenState extends State<McqScreen>
                     ),
                   ],
                 ),
+              ),
               const SizedBox(height: 16),
               Align(
                 alignment: Alignment.centerLeft,
@@ -556,14 +557,24 @@ class _McqScreenState extends State<McqScreen>
                       initialPrompt: 'Why was my answer wrong? The correct answer is "$correctAnswer". Please explain.',
                     );
                   },
-                  icon: const Icon(Icons.psychology_rounded, color: FluentianColors.primary),
+                  icon: const Icon(
+                    Icons.psychology_rounded,
+                    color: FluentianColors.primary,
+                  ),
                   label: const Text(
                     'Ask AI why',
-                    style: TextStyle(color: FluentianColors.primary, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: FluentianColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   style: TextButton.styleFrom(
-                    backgroundColor: FluentianColors.primary.withValues(alpha: 0.1),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    backgroundColor:
+                        FluentianColors.primary.withValues(alpha: 0.1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                   ),
                 ),
               ),
