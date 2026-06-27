@@ -188,6 +188,7 @@ class ContentProvider extends ChangeNotifier {
         completedAt: DateTime.now(),
         createdAt: DateTime.now(),
       );
+      _lessonCache.remove(lessonId);
       // Refresh global stats
       try {
         _stats = await _progressApi.getMyStats();

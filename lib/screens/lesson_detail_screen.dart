@@ -114,159 +114,163 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               children: [
                 Expanded(
                   child: blocks.isEmpty
-                      ? Center(
-                          child: Container(
-                            margin: const EdgeInsets.all(24),
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.black.withValues(alpha: 0.05),
-                          ),
-                          boxShadow: [FluentianShadows.subtle],
+                      ? Center(child: _buildQuizOnlyCard())
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                          itemCount: blocks.length,
+                          itemBuilder: (context, index) {
+                            return _buildBlock(blocks[index]);
+                          },
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                color: FluentianColors.primary.withValues(
-                                  alpha: 0.1,
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Iconsax.book_1,
-                                color: FluentianColors.primary,
-                                size: 32,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              'Quiz-Only Session',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: FluentianColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'This lesson is an assessment designed to test your skills directly without preparatory reading material.',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: FluentianColors.textSecondary,
-                                height: 1.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: blocks.length,
-                      itemBuilder: (context, index) {
-                        return _buildBlock(blocks[index]);
-                      },
-                    ),
+                ),
+                _buildBottomActionBar(quizQuestions),
+              ],
             ),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (quizQuestions.isEmpty) {
-                      setState(() => _isLoading = true);
-                      final result = await context.read<ContentProvider>().completeLesson(
-                        lessonId: _lesson!.id,
-                        score: 1.0,
-                        answers: [],
-                        timeSeconds: 5,
-                      );
-                      if (mounted) {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (_) => LessonCompleteScreen(
-                              lessonId: _lesson!.id,
-                              xpEarned: result?.xpEarned ?? _lesson!.xpReward,
-                              newXpTotal: result?.newXpTotal ?? 0,
-                              accuracy: 1.0,
-                              timeSeconds: 5,
-                              correctCount: 0,
-                              totalQuestions: 0,
-                            ),
-                          ),
-                        );
-                      }
-                    } else {
-                      // Navigate to MCQ flow with the questions
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => McqScreen(
-                            lessonId: _lesson!.id,
-                            questions: quizQuestions,
-                            xpReward: _lesson!.xpReward,
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: FluentianColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(
-                    quizQuestions.isEmpty
-                        ? 'Complete Lesson'
-                        : 'Continue to Quiz',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                  ),
+            Positioned(
+              right: 16,
+              bottom: 88,
+              child: FloatingActionButton(
+                backgroundColor: FluentianColors.primary,
+                onPressed: () {
+                  AiTutorSheet.show(
+                    context,
+                    systemContext:
+                        'You are a helpful language tutor. Help the user summarize the lesson "${_lesson!.title}". Keep the response short and friendly.',
+                    initialPrompt:
+                        'Can you summarize this lesson and tell me what I will learn?',
+                  );
+                },
+                child: const Icon(
+                  Icons.psychology_rounded,
+                  color: Colors.white,
                 ),
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuizOnlyCard() {
+    return Container(
+      margin: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        boxShadow: [FluentianShadows.subtle],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: FluentianColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Iconsax.book_1,
+              color: FluentianColors.primary,
+              size: 32,
+            ),
           ),
-          Positioned(
-            right: 16,
-            bottom: 80,
-            child: FloatingActionButton(
-              backgroundColor: FluentianColors.primary,
-              onPressed: () {
-                AiTutorSheet.show(
-                  context,
-                  systemContext: 'You are a helpful language tutor. Help the user summarize the lesson "${_lesson!.title}". Keep the response short and friendly.',
-                  initialPrompt: 'Can you summarize this lesson and tell me what I will learn?',
-                );
-              },
-              child: const Icon(Icons.psychology_rounded, color: Colors.white),
+          const SizedBox(height: 20),
+          Text(
+            'Quiz-Only Session',
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: FluentianColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'This lesson is an assessment designed to test your skills directly without preparatory reading material.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: FluentianColors.textSecondary,
+              height: 1.5,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBottomActionBar(List<QuestionModel> quizQuestions) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: 54,
+        child: ElevatedButton(
+          onPressed: () async {
+            if (quizQuestions.isEmpty) {
+              setState(() => _isLoading = true);
+              final result = await context.read<ContentProvider>().completeLesson(
+                    lessonId: _lesson!.id,
+                    score: 1.0,
+                    answers: [],
+                    timeSeconds: 5,
+                  );
+              if (!mounted) return;
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (_) => LessonCompleteScreen(
+                    lessonId: _lesson!.id,
+                    xpEarned: result?.xpEarned ?? _lesson!.xpReward,
+                    newXpTotal: result?.newXpTotal ?? 0,
+                    accuracy: 1.0,
+                    timeSeconds: 5,
+                    correctCount: 0,
+                    totalQuestions: 0,
+                  ),
+                ),
+              );
+              return;
+            }
+
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => McqScreen(
+                  lessonId: _lesson!.id,
+                  questions: quizQuestions,
+                  xpReward: _lesson!.xpReward,
+                ),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: FluentianColors.primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          child: Text(
+            quizQuestions.isEmpty ? 'Complete Lesson' : 'Continue to Quiz',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ),
       ),
     );
   }
