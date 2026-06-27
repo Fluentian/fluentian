@@ -31,9 +31,10 @@ class _SignInScreenState extends State<SignInScreen> {
     final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      context.read<AuthProvider>()
-        // ignore: invalid_use_of_protected_member
-        ..clearError();
+      context
+          .read<AuthProvider>()
+          // ignore: invalid_use_of_protected_member
+          .clearError();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill in all fields.')),
       );
@@ -41,17 +42,15 @@ class _SignInScreenState extends State<SignInScreen> {
     }
 
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.login(
-      email: email,
-      password: password,
-    );
+    final success = await authProvider.login(email: email, password: password);
 
     if (!mounted) return;
     if (!success) {
       if (authProvider.unverifiedEmail != null) {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => OtpVerificationScreen(email: authProvider.unverifiedEmail!),
+            builder: (_) =>
+                OtpVerificationScreen(email: authProvider.unverifiedEmail!),
           ),
         );
       }

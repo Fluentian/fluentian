@@ -56,21 +56,53 @@ class ChatDetailScreen extends StatelessWidget {
   List<Widget> _getMockMessages() {
     if (title == 'French Corner') {
       return [
-        _buildMessage('Salut tout le monde ! Comment ça va ?', isMe: false, time: '10:00 AM'),
-        _buildMessage('Ça va très bien, merci ! Et toi ?', isMe: true, time: '10:02 AM'),
-        _buildMessage('Super ! On parle de quoi aujourd\'hui ?', isMe: false, time: '10:05 AM'),
+        _buildMessage(
+          'Salut tout le monde ! Comment ça va ?',
+          isMe: false,
+          time: '10:00 AM',
+        ),
+        _buildMessage(
+          'Ça va très bien, merci ! Et toi ?',
+          isMe: true,
+          time: '10:02 AM',
+        ),
+        _buildMessage(
+          'Super ! On parle de quoi aujourd\'hui ?',
+          isMe: false,
+          time: '10:05 AM',
+        ),
       ];
     } else if (title == 'Grammar Help') {
       return [
-        _buildMessage('Can anyone explain the difference between "c\'est" and "il est" ?', isMe: false, time: '09:30 AM'),
-        _buildMessage('Sure! Use "c\'est" + noun and "il est" + adjective.', isMe: true, time: '09:35 AM'),
-        _buildMessage('Merci beaucoup ! That helps a lot.', isMe: false, time: '09:36 AM'),
+        _buildMessage(
+          'Can anyone explain the difference between "c\'est" and "il est" ?',
+          isMe: false,
+          time: '09:30 AM',
+        ),
+        _buildMessage(
+          'Sure! Use "c\'est" + noun and "il est" + adjective.',
+          isMe: true,
+          time: '09:35 AM',
+        ),
+        _buildMessage(
+          'Merci beaucoup ! That helps a lot.',
+          isMe: false,
+          time: '09:36 AM',
+        ),
       ];
     } else {
       return [
-        _buildMessage('Hello! Is anyone here practicing $title?', isMe: false, time: '10:00 AM'),
+        _buildMessage(
+          'Hello! Is anyone here practicing $title?',
+          isMe: false,
+          time: '10:00 AM',
+        ),
         _buildMessage('Yes, I am! Let\'s chat.', isMe: true, time: '10:02 AM'),
-        _buildMessage('Great! Let\'s start with basics.', isMe: false, time: '10:05 AM'),
+        _buildMessage(
+          'Great! Let\'s start with basics.',
+          isMe: false,
+          time: '10:05 AM',
+        ),
       ];
     }
   }
@@ -98,7 +130,7 @@ class ChatDetailScreen extends StatelessWidget {
           ),
           border: isMe
               ? null
-              : Border.all(color: Colors.black.withOpacity(0.05)),
+              : Border.all(color: Colors.black.withValues(alpha: 0.05)),
           boxShadow: [FluentianShadows.subtle],
         ),
         child: Column(
@@ -130,7 +162,9 @@ class ChatDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.black.withOpacity(0.05))),
+        border: Border(
+          top: BorderSide(color: Colors.black.withValues(alpha: 0.05)),
+        ),
       ),
       child: SafeArea(
         child: Row(

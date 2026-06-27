@@ -1,5 +1,6 @@
 /// Course / Unit / Lesson / Block / Question models.
 /// Payload fields accept Admin, seed, and import aliases via getters below.
+library;
 
 import '../services/api_client.dart';
 

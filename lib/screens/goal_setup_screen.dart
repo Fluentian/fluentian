@@ -245,19 +245,23 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                         : () async {
                             final success = await auth.updateProfile({
                               'current_level': widget.level.code,
-                              'daily_goal_xp': DailyGoal.goals[_selectedIndex].xp,
+                              'daily_goal_xp':
+                                  DailyGoal.goals[_selectedIndex].xp,
                             });
-                            if (success && mounted) {
+                            if (!context.mounted) return;
+                            if (success) {
                               await auth.completeOnboarding(
                                 selectedLevel: widget.level.code,
                               );
-                              if (!mounted) return;
-                              Navigator.of(context)
-                                  .popUntil((route) => route.isFirst);
-                            } else if (mounted) {
+                              if (!context.mounted) return;
+                              Navigator.of(
+                                context,
+                              ).popUntil((route) => route.isFirst);
+                            } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('Failed to save profile')),
+                                  content: Text('Failed to save profile'),
+                                ),
                               );
                             }
                           },

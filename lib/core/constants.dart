@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -45,7 +44,9 @@ enum CEFRLevel {
     if (cleanCode == 'A2') return 'Elementary';
     if (cleanCode == 'B1') return 'Intermediate';
     if (cleanCode == 'B2') return 'Upper Intermediate';
-    if (cleanCode == 'C1' || cleanCode == 'C2' || cleanCode == 'C1C2') return 'Advanced';
+    if (cleanCode == 'C1' || cleanCode == 'C2' || cleanCode == 'C1C2') {
+      return 'Advanced';
+    }
     return code;
   }
 }

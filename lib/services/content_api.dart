@@ -71,11 +71,8 @@ class ContentApi {
     List<Map<String, dynamic>> answers,
     int timeSeconds,
   ) async {
-    final payload = {
-      'answers': answers,
-      'time_seconds': timeSeconds,
-    };
+    final payload = {'answers': answers, 'time_seconds': timeSeconds};
     final response = await _client.post('/content/review/complete', payload);
-    return response as Map<String, dynamic>;
+    return response;
   }
 }

@@ -1,4 +1,5 @@
 /// User data models — mirrors backend UserBriefResponse & UserProfile.
+library;
 
 class UserModel {
   final String id;
@@ -70,10 +71,15 @@ class UserModel {
       streakDays: json['streak_days'] as int? ?? 0,
       hearts: json['hearts'] as int? ?? 5,
       createdAt: DateTime.parse(json['created_at'] as String),
-      displayNameField: profile?['display_name']?.toString() ?? json['display_name_field']?.toString(),
-      avatarUrl: profile?['avatar_url']?.toString() ?? json['avatar_url']?.toString(),
+      displayNameField:
+          profile?['display_name']?.toString() ??
+          json['display_name_field']?.toString(),
+      avatarUrl:
+          profile?['avatar_url']?.toString() ?? json['avatar_url']?.toString(),
       bio: profile?['bio']?.toString() ?? json['bio']?.toString(),
-      learningGoal: profile?['learning_goal']?.toString() ?? json['learning_goal']?.toString(),
+      learningGoal:
+          profile?['learning_goal']?.toString() ??
+          json['learning_goal']?.toString(),
       dailyGoalMinutes: json['daily_goal_minutes'] as int? ?? 15,
       notificationsEnabled: settings?['notifications_enabled'] as bool? ?? true,
       autoplayAudio: settings?['autoplay_audio'] as bool? ?? true,
@@ -85,8 +91,7 @@ class UserModel {
           settings?['phonetic_hints_enabled'] as bool? ?? true,
       speakingExercisesEnabled:
           settings?['speaking_exercises_enabled'] as bool? ?? true,
-      highContrastEnabled:
-          settings?['high_contrast_enabled'] as bool? ?? false,
+      highContrastEnabled: settings?['high_contrast_enabled'] as bool? ?? false,
       reduceAnimationsEnabled:
           settings?['reduce_animations_enabled'] as bool? ?? false,
       hapticFeedbackEnabled:
@@ -97,35 +102,35 @@ class UserModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'username': username,
-        'email': email,
-        'role': role,
-        'current_level': currentLevel,
-        'xp_total': xpTotal,
-        'streak_days': streakDays,
-        'hearts': hearts,
-        'created_at': createdAt.toIso8601String(),
-        'display_name_field': displayNameField,
-        'avatar_url': avatarUrl,
-        'bio': bio,
-        'learning_goal': learningGoal,
-        'daily_goal_minutes': dailyGoalMinutes,
-        'settings': {
-          'notifications_enabled': notificationsEnabled,
-          'autoplay_audio': autoplayAudio,
-          'sound_enabled': soundEnabled,
-          'learning_reminder_enabled': learningReminderEnabled,
-          'reminder_time': reminderTime,
-          'phonetic_hints_enabled': phoneticHintsEnabled,
-          'speaking_exercises_enabled': speakingExercisesEnabled,
-          'high_contrast_enabled': highContrastEnabled,
-          'reduce_animations_enabled': reduceAnimationsEnabled,
-          'haptic_feedback_enabled': hapticFeedbackEnabled,
-          'tts_speed': ttsSpeed,
-          'font_scale': fontScale,
-        },
-      };
+    'id': id,
+    'username': username,
+    'email': email,
+    'role': role,
+    'current_level': currentLevel,
+    'xp_total': xpTotal,
+    'streak_days': streakDays,
+    'hearts': hearts,
+    'created_at': createdAt.toIso8601String(),
+    'display_name_field': displayNameField,
+    'avatar_url': avatarUrl,
+    'bio': bio,
+    'learning_goal': learningGoal,
+    'daily_goal_minutes': dailyGoalMinutes,
+    'settings': {
+      'notifications_enabled': notificationsEnabled,
+      'autoplay_audio': autoplayAudio,
+      'sound_enabled': soundEnabled,
+      'learning_reminder_enabled': learningReminderEnabled,
+      'reminder_time': reminderTime,
+      'phonetic_hints_enabled': phoneticHintsEnabled,
+      'speaking_exercises_enabled': speakingExercisesEnabled,
+      'high_contrast_enabled': highContrastEnabled,
+      'reduce_animations_enabled': reduceAnimationsEnabled,
+      'haptic_feedback_enabled': hapticFeedbackEnabled,
+      'tts_speed': ttsSpeed,
+      'font_scale': fontScale,
+    },
+  };
 
   UserModel copyWith({
     String? id,
@@ -154,39 +159,37 @@ class UserModel {
     bool? hapticFeedbackEnabled,
     double? ttsSpeed,
     int? fontScale,
-  }) =>
-      UserModel(
-        id: id ?? this.id,
-        username: username ?? this.username,
-        email: email ?? this.email,
-        role: role ?? this.role,
-        currentLevel: currentLevel ?? this.currentLevel,
-        xpTotal: xpTotal ?? this.xpTotal,
-        streakDays: streakDays ?? this.streakDays,
-        hearts: hearts ?? this.hearts,
-        createdAt: createdAt ?? this.createdAt,
-        displayNameField: displayNameField ?? this.displayNameField,
-        avatarUrl: avatarUrl ?? this.avatarUrl,
-        bio: bio ?? this.bio,
-        learningGoal: learningGoal ?? this.learningGoal,
-        dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
-        notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
-        autoplayAudio: autoplayAudio ?? this.autoplayAudio,
-        soundEnabled: soundEnabled ?? this.soundEnabled,
-        learningReminderEnabled:
-            learningReminderEnabled ?? this.learningReminderEnabled,
-        reminderTime: reminderTime ?? this.reminderTime,
-        phoneticHintsEnabled: phoneticHintsEnabled ?? this.phoneticHintsEnabled,
-        speakingExercisesEnabled:
-            speakingExercisesEnabled ?? this.speakingExercisesEnabled,
-        highContrastEnabled: highContrastEnabled ?? this.highContrastEnabled,
-        reduceAnimationsEnabled:
-            reduceAnimationsEnabled ?? this.reduceAnimationsEnabled,
-        hapticFeedbackEnabled:
-            hapticFeedbackEnabled ?? this.hapticFeedbackEnabled,
-        ttsSpeed: ttsSpeed ?? this.ttsSpeed,
-        fontScale: fontScale ?? this.fontScale,
-      );
+  }) => UserModel(
+    id: id ?? this.id,
+    username: username ?? this.username,
+    email: email ?? this.email,
+    role: role ?? this.role,
+    currentLevel: currentLevel ?? this.currentLevel,
+    xpTotal: xpTotal ?? this.xpTotal,
+    streakDays: streakDays ?? this.streakDays,
+    hearts: hearts ?? this.hearts,
+    createdAt: createdAt ?? this.createdAt,
+    displayNameField: displayNameField ?? this.displayNameField,
+    avatarUrl: avatarUrl ?? this.avatarUrl,
+    bio: bio ?? this.bio,
+    learningGoal: learningGoal ?? this.learningGoal,
+    dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
+    notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+    autoplayAudio: autoplayAudio ?? this.autoplayAudio,
+    soundEnabled: soundEnabled ?? this.soundEnabled,
+    learningReminderEnabled:
+        learningReminderEnabled ?? this.learningReminderEnabled,
+    reminderTime: reminderTime ?? this.reminderTime,
+    phoneticHintsEnabled: phoneticHintsEnabled ?? this.phoneticHintsEnabled,
+    speakingExercisesEnabled:
+        speakingExercisesEnabled ?? this.speakingExercisesEnabled,
+    highContrastEnabled: highContrastEnabled ?? this.highContrastEnabled,
+    reduceAnimationsEnabled:
+        reduceAnimationsEnabled ?? this.reduceAnimationsEnabled,
+    hapticFeedbackEnabled: hapticFeedbackEnabled ?? this.hapticFeedbackEnabled,
+    ttsSpeed: ttsSpeed ?? this.ttsSpeed,
+    fontScale: fontScale ?? this.fontScale,
+  );
 
   /// Greeting based on time of day.
   String get greeting {
@@ -197,7 +200,8 @@ class UserModel {
   }
 
   /// Returns display name (username fallback).
-  String get displayName => (displayNameField != null && displayNameField!.isNotEmpty)
+  String get displayName =>
+      (displayNameField != null && displayNameField!.isNotEmpty)
       ? displayNameField!
       : username;
 }
@@ -214,8 +218,8 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
-        accessToken: json['access_token'] as String,
-        refreshToken: json['refresh_token'] as String,
-        user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
-      );
+    accessToken: json['access_token'] as String,
+    refreshToken: json['refresh_token'] as String,
+    user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
+  );
 }

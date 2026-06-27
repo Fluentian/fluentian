@@ -41,28 +41,22 @@ class SettingsScreen extends StatelessWidget {
             children: [
               _DailyGoalRow(
                 minutes: user.dailyGoalMinutes,
-                onChanged: (minutes) => _save(
-                  context,
-                  {'daily_goal_minutes': minutes},
-                ),
+                onChanged: (minutes) =>
+                    _save(context, {'daily_goal_minutes': minutes}),
               ),
               _SwitchRow(
                 icon: Icons.text_fields_rounded,
                 label: 'Phonetic hints',
                 value: user.phoneticHintsEnabled,
-                onChanged: (value) => _save(
-                  context,
-                  {'phonetic_hints_enabled': value},
-                ),
+                onChanged: (value) =>
+                    _save(context, {'phonetic_hints_enabled': value}),
               ),
               _SwitchRow(
                 icon: Icons.mic_rounded,
                 label: 'Speaking exercises',
                 value: user.speakingExercisesEnabled,
-                onChanged: (value) => _save(
-                  context,
-                  {'speaking_exercises_enabled': value},
-                ),
+                onChanged: (value) =>
+                    _save(context, {'speaking_exercises_enabled': value}),
               ),
             ],
           ),
@@ -89,10 +83,9 @@ class SettingsScreen extends StatelessWidget {
                 min: 0.6,
                 max: 1.6,
                 displayValue: '${user.ttsSpeed.toStringAsFixed(1)}x',
-                onChanged: (value) => _save(
-                  context,
-                  {'tts_speed': double.parse(value.toStringAsFixed(1))},
-                ),
+                onChanged: (value) => _save(context, {
+                  'tts_speed': double.parse(value.toStringAsFixed(1)),
+                }),
               ),
             ],
           ),
@@ -104,19 +97,15 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.notifications_rounded,
                 label: 'Learning announcements',
                 value: user.notificationsEnabled,
-                onChanged: (value) => _save(
-                  context,
-                  {'notifications_enabled': value},
-                ),
+                onChanged: (value) =>
+                    _save(context, {'notifications_enabled': value}),
               ),
               _SwitchRow(
                 icon: Icons.alarm_rounded,
                 label: 'Daily reminder',
                 value: user.learningReminderEnabled,
-                onChanged: (value) => _save(
-                  context,
-                  {'learning_reminder_enabled': value},
-                ),
+                onChanged: (value) =>
+                    _save(context, {'learning_reminder_enabled': value}),
               ),
               _TimeRow(
                 time: user.reminderTime,
@@ -147,28 +136,22 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.contrast_rounded,
                 label: 'High contrast',
                 value: user.highContrastEnabled,
-                onChanged: (value) => _save(
-                  context,
-                  {'high_contrast_enabled': value},
-                ),
+                onChanged: (value) =>
+                    _save(context, {'high_contrast_enabled': value}),
               ),
               _SwitchRow(
                 icon: Icons.motion_photos_pause_rounded,
                 label: 'Reduce animations',
                 value: user.reduceAnimationsEnabled,
-                onChanged: (value) => _save(
-                  context,
-                  {'reduce_animations_enabled': value},
-                ),
+                onChanged: (value) =>
+                    _save(context, {'reduce_animations_enabled': value}),
               ),
               _SwitchRow(
                 icon: Icons.vibration_rounded,
                 label: 'Haptic feedback',
                 value: user.hapticFeedbackEnabled,
-                onChanged: (value) => _save(
-                  context,
-                  {'haptic_feedback_enabled': value},
-                ),
+                onChanged: (value) =>
+                    _save(context, {'haptic_feedback_enabled': value}),
               ),
             ],
           ),
@@ -193,9 +176,9 @@ class SettingsScreen extends StatelessWidget {
   Future<void> _save(BuildContext context, Map<String, dynamic> data) async {
     final ok = await context.read<AuthProvider>().updateSettings(data);
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not save setting.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not save setting.')));
     }
   }
 
@@ -205,10 +188,7 @@ class SettingsScreen extends StatelessWidget {
       hour: int.tryParse(parts.first) ?? 8,
       minute: parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0,
     );
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: initial,
-    );
+    final picked = await showTimePicker(context: context, initialTime: initial);
     if (picked == null || !context.mounted) return;
     final value =
         '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
@@ -240,76 +220,84 @@ class SettingsScreen extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return Padding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Edit profile',
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: FluentianColors.textPrimary,
-                ),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 20,
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Display name',
-                  border: OutlineInputBorder(),
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Edit profile',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: FluentianColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Display name',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: goalController,
+                    decoration: const InputDecoration(
+                      labelText: 'Learning goal',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: bioController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Bio',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isSaving
+                          ? null
+                          : () async {
+                              setState(() => isSaving = true);
+                              final ok = await auth.updateProfile({
+                                'display_name': nameController.text.trim(),
+                                'learning_goal': goalController.text.trim(),
+                                'bio': bioController.text.trim(),
+                              });
+                              if (!context.mounted) return;
+                              Navigator.pop(context);
+                              if (!ok) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Could not save profile.'),
+                                  ),
+                                );
+                              }
+                            },
+                      child: isSaving
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Save profile'),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: goalController,
-                decoration: const InputDecoration(
-                  labelText: 'Learning goal',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: bioController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Bio',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isSaving ? null : () async {
-                    setState(() => isSaving = true);
-                    final ok = await auth.updateProfile({
-                      'display_name': nameController.text.trim(),
-                      'learning_goal': goalController.text.trim(),
-                      'bio': bioController.text.trim(),
-                    });
-                    if (!context.mounted) return;
-                    Navigator.pop(context);
-                    if (!ok) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Could not save profile.')),
-                      );
-                    }
-                  },
-                  child: isSaving 
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Save profile'),
-                ),
-              ),
-            ],
-          ),
-        );
+            );
           },
         );
       },
@@ -328,7 +316,9 @@ class _AccountHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user!;
-    final initial = user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U';
+    final initial = user.displayName.isNotEmpty
+        ? user.displayName[0].toUpperCase()
+        : 'U';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: _panelDecoration(),
@@ -446,10 +436,8 @@ class _DailyGoalRow extends StatelessWidget {
         underline: const SizedBox.shrink(),
         items: options
             .map(
-              (value) => DropdownMenuItem(
-                value: value,
-                child: Text('$value min'),
-              ),
+              (value) =>
+                  DropdownMenuItem(value: value, child: Text('$value min')),
             )
             .toList(),
         onChanged: (value) {
@@ -508,7 +496,10 @@ class _FontScaleRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.format_size_rounded, color: FluentianColors.primary),
+              const Icon(
+                Icons.format_size_rounded,
+                color: FluentianColors.primary,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -528,10 +519,8 @@ class _FontScaleRow extends StatelessWidget {
               showSelectedIcon: false,
               segments: List.generate(
                 labels.length,
-                (index) => ButtonSegment(
-                  value: index,
-                  label: Text(labels[index]),
-                ),
+                (index) =>
+                    ButtonSegment(value: index, label: Text(labels[index])),
               ),
               selected: {value.clamp(0, 2)},
               onSelectionChanged: (selected) => onChanged(selected.first),
@@ -569,7 +558,7 @@ class _SwitchRow extends StatelessWidget {
         ),
       ),
       value: value,
-      activeColor: FluentianColors.primary,
+      activeThumbColor: FluentianColors.primary,
       onChanged: onChanged,
     );
   }
@@ -725,8 +714,8 @@ class _DangerAction extends StatelessWidget {
 }
 
 BoxDecoration _panelDecoration() => BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-      boxShadow: [FluentianShadows.subtle],
-    );
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(12),
+  border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+  boxShadow: [FluentianShadows.subtle],
+);

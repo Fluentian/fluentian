@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import 'auth_widgets.dart';
 import 'sign_in_screen.dart';
-import '../level_setup_screen.dart';
 import 'otp_verification_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -44,30 +43,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('You must agree to the Terms of Service.')),
+          content: Text('You must agree to the Terms of Service.'),
+        ),
       );
       return;
     }
     if (username.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Username must be at least 3 characters.')),
+          content: Text('Username must be at least 3 characters.'),
+        ),
       );
       return;
     }
 
     final success = await context.read<AuthProvider>().register(
-          username: username,
-          email: email,
-          password: password,
-        );
+      username: username,
+      email: email,
+      password: password,
+    );
 
     if (!mounted) return;
     if (success) {
       Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => OtpVerificationScreen(email: email),
-        ),
+        MaterialPageRoute(builder: (_) => OtpVerificationScreen(email: email)),
       );
     } else {
       // Error displayed in UI via Consumer below
@@ -128,9 +127,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
             Icon(iconData, size: 20, color: AuthColors.primary),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(name,
-                  style:
-                      GoogleFonts.inter(fontSize: 16, color: AuthColors.body)),
+              child: Text(
+                name,
+                style: GoogleFonts.inter(fontSize: 16, color: AuthColors.body),
+              ),
             ),
             Container(
               width: 20,
@@ -164,8 +164,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_rounded,
-                            color: AuthColors.body, size: 24),
+                        icon: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: AuthColors.body,
+                          size: 24,
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                       const Expanded(child: AuthLogo()),
@@ -175,7 +178,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const SizedBox(height: 32),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 28, vertical: 32),
+                      horizontal: 28,
+                      vertical: 32,
+                    ),
                     decoration: BoxDecoration(
                       color: AuthColors.cardBg,
                       borderRadius: BorderRadius.circular(24),
@@ -196,7 +201,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         Text(
                           'Start your French journey today.',
                           style: GoogleFonts.inter(
-                              fontSize: 15, color: AuthColors.placeholder),
+                            fontSize: 15,
+                            color: AuthColors.placeholder,
+                          ),
                         ),
                         const SizedBox(height: 32),
 
@@ -242,21 +249,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: AuthColors.border),
                             ),
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Row(
                               children: [
-                                const Icon(Icons.language_outlined,
-                                    color: AuthColors.placeholder, size: 18),
+                                const Icon(
+                                  Icons.language_outlined,
+                                  color: AuthColors.placeholder,
+                                  size: 18,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                  child: Text(_selectedLang,
-                                      style: GoogleFonts.inter(
-                                          fontSize: 16,
-                                          color: AuthColors.heading)),
+                                  child: Text(
+                                    _selectedLang,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      color: AuthColors.heading,
+                                    ),
+                                  ),
                                 ),
-                                const Icon(Icons.keyboard_arrow_down_rounded,
-                                    color: AuthColors.placeholder, size: 20),
+                                const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: AuthColors.placeholder,
+                                  size: 20,
+                                ),
                               ],
                             ),
                           ),
@@ -270,7 +285,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               onTap: auth.isLoading
                                   ? null
                                   : () => setState(
-                                      () => _agreedToTerms = !_agreedToTerms),
+                                      () => _agreedToTerms = !_agreedToTerms,
+                                    ),
                               child: Container(
                                 width: 20,
                                 height: 20,
@@ -286,8 +302,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                 ),
                                 child: _agreedToTerms
-                                    ? const Icon(Icons.check,
-                                        size: 14, color: Colors.white)
+                                    ? const Icon(
+                                        Icons.check,
+                                        size: 14,
+                                        color: Colors.white,
+                                      )
                                     : null,
                               ),
                             ),
@@ -296,7 +315,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               child: RichText(
                                 text: TextSpan(
                                   style: GoogleFonts.inter(
-                                      fontSize: 13, color: AuthColors.body),
+                                    fontSize: 13,
+                                    color: AuthColors.body,
+                                  ),
                                   children: const [
                                     TextSpan(text: 'I agree to the '),
                                     TextSpan(
@@ -361,7 +382,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     child: RichText(
                       text: TextSpan(
                         style: GoogleFonts.inter(
-                            fontSize: 14, color: AuthColors.placeholder),
+                          fontSize: 14,
+                          color: AuthColors.placeholder,
+                        ),
                         children: const [
                           TextSpan(text: 'Already have an account? '),
                           TextSpan(
@@ -402,12 +425,17 @@ class _ErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded,
-              color: AuthColors.errorText, size: 18),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: AuthColors.errorText,
+            size: 18,
+          ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(message,
-                style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body)),
+            child: Text(
+              message,
+              style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
+            ),
           ),
         ],
       ),

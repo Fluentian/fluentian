@@ -128,7 +128,8 @@ class _HomeContent extends StatelessWidget {
                                 onPressed: () async {
                                   await Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (_) => const NotificationsScreen(),
+                                      builder: (_) =>
+                                          const NotificationsScreen(),
                                     ),
                                   );
                                 },
@@ -146,7 +147,9 @@ class _HomeContent extends StatelessWidget {
                                       minWidth: 18,
                                       minHeight: 18,
                                     ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                    ),
                                     decoration: const BoxDecoration(
                                       color: FluentianColors.error,
                                       shape: BoxShape.circle,
@@ -290,23 +293,39 @@ class _HomeContent extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: FluentianColors.accentTint,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: FluentianColors.accent.withValues(alpha: 0.3)),
+                              border: Border.all(
+                                color: FluentianColors.accent.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.psychology_rounded, color: FluentianColors.accent, size: 32),
+                                const Icon(
+                                  Icons.psychology_rounded,
+                                  color: FluentianColors.accent,
+                                  size: 32,
+                                ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Daily Review Time!',
-                                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: FluentianColors.textPrimary),
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                          color: FluentianColors.textPrimary,
+                                        ),
                                       ),
                                       Text(
                                         '${dueQuestions.length} questions ready for you',
-                                        style: GoogleFonts.inter(fontSize: 13, color: FluentianColors.textSecondary),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          color: FluentianColors.textSecondary,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -321,9 +340,16 @@ class _HomeContent extends StatelessWidget {
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: FluentianColors.accent,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
-                                  child: const Text('Review', style: TextStyle(fontWeight: FontWeight.w600)),
+                                  child: const Text(
+                                    'Review',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -814,21 +840,21 @@ class _EnrollmentCardState extends State<_EnrollmentCard> {
                       final ok = await context
                           .read<ContentProvider>()
                           .enrollInCourse(widget.course.id);
-                      if (mounted) {
-                        setState(() => _isEnrolling = false);
-                        if (!ok) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                content.error ?? 'Could not enroll.',
-                              ),
-                            ),
-                          );
-                        }
+                      if (!context.mounted) return;
+                      setState(() => _isEnrolling = false);
+                      if (!ok) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(content.error ?? 'Could not enroll.'),
+                          ),
+                        );
                       }
                     },
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(100, 44), // Fix infinite width from theme
+                minimumSize: const Size(
+                  100,
+                  44,
+                ), // Fix infinite width from theme
                 backgroundColor: enrolled
                     ? FluentianColors.primary
                     : FluentianColors.success,
@@ -838,7 +864,11 @@ class _EnrollmentCardState extends State<_EnrollmentCard> {
                 ),
               ),
               child: Text(
-                _isEnrolling ? '...' : enrolled ? 'Continue' : 'Enroll',
+                _isEnrolling
+                    ? '...'
+                    : enrolled
+                    ? 'Continue'
+                    : 'Enroll',
                 style: GoogleFonts.inter(fontWeight: FontWeight.w700),
               ),
             ),

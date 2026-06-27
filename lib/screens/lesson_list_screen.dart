@@ -115,7 +115,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
               }
             }
           }
-          final progressPercent = totalLessons > 0 ? (completedLessons / totalLessons) : 0.0;
+          final progressPercent = totalLessons > 0
+              ? (completedLessons / totalLessons)
+              : 0.0;
           final items = _buildPathItems(content.courses, content);
 
           return Column(
@@ -127,7 +129,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                  border: Border.all(
+                    color: Colors.black.withValues(alpha: 0.05),
+                  ),
                   boxShadow: [FluentianShadows.subtle],
                 ),
                 child: Row(
@@ -151,7 +155,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            course.code == 'FR_A1_BASICS' ? 'French A1 Basics' : course.code.replaceAll('_', ' '),
+                            course.code == 'FR_A1_BASICS'
+                                ? 'French A1 Basics'
+                                : course.code.replaceAll('_', ' '),
                             style: GoogleFonts.inter(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -163,8 +169,11 @@ class _LessonListScreenState extends State<LessonListScreen> {
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
                               value: progressPercent,
-                              backgroundColor: FluentianColors.primary.withValues(alpha: 0.1),
-                              valueColor: const AlwaysStoppedAnimation(FluentianColors.primary),
+                              backgroundColor: FluentianColors.primary
+                                  .withValues(alpha: 0.1),
+                              valueColor: const AlwaysStoppedAnimation(
+                                FluentianColors.primary,
+                              ),
                               minHeight: 6,
                             ),
                           ),
@@ -193,7 +202,10 @@ class _LessonListScreenState extends State<LessonListScreen> {
                       itemBuilder: (context, index) {
                         final item = items[index];
                         if (item is _UnitHeaderItem) {
-                          final key = _unitKeys.putIfAbsent(item.unit.id, () => GlobalKey());
+                          final key = _unitKeys.putIfAbsent(
+                            item.unit.id,
+                            () => GlobalKey(),
+                          );
                           return Container(
                             key: key,
                             child: _buildUnitHeader(
@@ -218,7 +230,10 @@ class _LessonListScreenState extends State<LessonListScreen> {
     );
   }
 
-  List<_PathItem> _buildPathItems(List<CourseModel> courses, ContentProvider content) {
+  List<_PathItem> _buildPathItems(
+    List<CourseModel> courses,
+    ContentProvider content,
+  ) {
     final List<_PathItem> items = [];
     if (courses.isEmpty) return items;
 
@@ -236,14 +251,16 @@ class _LessonListScreenState extends State<LessonListScreen> {
         final isUnlocked = content.isLessonUnlocked(lessons, i);
         final isActive = !isCompleted && isUnlocked;
 
-        items.add(_LessonNodeItem(
-          lesson: lesson,
-          lessonIndex: i,
-          isCompleted: isCompleted,
-          isUnlocked: isUnlocked,
-          isActive: isActive,
-          unitNo: unit.unitNo,
-        ));
+        items.add(
+          _LessonNodeItem(
+            lesson: lesson,
+            lessonIndex: i,
+            isCompleted: isCompleted,
+            isUnlocked: isUnlocked,
+            isActive: isActive,
+            unitNo: unit.unitNo,
+          ),
+        );
       }
     }
 
@@ -264,10 +281,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              FluentianColors.primary,
-              Color(0xFF4E22D4),
-            ],
+            colors: [FluentianColors.primary, Color(0xFF4E22D4)],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
@@ -275,7 +289,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
               color: FluentianColors.primary.withValues(alpha: 0.15),
               blurRadius: 12,
               offset: const Offset(0, 4),
-            )
+            ),
           ],
         ),
         child: Row(
@@ -331,7 +345,11 @@ class _LessonListScreenState extends State<LessonListScreen> {
               onPressed: () {
                 _showGuidebookDialog(context, unit);
               },
-              icon: const Icon(Iconsax.book_1, size: 16, color: FluentianColors.primary),
+              icon: const Icon(
+                Iconsax.book_1,
+                size: 16,
+                color: FluentianColors.primary,
+              ),
               label: Text(
                 'GUIDE',
                 style: GoogleFonts.inter(
@@ -346,7 +364,10 @@ class _LessonListScreenState extends State<LessonListScreen> {
                 elevation: 0,
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -412,7 +433,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                   color: FluentianColors.primary.withValues(alpha: 0.06),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
-                )
+                ),
               ]
             : [FluentianShadows.subtle],
       ),
@@ -443,7 +464,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
                         ),
                         child: Icon(
                           kindIcon,
-                          color: item.isUnlocked ? kindColor : Colors.grey.shade400,
+                          color: item.isUnlocked
+                              ? kindColor
+                              : Colors.grey.shade400,
                           size: 20,
                         ),
                       ),
@@ -460,16 +483,23 @@ class _LessonListScreenState extends State<LessonListScreen> {
                                   style: GoogleFonts.inter(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
-                                    color: item.isUnlocked ? kindColor : Colors.grey.shade500,
+                                    color: item.isUnlocked
+                                        ? kindColor
+                                        : Colors.grey.shade500,
                                     letterSpacing: 0.8,
                                   ),
                                 ),
                                 if (item.isActive) ...[
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: FluentianColors.primary.withValues(alpha: 0.15),
+                                      color: FluentianColors.primary.withValues(
+                                        alpha: 0.15,
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -503,7 +533,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
                                 Icon(
                                   Icons.bolt_rounded,
                                   size: 12,
-                                  color: item.isUnlocked ? FluentianColors.primary : Colors.grey.shade400,
+                                  color: item.isUnlocked
+                                      ? FluentianColors.primary
+                                      : Colors.grey.shade400,
                                 ),
                                 const SizedBox(width: 2),
                                 Text(
@@ -511,14 +543,18 @@ class _LessonListScreenState extends State<LessonListScreen> {
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
-                                    color: item.isUnlocked ? FluentianColors.textPrimary : Colors.grey.shade400,
+                                    color: item.isUnlocked
+                                        ? FluentianColors.textPrimary
+                                        : Colors.grey.shade400,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 Icon(
                                   Icons.timer_outlined,
                                   size: 12,
-                                  color: item.isUnlocked ? Colors.blue : Colors.grey.shade400,
+                                  color: item.isUnlocked
+                                      ? Colors.blue
+                                      : Colors.grey.shade400,
                                 ),
                                 const SizedBox(width: 2),
                                 Text(
@@ -526,7 +562,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
-                                    color: item.isUnlocked ? FluentianColors.textPrimary : Colors.grey.shade400,
+                                    color: item.isUnlocked
+                                        ? FluentianColors.textPrimary
+                                        : Colors.grey.shade400,
                                   ),
                                 ),
                               ],
@@ -541,9 +579,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
               const SizedBox(width: 12),
               Padding(
                 padding: const EdgeInsets.only(right: 16),
-                child: Center(
-                  child: _buildRightAction(context, item),
-                ),
+                child: Center(child: _buildRightAction(context, item)),
               ),
             ],
           ),
@@ -561,11 +597,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
           color: Colors.grey.shade100,
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          Icons.lock_rounded,
-          size: 14,
-          color: Colors.grey.shade400,
-        ),
+        child: Icon(Icons.lock_rounded, size: 14, color: Colors.grey.shade400),
       );
     }
 
@@ -580,11 +612,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
               color: FluentianColors.success,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.check,
-              size: 12,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.check, size: 12, color: Colors.white),
           ),
           const SizedBox(width: 8),
           GestureDetector(
@@ -618,9 +646,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
         foregroundColor: Colors.white,
         minimumSize: Size.zero,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 0,
       ),
       child: Text(
@@ -960,7 +986,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                     ],
                   ),
                 );
-              }).toList(),
+              }),
               if (unit.lessons.length > 4)
                 Padding(
                   padding: const EdgeInsets.only(top: 4, left: 14),

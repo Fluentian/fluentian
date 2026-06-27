@@ -72,9 +72,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                user == null
-                    ? 'Nice work.'
-                    : 'Nice work, ${user.displayName}.',
+                user == null ? 'Nice work.' : 'Nice work, ${user.displayName}.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 16,
@@ -140,7 +138,8 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
               const SizedBox(height: 12),
               FluentianButton(
                 text: 'Continue',
-                onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                onPressed: () =>
+                    Navigator.of(context).popUntil((r) => r.isFirst),
               ),
             ],
           ),
@@ -216,10 +215,9 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                               ? null
                               : controller.text.trim(),
                         );
-                        if (mounted) {
-                          setState(() => _feedbackSent = true);
-                          Navigator.pop(context);
-                        }
+                        if (!context.mounted) return;
+                        setState(() => _feedbackSent = true);
+                        Navigator.pop(context);
                       },
                       child: const Text('Send feedback'),
                     ),

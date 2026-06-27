@@ -249,10 +249,12 @@ class _ProfessionalApplicationScreenState
                 ? TextInputType.emailAddress
                 : TextInputType.text,
             validator: (val) {
-              if (isRequired && (val == null || val.isEmpty))
+              if (isRequired && (val == null || val.isEmpty)) {
                 return 'This field is required';
-              if (isEmail && val != null && !val.contains('@'))
+              }
+              if (isEmail && val != null && !val.contains('@')) {
                 return 'Invalid email';
+              }
               return null;
             },
             decoration: InputDecoration(

@@ -50,8 +50,8 @@ class _McqScreenState extends State<McqScreen>
   final TextEditingController _textController = TextEditingController();
 
   // Dynamic question variables
-  Set<int> _selectedMulti = {};
-  List<String> _assembledWords = [];
+  final Set<int> _selectedMulti = {};
+  final List<String> _assembledWords = [];
   List<String> _remainingScrambled = [];
 
   // Matching variables
@@ -59,7 +59,7 @@ class _McqScreenState extends State<McqScreen>
   List<String> _rightItems = [];
   String? _selectedLeft;
   String? _selectedRight;
-  Map<String, String> _matches = {}; // left -> right
+  final Map<String, String> _matches = {}; // left -> right
 
   // Speaking variables
   _RecordState _recordState = _RecordState.idle;
@@ -553,8 +553,10 @@ class _McqScreenState extends State<McqScreen>
                     final q = widget.questions[_currentIndex];
                     AiTutorSheet.show(
                       context,
-                      systemContext: 'You are a helpful language tutor. The user answered a question incorrectly. The question was: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Explain the grammar or vocabulary simply.',
-                      initialPrompt: 'Why was my answer wrong? The correct answer is "$correctAnswer". Please explain.',
+                      systemContext:
+                          'You are a helpful language tutor. The user answered a question incorrectly. The question was: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Explain the grammar or vocabulary simply.',
+                      initialPrompt:
+                          'Why was my answer wrong? The correct answer is "$correctAnswer". Please explain.',
                     );
                   },
                   icon: const Icon(
@@ -569,8 +571,9 @@ class _McqScreenState extends State<McqScreen>
                     ),
                   ),
                   style: TextButton.styleFrom(
-                    backgroundColor:
-                        FluentianColors.primary.withValues(alpha: 0.1),
+                    backgroundColor: FluentianColors.primary.withValues(
+                      alpha: 0.1,
+                    ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
@@ -1363,7 +1366,7 @@ class _McqScreenState extends State<McqScreen>
                     boxShadow: [
                       if (isSelected)
                         BoxShadow(
-                          color: FluentianColors.primary.withOpacity(0.1),
+                          color: FluentianColors.primary.withValues(alpha: 0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -1425,7 +1428,7 @@ class _McqScreenState extends State<McqScreen>
 
               if (_state != _AnswerState.unanswered) {
                 // Graded state
-                if (isMatched && leftMatched != null) {
+                if (isMatched) {
                   final correct = _isPairCorrect(leftMatched, right);
                   bgCol = correct
                       ? FluentianColors.successTint
@@ -1488,7 +1491,7 @@ class _McqScreenState extends State<McqScreen>
                     boxShadow: [
                       if (isSelected)
                         BoxShadow(
-                          color: FluentianColors.primary.withOpacity(0.1),
+                          color: FluentianColors.primary.withValues(alpha: 0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),

@@ -77,20 +77,24 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                ...List.generate(q.options.length, (optionIndex) {
-                  return RadioListTile<int>(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(q.options[optionIndex]),
-                    value: optionIndex,
-                    groupValue: _answers[index],
-                    activeColor: FluentianColors.primary,
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _answers[index] = value);
-                      }
-                    },
-                  );
-                }),
+                RadioGroup<int>(
+                  groupValue: _answers[index],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _answers[index] = value);
+                    }
+                  },
+                  child: Column(
+                    children: List.generate(q.options.length, (optionIndex) {
+                      return RadioListTile<int>(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(q.options[optionIndex]),
+                        value: optionIndex,
+                        activeColor: FluentianColors.primary,
+                      );
+                    }),
+                  ),
+                ),
               ],
             ),
           );
@@ -110,6 +114,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
 
   Future<void> _submit() async {
     setState(() => _isSubmitting = true);
+    final auth = context.read<AuthProvider>();
     final correct = List.generate(_questions.length, (index) {
       return _answers[index] == _questions[index].correctIndex;
     });
@@ -122,7 +127,6 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
         },
       );
       final assigned = result['assigned_level']?.toString() ?? 'a0';
-      final auth = context.read<AuthProvider>();
       final user = auth.user;
       if (user != null) {
         auth.updateUser(user.copyWith(currentLevel: assigned));

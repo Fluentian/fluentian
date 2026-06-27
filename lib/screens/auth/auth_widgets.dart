@@ -31,7 +31,7 @@ class AuthLogo extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: AuthColors.primary.withOpacity(0.2),
+                color: AuthColors.primary.withValues(alpha: 0.2),
                 blurRadius: 0,
                 offset: const Offset(0, 2),
               ),
@@ -163,7 +163,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
                     hintText: widget.hint,
                     hintStyle: GoogleFonts.inter(
                       fontSize: 14,
-                      color: AuthColors.placeholder.withOpacity(0.7),
+                      color: AuthColors.placeholder.withValues(alpha: 0.7),
                     ),
                     labelStyle: GoogleFonts.inter(
                       fontSize: _isFocused ? 12 : 16,

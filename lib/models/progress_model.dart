@@ -1,4 +1,5 @@
 /// Progress models — mirrors backend progress schemas.
+library;
 
 class LessonProgressModel {
   final String id;
@@ -53,14 +54,14 @@ class UserStatsModel {
   });
 
   factory UserStatsModel.fromJson(Map<String, dynamic> json) => UserStatsModel(
-        totalXp: json['total_xp'] as int? ?? 0,
-        streakDays: json['streak_days'] as int? ?? 0,
-        lessonsCompleted: json['lessons_completed'] as int? ?? 0,
-        unitsCompleted: json['units_completed'] as int? ?? 0,
-        hearts: json['hearts'] as int? ?? 5,
-        currentLevel: json['current_level'] as String? ?? 'A0',
-        weeklyXp: json['weekly_xp'] as int? ?? 0,
-      );
+    totalXp: json['total_xp'] as int? ?? 0,
+    streakDays: json['streak_days'] as int? ?? 0,
+    lessonsCompleted: json['lessons_completed'] as int? ?? 0,
+    unitsCompleted: json['units_completed'] as int? ?? 0,
+    hearts: json['hearts'] as int? ?? 5,
+    currentLevel: json['current_level'] as String? ?? 'A0',
+    weeklyXp: json['weekly_xp'] as int? ?? 0,
+  );
 }
 
 class EnrollmentModel {
@@ -128,8 +129,8 @@ class AnswerPayload {
   });
 
   Map<String, dynamic> toJson() => {
-        'question_id': questionId,
-        'answer': answer,
-        'is_correct': isCorrect,
-      };
+    'question_id': questionId,
+    'answer': answer,
+    'is_correct': isCorrect,
+  };
 }
