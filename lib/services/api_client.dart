@@ -212,7 +212,7 @@ class ApiClient {
       final uri = Uri.parse('$_baseUrl$path');
       final response =
           await http.get(uri, headers: headers).timeout(const Duration(seconds: 15));
-      _checkStatus(response);
+      _checkStatus(response, uri: uri);
       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
       if (decoded is List) return decoded;
       // Paginated response: return items list
@@ -265,7 +265,7 @@ class ApiClient {
           throw ApiException(0, 'Unknown HTTP method: $method');
       }
 
-      _checkStatus(response);
+      _checkStatus(response, uri: uri);
       if (response.body.isEmpty) return {};
       return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     } on SocketException {
@@ -296,7 +296,7 @@ class ApiClient {
     return headers;
   }
 
-  void _checkStatus(http.Response response) {
+  void _checkStatus(http.Response response, {Uri? uri}) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
     String message = 'Request failed';
     Map<String, dynamic>? responseBody;
@@ -312,7 +312,13 @@ class ApiClient {
       // ignore parse errors on error bodies
     }
     if (kDebugMode) {
-      debugPrint('API Error ${response.statusCode}: $message');
+      debugPrint(
+        'API Error ${response.statusCode} ${uri?.path ?? ''}: $message',
+      );
+      final body = utf8.decode(response.bodyBytes);
+      if (body.isNotEmpty) {
+        debugPrint('API Error body: $body');
+      }
     }
     throw ApiException(response.statusCode, message, responseBody);
   }

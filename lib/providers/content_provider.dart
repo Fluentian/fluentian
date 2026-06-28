@@ -33,19 +33,34 @@ class ContentProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      final results = await Future.wait([
-        _contentApi.getCourses(),
-        _progressApi.getMyStats(),
-        _progressApi.getMyEnrollments(),
-      ]);
-      _courses = results[0] as List<CourseModel>;
-      _stats = results[1] as UserStatsModel;
+      _courses = await _contentApi.getCourses();
+
+      try {
+        _stats = await _progressApi.getMyStats();
+      } catch (e) {
+        if (kDebugMode) debugPrint('loadHomeData stats error: $e');
+        _stats = const UserStatsModel(
+          totalXp: 0,
+          streakDays: 0,
+          lessonsCompleted: 0,
+          unitsCompleted: 0,
+          hearts: 5,
+          currentLevel: 'A0',
+          weeklyXp: 0,
+        );
+      }
+
+      List<EnrollmentModel> enrollments = const [];
+      try {
+        enrollments = await _progressApi.getMyEnrollments();
+      } catch (e) {
+        if (kDebugMode) debugPrint('loadHomeData enrollments error: $e');
+      }
+
       _enrolledCourseIds
         ..clear()
         ..addAll(
-          (results[2] as List<EnrollmentModel>)
-              .where((e) => e.isActive)
-              .map((e) => e.courseId),
+          enrollments.where((e) => e.isActive).map((e) => e.courseId),
         );
       _status = ContentStatus.loaded;
     } on ApiException catch (e) {
