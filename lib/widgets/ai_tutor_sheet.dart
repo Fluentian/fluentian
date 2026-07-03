@@ -64,6 +64,9 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
       if (!isInitial) _controller.clear();
       _isLoading = true;
     });
+    if (!isInitial) {
+      SoundEffectService.instance.play(SoundEffect.aiResponse);
+    }
     _scrollToBottom();
 
     final aiResponse = await AiService.instance.generateText(
