@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
@@ -259,6 +260,27 @@ class AuthProvider extends ChangeNotifier {
       return false;
     } on firebase_auth.FirebaseAuthException catch (e) {
       _errorMessage = e.message ?? 'Google sign-in failed.';
+      if (kDebugMode) {
+        debugPrint('Firebase Google sign-in error [${e.code}]: ${e.message}');
+      }
+      await _firebaseAuth.signOut();
+      await _googleSignIn.signOut();
+      return false;
+    } on PlatformException catch (e) {
+      final raw = '${e.message ?? ''} ${e.details ?? ''}';
+      if (raw.contains('ApiException: 10')) {
+        _errorMessage =
+            'Google Sign-In is not configured for this Android app. Add the debug SHA-1/SHA-256 fingerprints in Firebase, then replace google-services.json.';
+      } else {
+        _errorMessage = e.message ?? 'Google sign-in failed.';
+      }
+      if (kDebugMode) {
+        debugPrint(
+          'Google platform sign-in error [${e.code}]: ${e.message} ${e.details}',
+        );
+      }
+      await _firebaseAuth.signOut();
+      await _googleSignIn.signOut();
       return false;
     } catch (e) {
       _errorMessage = 'Google sign-in failed. Please try again.';

@@ -59,7 +59,15 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    await context.read<AuthProvider>().signInWithGoogle();
+    final auth = context.read<AuthProvider>();
+    final success = await auth.signInWithGoogle();
+    if (!mounted || success) return;
+    final message = auth.errorMessage;
+    if (message != null && message.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 
   @override
