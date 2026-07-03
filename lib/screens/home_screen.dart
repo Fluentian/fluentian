@@ -616,6 +616,13 @@ class _HomeContentState extends State<_HomeContent> {
 }
 
 class _HomeHero extends StatelessWidget {
+  static const _fullHeartMessages = [
+    'Ready for a French streak',
+    'Full hearts, full focus',
+    'Practice energy restored',
+    'You are lesson-ready',
+  ];
+
   final String greeting;
   final String displayName;
   final int streak;
@@ -644,6 +651,9 @@ class _HomeHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final levelProgress = (xpProgress / xpForNextLevel).clamp(0.0, 1.0);
     final heartsFull = hearts >= maxHearts;
+    final now = DateTime.now();
+    final fullHeartMessage =
+        _fullHeartMessages[(now.day + now.hour) % _fullHeartMessages.length];
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
@@ -835,7 +845,7 @@ class _HomeHero extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      heartsFull ? 'Hearts are full' : 'Next heart refill',
+                      heartsFull ? fullHeartMessage : 'Next heart refill',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(

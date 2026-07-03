@@ -79,6 +79,12 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
   Timer? _timer;
   Duration _remaining = Duration.zero;
   bool _refreshQueued = false;
+  static const _fullHeartMessages = [
+    'Ready to roll',
+    'Full power',
+    'All set',
+    'Hearts loaded',
+  ];
 
   @override
   void initState() {
@@ -133,7 +139,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
   }
 
   String get _countdown {
-    if (widget.hearts >= widget.maxHearts) return 'Full';
+    if (widget.hearts >= widget.maxHearts) return _fullHeartMessage;
     if (widget.nextRefillAt == null) return 'Refilling';
     final hours = _remaining.inHours;
     final minutes = _remaining.inMinutes.remainder(60);
@@ -142,6 +148,12 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
       return '${hours}h ${minutes.toString().padLeft(2, '0')}m ${seconds.toString().padLeft(2, '0')}s';
     }
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  String get _fullHeartMessage {
+    final now = DateTime.now();
+    final index = (now.day + now.hour) % _fullHeartMessages.length;
+    return _fullHeartMessages[index];
   }
 
   @override
