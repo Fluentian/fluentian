@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fluentian/models/course_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +8,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
+import '../services/in_app_notification_service.dart';
 import '../services/notifications_api.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
@@ -883,11 +886,50 @@ class _HomeHero extends StatelessWidget {
   }
 }
 
-class _NotificationButton extends StatelessWidget {
+class _NotificationButton extends StatefulWidget {
+  @override
+  State<_NotificationButton> createState() => _NotificationButtonState();
+}
+
+class _NotificationButtonState extends State<_NotificationButton> {
+  late Future<int> _unreadFuture;
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _unreadFuture = _getUnreadCount();
+    _refreshTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _reload(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<int> _getUnreadCount() async {
+    final results = await Future.wait([
+      NotificationsApi.instance.getUnreadCount().catchError((_) => 0),
+      InAppNotificationService.instance.getUnreadCount().catchError((_) => 0),
+    ]);
+    return results.fold<int>(0, (sum, count) => sum + count);
+  }
+
+  void _reload() {
+    if (!mounted) return;
+    setState(() {
+      _unreadFuture = _getUnreadCount();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<int>(
-      future: NotificationsApi.instance.getUnreadCount(),
+      future: _unreadFuture,
       builder: (context, snapshot) {
         final unread = snapshot.data ?? 0;
         return Stack(
@@ -904,6 +946,7 @@ class _NotificationButton extends StatelessWidget {
                       builder: (_) => const NotificationsScreen(),
                     ),
                   );
+                  if (mounted) _reload();
                 },
                 child: const SizedBox(
                   width: 44,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'in_app_notification_service.dart';
 import 'notifications_api.dart';
 
 class LocalPushService {
@@ -110,6 +111,7 @@ class LocalPushService {
             id: notification.id.hashCode,
             title: notification.title,
             body: notification.body,
+            persistInApp: false,
           );
         }
       }
@@ -138,6 +140,7 @@ class LocalPushService {
       id: 1001,
       title: 'Daily practice reminder',
       body: 'A short French session keeps your streak moving.',
+      inAppId: 'daily-reminder-$key',
     );
   }
 
@@ -145,6 +148,8 @@ class LocalPushService {
     required int id,
     required String title,
     required String body,
+    String? inAppId,
+    bool persistInApp = true,
   }) async {
     const androidDetails = AndroidNotificationDetails(
       'fluentian_channel',
@@ -166,6 +171,12 @@ class LocalPushService {
     );
 
     await _plugin.show(id, title, body, details);
+    if (!persistInApp) return;
+    await InAppNotificationService.instance.addNotification(
+      id: inAppId ?? 'local-$id-${DateTime.now().millisecondsSinceEpoch}',
+      title: title,
+      body: body,
+    );
   }
 
   Future<void> showTestNotification() async {
@@ -177,6 +188,7 @@ class LocalPushService {
       id: 0,
       title: 'Time to learn!',
       body: 'Your daily goal is waiting for you.',
+      inAppId: 'test-${DateTime.now().millisecondsSinceEpoch}',
     );
   }
 }
