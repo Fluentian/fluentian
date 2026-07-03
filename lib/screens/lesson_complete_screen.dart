@@ -37,17 +37,31 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
-    final previousXp = (widget.newXpTotal - widget.xpEarned).clamp(0, 1 << 31);
-    final accuracyPercent = (widget.accuracy * 100).round();
+    final xpEarned = widget.xpEarned < 0 ? 0 : widget.xpEarned;
+    final newXpTotal = widget.newXpTotal < 0 ? 0 : widget.newXpTotal;
+    final previousXp = (newXpTotal - xpEarned).clamp(0, 1 << 31).toInt();
+    final accuracy = widget.accuracy.isFinite
+        ? widget.accuracy.clamp(0.0, 1.0)
+        : 0.0;
+    final accuracyPercent = (accuracy * 100).round();
+    final totalQuestions = widget.totalQuestions < 1 ? 1 : widget.totalQuestions;
+    final correctCount = widget.correctCount.clamp(0, totalQuestions).toInt();
 
     return Scaffold(
       backgroundColor: FluentianColors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 48,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 12),
               Container(
                 width: 80,
                 height: 80,
@@ -93,7 +107,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                     const Icon(Iconsax.flash_15, color: Colors.white, size: 28),
                     const SizedBox(height: 6),
                     Text(
-                      '+${widget.xpEarned} XP',
+                      '+$xpEarned XP',
                       style: GoogleFonts.inter(
                         fontSize: 44,
                         fontWeight: FontWeight.w800,
@@ -102,7 +116,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '$previousXp -> ${widget.newXpTotal} total XP',
+                      '$previousXp -> $newXpTotal total XP',
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         color: Colors.white.withValues(alpha: 0.8),
@@ -118,12 +132,12 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                   _StatColumn('$accuracyPercent%', 'Accuracy'),
                   _StatColumn(_formatTime(widget.timeSeconds), 'Time'),
                   _StatColumn(
-                    '${widget.correctCount}/${widget.totalQuestions}',
+                    '$correctCount/$totalQuestions',
                     'Correct',
                   ),
                 ],
               ),
-              const Spacer(),
+              const SizedBox(height: 28),
               if (!_feedbackSent)
                 TextButton.icon(
                   onPressed: _showFeedbackSheet,
@@ -145,8 +159,12 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                 onPressed: () =>
                     Navigator.of(context).popUntil((r) => r.isFirst),
               ),
-            ],
-          ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
