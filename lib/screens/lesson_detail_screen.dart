@@ -450,7 +450,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           payload['source'] ??
           payload['en'] ??
           '';
-      return '- ${block.blockType}: ${text.toString()}';
+      return '- ${block.blockKind}: ${text.toString()}';
     }).where((line) => line.trim().length > 3);
 
     final questionSummaries = lesson.questions.take(5).map((q) {
