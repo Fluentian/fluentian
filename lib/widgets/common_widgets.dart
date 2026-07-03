@@ -158,6 +158,13 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
 
   @override
   Widget build(BuildContext context) {
+    final heartsFull = widget.hearts >= widget.maxHearts;
+    final activeColor = heartsFull
+        ? FluentianColors.success
+        : FluentianColors.error;
+    final backgroundColor = heartsFull
+        ? FluentianColors.successTint
+        : FluentianColors.errorTint;
     final iconCount = widget.showHearts
         ? widget.compact
               ? widget.maxHearts.clamp(1, 5).toInt()
@@ -169,10 +176,10 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
         vertical: widget.compact ? 6 : 8,
       ),
       decoration: BoxDecoration(
-        color: FluentianColors.errorTint,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(FluentianRadius.pill),
         border: Border.all(
-          color: FluentianColors.error.withValues(alpha: 0.18),
+          color: activeColor.withValues(alpha: 0.18),
         ),
       ),
       child: Row(
@@ -188,9 +195,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
                   child: Icon(
                     i < widget.hearts ? Iconsax.heart5 : Iconsax.heart,
                     size: widget.compact ? 15 : 17,
-                    color: i < widget.hearts
-                        ? FluentianColors.error
-                        : Colors.grey.shade400,
+                    color: i < widget.hearts ? activeColor : Colors.grey.shade400,
                   ),
                 ),
               ),
@@ -204,7 +209,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
             style: GoogleFonts.inter(
               fontSize: widget.compact ? 11 : 12,
               fontWeight: FontWeight.w800,
-              color: FluentianColors.error,
+              color: activeColor,
             ),
           ),
           if (!widget.compact && widget.hearts < widget.maxHearts) ...[
