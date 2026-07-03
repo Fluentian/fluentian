@@ -74,7 +74,13 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
       setState(() {
         _isLoading = false;
         if (aiResponse != null) {
-          _messages.add(AiMessage(role: 'assistant', content: aiResponse));
+          _messages.add(
+            AiMessage(
+              role: 'assistant',
+              content: aiResponse.text,
+              activity: aiResponse.activity,
+            ),
+          );
         } else {
           _messages.add(
             AiMessage(
@@ -216,7 +222,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                   icon: Iconsax.task_square,
                   label: 'Quiz me',
                   onTap: () => _sendMessage(
-                    'Quiz me on this French lesson. Ask one short practice question based on the lesson context, then wait for my answer.',
+                    'Quiz me on this French lesson. Create one clickable multiple-choice French quiz or a quick poll based on the lesson context. Include instant feedback and a short explanation.',
                   ),
                 ),
               ],
@@ -413,7 +419,18 @@ class _TutorMessageBubble extends StatelessWidget {
                           height: 1.38,
                         ),
                       )
-                    : _MarkdownTutorText(message.content),
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (message.content.trim().isNotEmpty)
+                            _MarkdownTutorText(message.content),
+                          if (message.activity != null) ...[
+                            if (message.content.trim().isNotEmpty)
+                              const SizedBox(height: 12),
+                            _TutorActivityCard(activity: message.activity!),
+                          ],
+                        ],
+                      ),
               ),
             ),
           ),
@@ -522,6 +539,211 @@ class _MarkdownTutorText extends StatelessWidget {
           color: FluentianColors.primary,
           shape: BoxShape.circle,
         ),
+      ),
+    );
+  }
+}
+
+class _TutorActivityCard extends StatefulWidget {
+  final AiTutorActivity activity;
+
+  const _TutorActivityCard({required this.activity});
+
+  @override
+  State<_TutorActivityCard> createState() => _TutorActivityCardState();
+}
+
+class _TutorActivityCardState extends State<_TutorActivityCard> {
+  int? _selectedIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final activity = widget.activity;
+    final isPoll = activity.isPoll;
+    final selectedOption = _selectedIndex == null
+        ? null
+        : activity.options[_selectedIndex!];
+    final totalVotes = activity.options.fold<int>(
+      0,
+      (sum, option) => sum + (option.votes ?? 0),
+    );
+    final adjustedVotes = totalVotes + (_selectedIndex == null ? 0 : 1);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: FluentianColors.pageBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: FluentianColors.primary.withValues(alpha: 0.16),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: isPoll
+                      ? const Color(0xFFFFF7ED)
+                      : FluentianColors.primaryTint,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  isPoll ? Iconsax.chart_2 : Iconsax.task_square,
+                  size: 17,
+                  color: isPoll
+                      ? const Color(0xFFF97316)
+                      : FluentianColors.primary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isPoll ? 'Quick poll' : 'Mini quiz',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    color: FluentianColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            activity.question,
+            style: GoogleFonts.inter(
+              color: FluentianColors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...List.generate(activity.options.length, (index) {
+            final option = activity.options[index];
+            final selected = _selectedIndex == index;
+            final correct = option.isCorrect == true;
+            final wrongSelection =
+                selected && option.isCorrect != null && option.isCorrect == false;
+            final showResult = _selectedIndex != null;
+            final optionVotes = (option.votes ?? 0) + (selected && isPoll ? 1 : 0);
+            final percent = adjustedVotes <= 0 ? 0.0 : optionVotes / adjustedVotes;
+            final accent = isPoll
+                ? FluentianColors.primary
+                : correct
+                    ? FluentianColors.success
+                    : wrongSelection
+                        ? FluentianColors.error
+                        : FluentianColors.primary;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: () => setState(() => _selectedIndex = index),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(11),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: selected || (showResult && correct && !isPoll)
+                            ? accent.withValues(alpha: 0.55)
+                            : FluentianColors.border,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              selected
+                                  ? Iconsax.tick_circle
+                                  : Iconsax.record_circle,
+                              size: 18,
+                              color: selected ? accent : FluentianColors.textSecondary,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                option.text,
+                                style: GoogleFonts.inter(
+                                  color: FluentianColors.textPrimary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (isPoll && _selectedIndex != null) ...[
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(99),
+                            child: LinearProgressIndicator(
+                              value: percent,
+                              minHeight: 6,
+                              backgroundColor: FluentianColors.border,
+                              valueColor: AlwaysStoppedAnimation(accent),
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            '${(percent * 100).round()}% chose this',
+                            style: GoogleFonts.inter(
+                              color: FluentianColors.textSecondary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+          if (_selectedIndex != null) ...[
+            const SizedBox(height: 2),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(11),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: FluentianColors.border),
+              ),
+              child: Text(
+                [
+                  if (!isPoll && selectedOption?.isCorrect == true) 'Correct!',
+                  if (!isPoll && selectedOption?.isCorrect == false) 'Good try.',
+                  if (selectedOption?.feedback?.trim().isNotEmpty == true)
+                    selectedOption!.feedback!.trim(),
+                  if (activity.explanation.trim().isNotEmpty)
+                    activity.explanation.trim(),
+                ].join(' '),
+                style: GoogleFonts.inter(
+                  color: FluentianColors.textPrimary,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
