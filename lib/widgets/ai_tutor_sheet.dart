@@ -215,8 +215,9 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                 _PromptChip(
                   icon: Iconsax.task_square,
                   label: 'Quiz me',
-                  onTap: () =>
-                      _sendMessage('Ask me a quick practice question.'),
+                  onTap: () => _sendMessage(
+                    'Quiz me on this French lesson. Ask one short practice question based on the lesson context, then wait for my answer.',
+                  ),
                 ),
               ],
             ),

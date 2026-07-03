@@ -687,9 +687,9 @@ class _McqScreenState extends State<McqScreen>
                     AiTutorSheet.show(
                       context,
                       systemContext:
-                          'You are a helpful language tutor. The user answered a question incorrectly. The question was: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Explain the grammar or vocabulary simply.',
+                          'Target language: French. You are a helpful French tutor. The user answered a French lesson question incorrectly. Question: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Explain the French grammar, vocabulary, or translation point simply in English, using French examples when useful.',
                       initialPrompt:
-                          'Why was my answer wrong? The correct answer is "$correctAnswer". Please explain.',
+                          'Why was my answer wrong in this French question? The correct answer is "$correctAnswer". Please explain.',
                     );
                   },
                   icon: const Icon(

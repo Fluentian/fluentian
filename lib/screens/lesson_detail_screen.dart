@@ -174,10 +174,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 onPressed: () {
                   AiTutorSheet.show(
                     context,
-                    systemContext:
-                        'You are a helpful language tutor. Help the user summarize the lesson "${_lesson!.title}". Keep the response short and friendly.',
+                    systemContext: _aiLessonContext(),
                     initialPrompt:
-                        'Can you summarize this lesson and tell me what I will learn?',
+                        'Summarize this French lesson and tell me what I will learn.',
                   );
                 },
                 child: const Icon(Iconsax.message5, color: Colors.white),
@@ -431,6 +430,51 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     );
   }
 
+  String _aiLessonContext({String? focus}) {
+    final lesson = _lesson;
+    if (lesson == null) {
+      return [
+        'Target language: French.',
+        'Base explanation language: English.',
+        if (focus != null) 'Current focus: $focus',
+      ].join('\n');
+    }
+
+    final blockSummaries = lesson.blocks.take(8).map((block) {
+      final payload = block.blockPayload;
+      final text = payload['text'] ??
+          payload['word'] ??
+          payload['target'] ??
+          payload['base'] ??
+          payload['meaning'] ??
+          payload['source'] ??
+          payload['en'] ??
+          '';
+      return '- ${block.blockType}: ${text.toString()}';
+    }).where((line) => line.trim().length > 3);
+
+    final questionSummaries = lesson.questions.take(5).map((q) {
+      final prompt = q.promptPayload['question'] ??
+          q.promptPayload['text'] ??
+          q.promptPayload['prompt'] ??
+          '';
+      return '- ${prompt.toString()}';
+    }).where((line) => line.trim().length > 2);
+
+    return [
+      'Target language: French.',
+      'Base explanation language: English.',
+      'Lesson title: ${lesson.title}',
+      'Lesson kind: ${lesson.lessonKind}',
+      'Lesson XP: ${lesson.xpReward}',
+      if (focus != null) 'Current focus: $focus',
+      if (blockSummaries.isNotEmpty) 'Lesson content:\n${blockSummaries.join('\n')}',
+      if (questionSummaries.isNotEmpty)
+        'Existing lesson questions:\n${questionSummaries.join('\n')}',
+      'Tutor behavior: explain French clearly, use lesson vocabulary, and make quizzes about this French lesson only.',
+    ].join('\n');
+  }
+
   Widget _buildBlock(BlockModel block) {
     switch (block.blockKind) {
       case 'explanation':
@@ -486,10 +530,12 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         onPressed: () {
                           AiTutorSheet.show(
                             context,
-                            systemContext:
-                                'You are a language tutor. Explain the text or phrase clearly: "$text"',
+                            systemContext: _aiLessonContext(
+                              focus:
+                                  'Explain this French lesson text or phrase clearly: "$text"',
+                            ),
                             initialPrompt:
-                                'Can you explain this phrase to me: "$text"?',
+                                'Can you explain this French phrase to me: "$text"?',
                           );
                         },
                       ),
@@ -556,10 +602,12 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     onPressed: () {
                       AiTutorSheet.show(
                         context,
-                        systemContext:
-                            'You are a language tutor. Explain the vocabulary word "$word" which means "$meaning". Give an example sentence.',
+                        systemContext: _aiLessonContext(
+                          focus:
+                              'Explain the French vocabulary word "$word" which means "$meaning". Give a French example sentence with an English explanation.',
+                        ),
                         initialPrompt:
-                            'Can you give me an example sentence for the word "$word"?',
+                            'Can you give me a French example sentence for the word "$word"?',
                       );
                     },
                   ),
