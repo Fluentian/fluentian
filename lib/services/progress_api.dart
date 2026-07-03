@@ -14,15 +14,14 @@ class ProgressApi {
     required double score,
     required List<AnswerPayload> answers,
     required int timeSeconds,
+    int heartsSpent = 0,
   }) async {
-    final json = await _client.post(
-      '/progress/lessons/$lessonId/complete',
-      {
-        'score': score,
-        'answers': answers.map((a) => a.toJson()).toList(),
-        'time_seconds': timeSeconds,
-      },
-    );
+    final json = await _client.post('/progress/lessons/$lessonId/complete', {
+      'score': score,
+      'answers': answers.map((a) => a.toJson()).toList(),
+      'time_seconds': timeSeconds,
+      'hearts_spent': heartsSpent,
+    });
     return CompleteLessonResult.fromJson(json);
   }
 

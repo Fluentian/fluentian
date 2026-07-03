@@ -139,14 +139,18 @@ class _LessonListScreenState extends State<LessonListScreen> {
                     Container(
                       width: 48,
                       height: 48,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: FluentianColors.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Iconsax.award5,
-                        color: FluentianColors.primary,
-                        size: 24,
+                      child: Transform.translate(
+                        offset: const Offset(0, 1),
+                        child: const Icon(
+                          Iconsax.award5,
+                          color: FluentianColors.primary,
+                          size: 24,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 14),

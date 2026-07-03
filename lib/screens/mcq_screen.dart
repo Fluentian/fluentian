@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:just_audio/just_audio.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
 import '../models/course_model.dart';
 import '../models/progress_model.dart';
+import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
 import '../services/tts_service.dart';
 import '../widgets/ai_tutor_sheet.dart';
@@ -40,8 +42,10 @@ class _McqScreenState extends State<McqScreen>
   int _correctCount = 0;
 
   final List<AnswerPayload> _answers = [];
+  final List<Future<void>> _pendingHeartWrites = [];
   final DateTime _startTime = DateTime.now();
   bool _isSubmitting = false;
+  int _persistedHeartSpends = 0;
 
   late final AudioPlayer _audioPlayer;
   final TtsService _ttsService = TtsService.instance;
@@ -71,7 +75,16 @@ class _McqScreenState extends State<McqScreen>
   bool _audioPlaying = false;
   String? _loadedAudioUrl;
 
-  QuestionModel get _currentQ => widget.questions[_currentIndex];
+  List<QuestionModel> get _activeQuestions {
+    final speakingEnabled =
+        context.read<AuthProvider>().user?.speakingExercisesEnabled ?? true;
+    if (speakingEnabled) return widget.questions;
+    return widget.questions
+        .where((question) => question.questionKind != 'speech_record')
+        .toList(growable: false);
+  }
+
+  QuestionModel get _currentQ => _activeQuestions[_currentIndex];
 
   @override
   void initState() {
@@ -96,7 +109,11 @@ class _McqScreenState extends State<McqScreen>
       }
     });
 
+    final cachedHearts = context.read<AuthProvider>().user?.hearts;
+    final statsHearts = context.read<ContentProvider>().stats?.hearts;
+    _hearts = statsHearts ?? cachedHearts ?? _hearts;
     _initQuestion();
+    _loadPersistentHearts();
   }
 
   @override
@@ -144,9 +161,11 @@ class _McqScreenState extends State<McqScreen>
     }
 
     // Play audio automatically if autoplay is appropriate (dictation / listening)
-    if (q.audioUrl != null && q.audioUrl!.isNotEmpty) {
+    final autoplay = context.read<AuthProvider>().user?.autoplayAudio ?? true;
+    if (autoplay && q.audioUrl != null && q.audioUrl!.isNotEmpty) {
       _playQuestionAudio();
-    } else if (q.ttsEnabled &&
+    } else if (autoplay &&
+        q.ttsEnabled &&
         q.textToSpeak.trim().isNotEmpty &&
         q.questionKind != 'speech_record') {
       _speakCurrentQuestion();
@@ -231,10 +250,12 @@ class _McqScreenState extends State<McqScreen>
 
   Future<void> _speakCurrentQuestion() async {
     try {
+      final ttsSpeed = context.read<AuthProvider>().user?.ttsSpeed ?? 1.0;
       await _audioPlayer.stop();
       await _ttsService.speak(
         _currentQ.textToSpeak,
         language: _currentQ.ttsLanguage,
+        speed: ttsSpeed,
       );
     } catch (_) {
       if (mounted) {
@@ -343,6 +364,7 @@ class _McqScreenState extends State<McqScreen>
   }
 
   bool _isCheckEnabled() {
+    if (_hearts <= 0) return false;
     final q = _currentQ;
     if (q.questionKind == 'mcq_single' ||
         q.questionKind == 'fill_blank' && q.mcqOptions.isNotEmpty ||
@@ -372,6 +394,109 @@ class _McqScreenState extends State<McqScreen>
       return _recordState == _RecordState.result;
     }
     return false;
+  }
+
+  Future<void> _loadPersistentHearts() async {
+    final hearts = await context.read<AuthProvider>().refreshHearts();
+    if (!mounted || hearts == null) return;
+    setState(() {
+      _hearts = hearts;
+    });
+  }
+
+  Future<void> _refreshPersistentHearts() async {
+    final hearts = await context.read<AuthProvider>().refreshHearts();
+    if (!mounted || hearts == null) return;
+    setState(() {
+      _hearts = hearts;
+    });
+  }
+
+  Future<void> _syncWrongAnswerHeart() async {
+    final hearts = await context.read<AuthProvider>().spendHeart();
+    if (!mounted || hearts == null) return;
+    _persistedHeartSpends++;
+    setState(() {
+      _hearts = hearts;
+    });
+  }
+
+  void _showOutOfHeartsSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: const BoxDecoration(
+                color: FluentianColors.errorTint,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Iconsax.heart5,
+                color: FluentianColors.error,
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Hearts are refilling',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: FluentianColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Take a quick break, review a lesson, or come back when the next heart is ready.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                height: 1.4,
+                color: FluentianColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Consumer<AuthProvider>(
+              builder: (context, auth, _) {
+                final hearts = auth.user?.hearts ?? _hearts;
+                return HeartStatusChip(
+                  hearts: hearts,
+                  maxHearts: auth.maxHearts,
+                  nextRefillAt: auth.nextHeartRefillAt,
+                  onRefreshDue: () {
+                    _refreshPersistentHearts();
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Iconsax.clock),
+                label: const Text('Got it'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Stay here'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _check() {
@@ -452,14 +577,22 @@ class _McqScreenState extends State<McqScreen>
       ),
     );
 
+    var shouldSpendHeart = false;
     setState(() {
       _state = isCorrect ? _AnswerState.correct : _AnswerState.wrong;
       if (isCorrect) {
         _correctCount++;
       } else if (_hearts > 0) {
         _hearts--;
+        shouldSpendHeart = true;
       }
     });
+
+    if (shouldSpendHeart) {
+      final write = _syncWrongAnswerHeart();
+      _pendingHeartWrites.add(write);
+      write.whenComplete(() => _pendingHeartWrites.remove(write));
+    }
 
     _showResultSheet(isCorrect, correctAnswerText);
   }
@@ -499,7 +632,7 @@ class _McqScreenState extends State<McqScreen>
               Row(
                 children: [
                   const Icon(
-                    Icons.favorite_rounded,
+                    Iconsax.heart5,
                     color: FluentianColors.error,
                     size: 16,
                   ),
@@ -527,7 +660,7 @@ class _McqScreenState extends State<McqScreen>
                 child: Row(
                   children: [
                     const Icon(
-                      Icons.check_circle_rounded,
+                      Iconsax.tick_circle,
                       color: FluentianColors.success,
                       size: 18,
                     ),
@@ -550,7 +683,7 @@ class _McqScreenState extends State<McqScreen>
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
                   onPressed: () {
-                    final q = widget.questions[_currentIndex];
+                    final q = _activeQuestions[_currentIndex];
                     AiTutorSheet.show(
                       context,
                       systemContext:
@@ -560,7 +693,7 @@ class _McqScreenState extends State<McqScreen>
                     );
                   },
                   icon: const Icon(
-                    Icons.psychology_rounded,
+                    Iconsax.message5,
                     color: FluentianColors.primary,
                   ),
                   label: const Text(
@@ -618,7 +751,8 @@ class _McqScreenState extends State<McqScreen>
   }
 
   Future<void> _onNext(bool correct) async {
-    if (_currentIndex < widget.questions.length - 1) {
+    final questions = _activeQuestions;
+    if (_currentIndex < questions.length - 1) {
       Navigator.pop(context); // close sheet
       setState(() {
         _currentIndex++;
@@ -628,48 +762,63 @@ class _McqScreenState extends State<McqScreen>
     } else {
       setState(() => _isSubmitting = true);
 
-      final score = widget.questions.isEmpty
-          ? 1.0
-          : _correctCount / widget.questions.length;
+      final contentProvider = context.read<ContentProvider>();
+      final authProvider = context.read<AuthProvider>();
+      final navigator = Navigator.of(context);
+      final score = questions.isEmpty ? 1.0 : _correctCount / questions.length;
       final timeSeconds = DateTime.now().difference(_startTime).inSeconds;
+      await Future.wait(List<Future<void>>.from(_pendingHeartWrites));
 
       int finalXpEarned = widget.xpReward;
-      int finalNewXpTotal = 0;
+      int? finalNewXpTotal;
+      int? finalHeartsRemaining;
+      int? finalStreakDays;
 
       if (widget.isSrsReview) {
-        final result = await context.read<ContentProvider>().completeSrsReview(
+        final result = await contentProvider.completeSrsReview(
           answers: _answers,
           timeSeconds: timeSeconds,
         );
         if (result != null) {
           finalXpEarned = result['xp_earned'] as int? ?? 0;
           finalNewXpTotal = result['new_xp_total'] as int? ?? 0;
+          finalHeartsRemaining = result['hearts_remaining'] as int?;
+          finalStreakDays = result['streak_days'] as int?;
         }
       } else {
-        final result = await context.read<ContentProvider>().completeLesson(
+        final result = await contentProvider.completeLesson(
           lessonId: widget.lessonId,
           score: score,
           answers: _answers,
           timeSeconds: timeSeconds,
+          heartsSpent: _persistedHeartSpends,
         );
         if (result != null) {
           finalXpEarned = result.xpEarned;
           finalNewXpTotal = result.newXpTotal;
+          finalHeartsRemaining = result.heartsRemaining;
+          finalStreakDays = result.streakDays;
         }
       }
 
       if (!mounted) return;
-      Navigator.pop(context); // close sheet
-      Navigator.of(context).pushReplacement(
+      authProvider.updateUserStats(
+        hearts: finalHeartsRemaining,
+        xpTotal: finalNewXpTotal,
+        streakDays: finalStreakDays,
+      );
+      await authProvider.refreshHearts();
+      navigator.pop(); // close sheet
+      navigator.pushReplacement(
         MaterialPageRoute(
           builder: (_) => LessonCompleteScreen(
             lessonId: widget.lessonId,
             xpEarned: finalXpEarned,
-            newXpTotal: finalNewXpTotal,
+            newXpTotal: finalNewXpTotal ?? 0,
             accuracy: score,
             timeSeconds: timeSeconds,
             correctCount: _correctCount,
-            totalQuestions: widget.questions.length,
+            totalQuestions: questions.length,
           ),
         ),
       );
@@ -678,12 +827,14 @@ class _McqScreenState extends State<McqScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.questions.isEmpty) {
+    final questions = _activeQuestions;
+    if (questions.isEmpty) {
       return const Scaffold(body: Center(child: Text("No questions found.")));
     }
 
-    final progress = (_currentIndex) / widget.questions.length;
+    final progress = (_currentIndex) / questions.length;
     final q = _currentQ;
+    final auth = context.watch<AuthProvider>();
 
     return Scaffold(
       backgroundColor: FluentianColors.white,
@@ -698,7 +849,7 @@ class _McqScreenState extends State<McqScreen>
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Icon(
-                      Icons.close_rounded,
+                      Iconsax.close_circle,
                       color: Colors.grey.shade500,
                       size: 24,
                     ),
@@ -718,22 +869,14 @@ class _McqScreenState extends State<McqScreen>
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Row(
-                    children: List.generate(
-                      5,
-                      (i) => Padding(
-                        padding: const EdgeInsets.only(left: 1),
-                        child: Icon(
-                          i < _hearts
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          size: 18,
-                          color: i < _hearts
-                              ? FluentianColors.error
-                              : Colors.grey.shade300,
-                        ),
-                      ),
-                    ),
+                  HeartStatusChip(
+                    hearts: _hearts,
+                    maxHearts: auth.maxHearts,
+                    nextRefillAt: auth.nextHeartRefillAt,
+                    compact: true,
+                    onRefreshDue: () {
+                      _refreshPersistentHearts();
+                    },
                   ),
                 ],
               ),
@@ -767,6 +910,8 @@ class _McqScreenState extends State<McqScreen>
                         color: FluentianColors.textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    _buildQuizHud(),
                     const SizedBox(height: 24),
 
                     // Render dynamic image if present
@@ -782,7 +927,7 @@ class _McqScreenState extends State<McqScreen>
                             height: 180,
                             color: Colors.grey.shade100,
                             child: const Icon(
-                              Icons.broken_image_rounded,
+                              Iconsax.gallery_slash,
                               size: 40,
                               color: Colors.grey,
                             ),
@@ -829,8 +974,8 @@ class _McqScreenState extends State<McqScreen>
                                       )
                                     : Icon(
                                         _audioPlaying
-                                            ? Icons.pause_rounded
-                                            : Icons.play_arrow_rounded,
+                                            ? Iconsax.pause
+                                            : Iconsax.play,
                                         color: Colors.white,
                                         size: 26,
                                       ),
@@ -866,15 +1011,18 @@ class _McqScreenState extends State<McqScreen>
             Padding(
               padding: const EdgeInsets.all(16),
               child: FluentianButton(
-                text: 'Check ✓',
-                onPressed:
-                    _isCheckEnabled() && _state == _AnswerState.unanswered
+                text: _hearts <= 0 ? 'Hearts refilling' : 'Check',
+                onPressed: _hearts <= 0
+                    ? _showOutOfHeartsSheet
+                    : _isCheckEnabled() && _state == _AnswerState.unanswered
                     ? _check
                     : null,
-                backgroundColor: _isCheckEnabled()
+                backgroundColor: _hearts <= 0 || _isCheckEnabled()
                     ? FluentianColors.primary
                     : Colors.grey.shade300,
-                textColor: _isCheckEnabled() ? Colors.white : Colors.grey,
+                textColor: _hearts <= 0 || _isCheckEnabled()
+                    ? Colors.white
+                    : Colors.grey,
               ),
             ),
           ],
@@ -908,6 +1056,36 @@ class _McqScreenState extends State<McqScreen>
     }
   }
 
+  Widget _buildQuizHud() {
+    final current = _currentIndex + 1;
+    final total = _activeQuestions.length;
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _QuizHudChip(
+          icon: Iconsax.task_square,
+          label: '$current of $total',
+          color: FluentianColors.primary,
+          bgColor: FluentianColors.primaryTint,
+        ),
+        _QuizHudChip(
+          icon: Iconsax.flash_15,
+          label: '${widget.xpReward} XP',
+          color: FluentianColors.success,
+          bgColor: FluentianColors.successTint,
+        ),
+        _QuizHudChip(
+          icon: Iconsax.teacher,
+          label: widget.isSrsReview ? 'Review' : 'Lesson quiz',
+          color: FluentianColors.textSecondary,
+          bgColor: FluentianColors.infoTint,
+        ),
+      ],
+    );
+  }
+
   Widget _buildMcqSingle() {
     final options = _currentQ.mcqOptions;
     return Column(
@@ -935,12 +1113,14 @@ class _McqScreenState extends State<McqScreen>
           border = FluentianColors.error;
         }
 
-        return GestureDetector(
+        return FluentianPressable(
           onTap: _state == _AnswerState.unanswered
               ? () => setState(() => _selected = i)
               : null,
+          borderRadius: BorderRadius.circular(12),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -953,12 +1133,15 @@ class _McqScreenState extends State<McqScreen>
             ),
             child: Row(
               children: [
-                Container(
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.grey.shade100,
+                    color: isSelected
+                        ? FluentianColors.primary
+                        : Colors.grey.shade100,
                   ),
                   child: Center(
                     child: Text(
@@ -966,7 +1149,9 @@ class _McqScreenState extends State<McqScreen>
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: FluentianColors.textSecondary,
+                        color: isSelected
+                            ? Colors.white
+                            : FluentianColors.textSecondary,
                       ),
                     ),
                   ),
@@ -1019,7 +1204,7 @@ class _McqScreenState extends State<McqScreen>
           border = FluentianColors.error;
         }
 
-        return GestureDetector(
+        return FluentianPressable(
           onTap: _state == _AnswerState.unanswered
               ? () {
                   setState(() {
@@ -1031,8 +1216,10 @@ class _McqScreenState extends State<McqScreen>
                   });
                 }
               : null,
+          borderRadius: BorderRadius.circular(12),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -1046,9 +1233,7 @@ class _McqScreenState extends State<McqScreen>
             child: Row(
               children: [
                 Icon(
-                  isSelected
-                      ? Icons.check_box_rounded
-                      : Icons.check_box_outline_blank_rounded,
+                  isSelected ? Iconsax.tick_square : Iconsax.tick_square,
                   color: isSelected
                       ? FluentianColors.primary
                       : FluentianColors.textSecondary,
@@ -1581,9 +1766,7 @@ class _McqScreenState extends State<McqScreen>
                           ),
                         )
                       : Icon(
-                          _audioPlaying
-                              ? Icons.pause_rounded
-                              : Icons.volume_up_rounded,
+                          _audioPlaying ? Iconsax.pause : Iconsax.volume_high,
                           color: FluentianColors.primary,
                           size: 20,
                         ),
@@ -1662,9 +1845,7 @@ class _McqScreenState extends State<McqScreen>
                             ),
                           )
                         : Icon(
-                            isRecording
-                                ? Icons.stop_rounded
-                                : Icons.mic_rounded,
+                            isRecording ? Iconsax.stop : Iconsax.microphone_2,
                             size: 30,
                             color: isRecording
                                 ? Colors.white
@@ -1708,7 +1889,7 @@ class _McqScreenState extends State<McqScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(
-                      Icons.stars_rounded,
+                      Iconsax.star5,
                       color: FluentianColors.primary,
                       size: 24,
                     ),
@@ -1779,6 +1960,48 @@ class _MetricRow extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuizHudChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final Color bgColor;
+
+  const _QuizHudChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.bgColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.14)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: color),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
               color: color,
             ),
           ),

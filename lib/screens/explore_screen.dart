@@ -375,7 +375,9 @@ class _CultureStoryView extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 14),
+                const _TranslateHintCard(),
+                const SizedBox(height: 14),
                 ...story.paragraphs.map(
                   (paragraph) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -383,6 +385,47 @@ class _CultureStoryView extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TranslateHintCard extends StatelessWidget {
+  const _TranslateHintCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: FluentianColors.primaryTint,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: FluentianColors.primary.withValues(alpha: 0.12),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Iconsax.translate,
+            size: 18,
+            color: FluentianColors.primary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Tap any sentence to reveal its translation. Long press a paragraph for the full translation.',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 12.5,
+                height: 1.3,
+                fontWeight: FontWeight.w700,
+                color: FluentianColors.primaryDark,
+              ),
             ),
           ),
         ],

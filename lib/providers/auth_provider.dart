@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 import '../services/auth_api.dart';
 import '../services/api_client.dart';
@@ -14,6 +16,8 @@ class AuthProvider extends ChangeNotifier {
   bool _hasSeenIntro = false;
   bool _hasCompletedSetup = false;
   String? _unverifiedEmail;
+  int _maxHearts = 5;
+  DateTime? _nextHeartRefillAt;
 
   AuthStatus get status => _status;
   UserModel? get user => _user;
@@ -23,9 +27,14 @@ class AuthProvider extends ChangeNotifier {
   bool get hasSeenIntro => _hasSeenIntro;
   bool get hasCompletedSetup => _hasCompletedSetup;
   String? get unverifiedEmail => _unverifiedEmail;
+  int get maxHearts => _maxHearts;
+  DateTime? get nextHeartRefillAt =>
+      _nextHeartRefillAt ?? _user?.nextHeartRefillAt;
 
   final _authApi = AuthApi.instance;
   final _apiClient = ApiClient.instance;
+  final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
+  final _googleSignIn = GoogleSignIn();
 
   /// Called once at app startup to restore auth state from stored tokens.
   Future<void> initialize() async {
@@ -49,6 +58,7 @@ class AuthProvider extends ChangeNotifier {
       try {
         final res = await _authApi.refreshTokens();
         _user = res.user;
+        _nextHeartRefillAt = res.user.nextHeartRefillAt;
         _hasCompletedSetup = _hasCompletedSetup || _hasFinishedSetup(res.user);
         _status = AuthStatus.authenticated;
         await _apiClient.saveUser(res.user);
@@ -62,6 +72,7 @@ class AuthProvider extends ChangeNotifier {
           // Network or server error, use cached session if present
           if (cachedUser != null) {
             _user = cachedUser;
+            _nextHeartRefillAt = cachedUser.nextHeartRefillAt;
             _hasCompletedSetup =
                 _hasCompletedSetup || _hasFinishedSetup(cachedUser);
             _status = AuthStatus.authenticated;
@@ -129,6 +140,7 @@ class AuthProvider extends ChangeNotifier {
         otp: otp,
       );
       _user = res.user;
+      _nextHeartRefillAt = res.user.nextHeartRefillAt;
       _hasCompletedSetup = _hasFinishedSetup(res.user);
       await _apiClient.saveUser(res.user);
       _status = AuthStatus.authenticated;
@@ -172,15 +184,13 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Sign in with email + password.
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> login({required String email, required String password}) async {
     _setLoading(true);
     _unverifiedEmail = null;
     try {
       final res = await _authApi.login(email: email, password: password);
       _user = res.user;
+      _nextHeartRefillAt = res.user.nextHeartRefillAt;
       _hasCompletedSetup = _hasCompletedSetup || _hasFinishedSetup(res.user);
       await _apiClient.saveUser(res.user);
       _status = AuthStatus.authenticated;
@@ -198,6 +208,61 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = 'An unexpected error occurred.';
       if (kDebugMode) debugPrint('Login error: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> signInWithGoogle() async {
+    _setLoading(true);
+    try {
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        _errorMessage = null;
+        return false;
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final credential = firebase_auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final firebaseUserCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
+      final idToken = await firebaseUserCredential.user?.getIdToken();
+      if (idToken == null || idToken.isEmpty) {
+        throw firebase_auth.FirebaseAuthException(
+          code: 'missing-id-token',
+          message: 'Could not get Google sign-in token.',
+        );
+      }
+
+      final res = await _authApi.loginWithFirebase(idToken: idToken);
+      _user = res.user;
+      _nextHeartRefillAt = res.user.nextHeartRefillAt;
+      _hasCompletedSetup = _hasCompletedSetup || _hasFinishedSetup(res.user);
+      await _apiClient.saveUser(res.user);
+      _status = AuthStatus.authenticated;
+      _errorMessage = null;
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.userMessage;
+      await _firebaseAuth.signOut();
+      await _googleSignIn.signOut();
+      return false;
+    } on NetworkException catch (e) {
+      _errorMessage = e.message;
+      await _firebaseAuth.signOut();
+      await _googleSignIn.signOut();
+      return false;
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      _errorMessage = e.message ?? 'Google sign-in failed.';
+      return false;
+    } catch (e) {
+      _errorMessage = 'Google sign-in failed. Please try again.';
+      if (kDebugMode) debugPrint('Google sign-in error: $e');
       return false;
     } finally {
       _setLoading(false);
@@ -262,8 +327,12 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     _setLoading(true);
     await _authApi.logout();
+    await _firebaseAuth.signOut();
+    await _googleSignIn.signOut();
     await _apiClient.clearUser();
     _user = null;
+    _nextHeartRefillAt = null;
+    _maxHearts = 5;
     _status = AuthStatus.unauthenticated;
     _errorMessage = null;
     _setLoading(false);
@@ -274,6 +343,62 @@ class AuthProvider extends ChangeNotifier {
     _user = updated;
     await _apiClient.saveUser(updated);
     notifyListeners();
+  }
+
+  void updateUserStats({
+    int? hearts,
+    int? xpTotal,
+    int? streakDays,
+    DateTime? nextHeartRefillAt,
+    bool updateNextHeartRefill = false,
+  }) async {
+    final previous = _user;
+    if (previous == null) return;
+    if (updateNextHeartRefill) {
+      _nextHeartRefillAt = nextHeartRefillAt;
+    }
+    _user = previous.copyWith(
+      hearts: hearts,
+      xpTotal: xpTotal,
+      streakDays: streakDays,
+      nextHeartRefillAt: nextHeartRefillAt,
+      clearNextHeartRefillAt:
+          updateNextHeartRefill && nextHeartRefillAt == null,
+    );
+    await _apiClient.saveUser(_user!);
+    notifyListeners();
+  }
+
+  Future<int?> refreshHearts() async {
+    try {
+      final status = await _authApi.getHearts();
+      _maxHearts = status.maxHearts;
+      updateUserStats(
+        hearts: status.hearts,
+        nextHeartRefillAt: status.nextRefillAt,
+        updateNextHeartRefill: true,
+      );
+      return status.hearts;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Refresh hearts error: $e');
+      return _user?.hearts;
+    }
+  }
+
+  Future<int?> spendHeart() async {
+    try {
+      final status = await _authApi.spendHeart();
+      _maxHearts = status.maxHearts;
+      updateUserStats(
+        hearts: status.hearts,
+        nextHeartRefillAt: status.nextRefillAt,
+        updateNextHeartRefill: true,
+      );
+      return status.hearts;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Spend heart error: $e');
+      return null;
+    }
   }
 
   /// Complete onboarding and transition to authenticated state.
@@ -320,33 +445,29 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> updateSettings(Map<String, dynamic> data) async {
     final previous = _user;
-    if (previous != null) {
-      _user = previous.copyWith(
-        dailyGoalMinutes: data['daily_goal_minutes'] as int?,
-        notificationsEnabled: data['notifications_enabled'] as bool?,
-        autoplayAudio: data['autoplay_audio'] as bool?,
-        soundEnabled: data['sound_enabled'] as bool?,
-        learningReminderEnabled:
-            data['learning_reminder_enabled'] as bool?,
-        reminderTime: data['reminder_time'] as String?,
-        phoneticHintsEnabled:
-            data['phonetic_hints_enabled'] as bool?,
-        speakingExercisesEnabled:
-            data['speaking_exercises_enabled'] as bool?,
-        highContrastEnabled:
-            data['high_contrast_enabled'] as bool?,
-        reduceAnimationsEnabled:
-            data['reduce_animations_enabled'] as bool?,
-        hapticFeedbackEnabled:
-            data['haptic_feedback_enabled'] as bool?,
-        ttsSpeed: data['tts_speed'] as double?,
-        fontScale: data['font_scale'] as int?,
-      );
-      notifyListeners();
-    }
+    if (previous == null) return false;
+    _user = previous.copyWith(
+      dailyGoalMinutes: data['daily_goal_minutes'] as int?,
+      notificationsEnabled: data['notifications_enabled'] as bool?,
+      autoplayAudio: data['autoplay_audio'] as bool?,
+      soundEnabled: data['sound_enabled'] as bool?,
+      learningReminderEnabled: data['learning_reminder_enabled'] as bool?,
+      reminderTime: data['reminder_time'] as String?,
+      phoneticHintsEnabled: data['phonetic_hints_enabled'] as bool?,
+      speakingExercisesEnabled: data['speaking_exercises_enabled'] as bool?,
+      highContrastEnabled: data['high_contrast_enabled'] as bool?,
+      reduceAnimationsEnabled: data['reduce_animations_enabled'] as bool?,
+      hapticFeedbackEnabled: data['haptic_feedback_enabled'] as bool?,
+      ttsSpeed: data['tts_speed'] as double?,
+      fontScale: data['font_scale'] as int?,
+    );
+    notifyListeners();
     try {
       await _authApi.updateSettings(data);
-      await _apiClient.saveUser(_user!);
+      final updated = _user;
+      if (updated != null) {
+        await _apiClient.saveUser(updated);
+      }
       notifyListeners();
       return true;
     } catch (e) {

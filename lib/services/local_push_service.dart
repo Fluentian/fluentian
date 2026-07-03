@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import 'notifications_api.dart';
 
 class LocalPushService {
@@ -7,14 +9,22 @@ class LocalPushService {
   static final LocalPushService instance = LocalPushService._();
 
   final _plugin = FlutterLocalNotificationsPlugin();
-  Timer? _timer;
   final Set<String> _notifiedIds = {};
+
+  Timer? _pollTimer;
+  Timer? _reminderTimer;
   bool _initialized = false;
+  bool _notificationsEnabled = true;
+  bool _learningReminderEnabled = true;
+  String _reminderTime = '08:00';
+  String? _lastReminderKey;
 
   Future<void> initialize() async {
     if (_initialized) return;
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings();
     const settings = InitializationSettings(
       android: androidSettings,
@@ -23,31 +33,76 @@ class LocalPushService {
 
     await _plugin.initialize(settings);
 
-    // Request permissions for Android 13+
     await _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.requestNotificationsPermission();
 
     _initialized = true;
   }
 
+  Future<void> configure({
+    required bool notificationsEnabled,
+    required bool learningReminderEnabled,
+    required String reminderTime,
+  }) async {
+    await initialize();
+
+    final reminderChanged = _reminderTime != reminderTime;
+    _notificationsEnabled = notificationsEnabled;
+    _learningReminderEnabled = learningReminderEnabled;
+    _reminderTime = reminderTime;
+    if (reminderChanged) _lastReminderKey = null;
+
+    if (_notificationsEnabled) {
+      startPolling();
+    } else {
+      stopPolling();
+    }
+
+    if (_notificationsEnabled && _learningReminderEnabled) {
+      _startReminderWatcher();
+    } else {
+      _stopReminderWatcher();
+    }
+  }
+
   void startPolling() {
-    if (_timer != null) return;
-    
-    // Check every 15 seconds for new admin notifications
-    _timer = Timer.periodic(const Duration(seconds: 15), (_) => _checkNotifications());
-    _checkNotifications(); // check immediately
+    if (!_notificationsEnabled || _pollTimer != null) return;
+    _pollTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => _checkNotifications(),
+    );
+    _checkNotifications();
   }
 
   void stopPolling() {
-    _timer?.cancel();
-    _timer = null;
+    _pollTimer?.cancel();
+    _pollTimer = null;
+    _stopReminderWatcher();
+  }
+
+  void _startReminderWatcher() {
+    if (_reminderTimer != null) return;
+    _reminderTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => _checkDailyReminder(),
+    );
+    _checkDailyReminder();
+  }
+
+  void _stopReminderWatcher() {
+    _reminderTimer?.cancel();
+    _reminderTimer = null;
   }
 
   Future<void> _checkNotifications() async {
+    if (!_notificationsEnabled) return;
     try {
-      final unread = await NotificationsApi.instance.getNotifications(isRead: false);
+      final unread = await NotificationsApi.instance.getNotifications(
+        isRead: false,
+      );
       for (final notification in unread) {
         if (!_notifiedIds.contains(notification.id)) {
           _notifiedIds.add(notification.id);
@@ -58,9 +113,32 @@ class LocalPushService {
           );
         }
       }
-    } catch (e) {
-      // Ignore errors (e.g., if not logged in or backend offline)
+    } catch (_) {
+      // Ignore errors when logged out, offline, or the backend is unavailable.
     }
+  }
+
+  Future<void> _checkDailyReminder() async {
+    if (!_notificationsEnabled || !_learningReminderEnabled) return;
+
+    final parts = _reminderTime.split(':');
+    final hour = int.tryParse(parts.first);
+    final minute = parts.length > 1 ? int.tryParse(parts[1]) : 0;
+    if (hour == null || minute == null) return;
+
+    final now = DateTime.now();
+    if (now.hour != hour || now.minute != minute) return;
+
+    final key =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} $_reminderTime';
+    if (_lastReminderKey == key) return;
+    _lastReminderKey = key;
+
+    await _showNotification(
+      id: 1001,
+      title: 'Daily practice reminder',
+      body: 'A short French session keeps your streak moving.',
+    );
   }
 
   Future<void> _showNotification({
@@ -92,9 +170,12 @@ class LocalPushService {
 
   Future<void> showTestNotification() async {
     await initialize();
+    if (!_notificationsEnabled) {
+      throw StateError('Notifications are disabled in settings.');
+    }
     await _showNotification(
       id: 0,
-      title: 'Time to learn! 🇫🇷',
+      title: 'Time to learn!',
       body: 'Your daily goal is waiting for you.',
     );
   }

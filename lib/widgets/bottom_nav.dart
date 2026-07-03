@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 
 class FluentianBottomNav extends StatelessWidget {
@@ -13,10 +14,10 @@ class FluentianBottomNav extends StatelessWidget {
   });
 
   static const _tabs = [
-    _NavItem(Icons.home_rounded, 'Home'),
-    _NavItem(Icons.explore_rounded, 'Explore'),
-    _NavItem(Icons.public_rounded, 'Board'),
-    _NavItem(Icons.person_rounded, 'Profile'),
+    _NavItem(Iconsax.home_1, 'Home'),
+    _NavItem(Iconsax.global, 'Explore'),
+    _NavItem(Iconsax.briefcase, 'Board'),
+    _NavItem(Iconsax.user, 'Profile'),
   ];
 
   @override
@@ -51,12 +52,18 @@ class FluentianBottomNav extends StatelessWidget {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  Icon(
-                    _tabs[index].icon,
-                    size: 24,
-                    color: isActive
-                        ? FluentianColors.white
-                        : FluentianColors.white.withValues(alpha: 0.5),
+                  SizedBox(
+                    width: 28,
+                    height: 26,
+                    child: Center(
+                      child: Icon(
+                        _tabs[index].icon,
+                        size: 23,
+                        color: isActive
+                            ? FluentianColors.white
+                            : FluentianColors.white.withValues(alpha: 0.58),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(

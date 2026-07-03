@@ -10,6 +10,7 @@ class UserModel {
   final int xpTotal;
   final int streakDays;
   final int hearts;
+  final DateTime? nextHeartRefillAt;
   final DateTime createdAt;
   final String? displayNameField;
   final String? avatarUrl;
@@ -38,6 +39,7 @@ class UserModel {
     required this.xpTotal,
     required this.streakDays,
     required this.hearts,
+    this.nextHeartRefillAt,
     required this.createdAt,
     this.displayNameField,
     this.avatarUrl,
@@ -70,6 +72,9 @@ class UserModel {
       xpTotal: json['xp_total'] as int? ?? 0,
       streakDays: json['streak_days'] as int? ?? 0,
       hearts: json['hearts'] as int? ?? 5,
+      nextHeartRefillAt: json['next_heart_refill_at'] != null
+          ? DateTime.parse(json['next_heart_refill_at'] as String)
+          : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       displayNameField:
           profile?['display_name']?.toString() ??
@@ -110,6 +115,7 @@ class UserModel {
     'xp_total': xpTotal,
     'streak_days': streakDays,
     'hearts': hearts,
+    'next_heart_refill_at': nextHeartRefillAt?.toIso8601String(),
     'created_at': createdAt.toIso8601String(),
     'display_name_field': displayNameField,
     'avatar_url': avatarUrl,
@@ -141,6 +147,8 @@ class UserModel {
     int? xpTotal,
     int? streakDays,
     int? hearts,
+    DateTime? nextHeartRefillAt,
+    bool clearNextHeartRefillAt = false,
     DateTime? createdAt,
     String? displayNameField,
     String? avatarUrl,
@@ -168,6 +176,9 @@ class UserModel {
     xpTotal: xpTotal ?? this.xpTotal,
     streakDays: streakDays ?? this.streakDays,
     hearts: hearts ?? this.hearts,
+    nextHeartRefillAt: clearNextHeartRefillAt
+        ? null
+        : nextHeartRefillAt ?? this.nextHeartRefillAt,
     createdAt: createdAt ?? this.createdAt,
     displayNameField: displayNameField ?? this.displayNameField,
     avatarUrl: avatarUrl ?? this.avatarUrl,
@@ -204,6 +215,26 @@ class UserModel {
       (displayNameField != null && displayNameField!.isNotEmpty)
       ? displayNameField!
       : username;
+}
+
+class HeartStatus {
+  final int hearts;
+  final int maxHearts;
+  final DateTime? nextRefillAt;
+
+  const HeartStatus({
+    required this.hearts,
+    required this.maxHearts,
+    this.nextRefillAt,
+  });
+
+  factory HeartStatus.fromJson(Map<String, dynamic> json) => HeartStatus(
+    hearts: json['hearts'] as int? ?? 5,
+    maxHearts: json['max_hearts'] as int? ?? 5,
+    nextRefillAt: json['next_refill_at'] != null
+        ? DateTime.parse(json['next_refill_at'] as String)
+        : null,
+  );
 }
 
 class AuthResponse {

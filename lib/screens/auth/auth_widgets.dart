@@ -257,7 +257,7 @@ class AuthButton extends StatelessWidget {
 class AuthSocialButton extends StatelessWidget {
   final String text;
   final IconData icon; // Placeholder for logo
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const AuthSocialButton({
     super.key,

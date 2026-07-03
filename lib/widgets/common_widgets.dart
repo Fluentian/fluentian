@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 
 /// Stat chip — used in top bar and profile
@@ -32,10 +35,7 @@ class StatChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (emoji != null)
-            Text(
-              emoji!,
-              style: const TextStyle(fontSize: 14),
-            )
+            Text(emoji!, style: const TextStyle(fontSize: 14))
           else if (icon != null)
             Icon(icon!, size: 14, color: color),
           const SizedBox(width: 4),
@@ -47,6 +47,165 @@ class StatChip extends StatelessWidget {
               color: color,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class HeartStatusChip extends StatefulWidget {
+  final int hearts;
+  final int maxHearts;
+  final DateTime? nextRefillAt;
+  final FutureOr<void> Function()? onRefreshDue;
+  final bool compact;
+  final bool showHearts;
+
+  const HeartStatusChip({
+    super.key,
+    required this.hearts,
+    required this.maxHearts,
+    this.nextRefillAt,
+    this.onRefreshDue,
+    this.compact = false,
+    this.showHearts = true,
+  });
+
+  @override
+  State<HeartStatusChip> createState() => _HeartStatusChipState();
+}
+
+class _HeartStatusChipState extends State<HeartStatusChip> {
+  Timer? _timer;
+  Duration _remaining = Duration.zero;
+  bool _refreshQueued = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant HeartStatusChip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.nextRefillAt != widget.nextRefillAt ||
+        oldWidget.hearts != widget.hearts) {
+      _refreshQueued = false;
+      _syncTimer();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _syncTimer() {
+    _timer?.cancel();
+    _tick();
+    if (widget.nextRefillAt != null && widget.hearts < widget.maxHearts) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    }
+  }
+
+  void _tick() {
+    final target = widget.nextRefillAt;
+    final remaining = target == null
+        ? Duration.zero
+        : target.difference(DateTime.now());
+    if (mounted) {
+      setState(() {
+        _remaining = remaining.isNegative ? Duration.zero : remaining;
+      });
+    }
+    if (remaining <= Duration.zero &&
+        target != null &&
+        widget.hearts < widget.maxHearts &&
+        !_refreshQueued) {
+      _refreshQueued = true;
+      Future.sync(() => widget.onRefreshDue?.call()).whenComplete(() {
+        if (!mounted) return;
+        _refreshQueued = false;
+      });
+    }
+  }
+
+  String get _countdown {
+    if (widget.hearts >= widget.maxHearts) return 'Full';
+    if (widget.nextRefillAt == null) return 'Refilling';
+    final hours = _remaining.inHours;
+    final minutes = _remaining.inMinutes.remainder(60);
+    final seconds = _remaining.inSeconds.remainder(60);
+    if (hours > 0) {
+      return '${hours}h ${minutes.toString().padLeft(2, '0')}m ${seconds.toString().padLeft(2, '0')}s';
+    }
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final iconCount = widget.showHearts
+        ? widget.compact
+              ? widget.maxHearts.clamp(1, 5).toInt()
+              : widget.maxHearts
+        : 0;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: widget.compact ? 8 : 10,
+        vertical: widget.compact ? 6 : 8,
+      ),
+      decoration: BoxDecoration(
+        color: FluentianColors.errorTint,
+        borderRadius: BorderRadius.circular(FluentianRadius.pill),
+        border: Border.all(
+          color: FluentianColors.error.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.showHearts) ...[
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(
+                iconCount,
+                (i) => Padding(
+                  padding: const EdgeInsets.only(right: 1),
+                  child: Icon(
+                    i < widget.hearts ? Iconsax.heart5 : Iconsax.heart,
+                    size: widget.compact ? 15 : 17,
+                    color: i < widget.hearts
+                        ? FluentianColors.error
+                        : Colors.grey.shade400,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            widget.compact
+                ? '${widget.hearts}/${widget.maxHearts}'
+                : _countdown,
+            style: GoogleFonts.inter(
+              fontSize: widget.compact ? 11 : 12,
+              fontWeight: FontWeight.w800,
+              color: FluentianColors.error,
+            ),
+          ),
+          if (!widget.compact && widget.hearts < widget.maxHearts) ...[
+            const SizedBox(width: 4),
+            Text(
+              'next',
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: FluentianColors.error.withValues(alpha: 0.65),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -99,10 +258,61 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
+class FluentianPressable extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final double pressedScale;
+  final BorderRadius? borderRadius;
+
+  const FluentianPressable({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.pressedScale = 0.97,
+    this.borderRadius,
+  });
+
+  @override
+  State<FluentianPressable> createState() => _FluentianPressableState();
+}
+
+class _FluentianPressableState extends State<FluentianPressable> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed == value) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: widget.onTap == null ? null : (_) => _setPressed(true),
+      onPointerUp: widget.onTap == null ? null : (_) => _setPressed(false),
+      onPointerCancel: widget.onTap == null ? null : (_) => _setPressed(false),
+      child: AnimatedScale(
+        scale: _pressed ? widget.pressedScale : 1,
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeOut,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: widget.borderRadius,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: widget.borderRadius,
+            child: widget.child,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Primary CTA button
 class FluentianButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
+  final IconData? icon;
   final Color? backgroundColor;
   final Color? textColor;
   final bool isOutlined;
@@ -112,6 +322,7 @@ class FluentianButton extends StatelessWidget {
     super.key,
     required this.text,
     this.onPressed,
+    this.icon,
     this.backgroundColor,
     this.textColor,
     this.isOutlined = false,
@@ -134,14 +345,7 @@ class FluentianButton extends StatelessWidget {
             onTap: onPressed,
             borderRadius: BorderRadius.circular(FluentianRadius.medium),
             child: Center(
-              child: Text(
-                text,
-                style: GoogleFonts.inter(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: textColor ?? FluentianColors.textPrimary,
-                ),
-              ),
+              child: _buttonChild(textColor ?? FluentianColors.textPrimary),
             ),
           ),
         ),
@@ -149,7 +353,10 @@ class FluentianButton extends StatelessWidget {
     }
 
     if (isOutlined) {
-      return OutlinedButton(onPressed: onPressed, child: Text(text));
+      return OutlinedButton(
+        onPressed: onPressed,
+        child: _buttonChild(FluentianColors.primary),
+      );
     }
 
     return ElevatedButton(
@@ -160,7 +367,31 @@ class FluentianButton extends StatelessWidget {
               foregroundColor: textColor ?? FluentianColors.white,
             )
           : null,
-      child: Text(text),
+      child: _buttonChild(textColor ?? FluentianColors.white),
+    );
+  }
+
+  Widget _buttonChild(Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 19, color: color),
+          const SizedBox(width: 8),
+        ],
+        Flexible(
+          child: Text(
+            text,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -383,7 +614,7 @@ class SettingsRow extends StatelessWidget {
             if (trailingWidget != null) trailingWidget!,
             const SizedBox(width: 4),
             Icon(
-              Icons.chevron_right_rounded,
+              Iconsax.arrow_right_3,
               size: 20,
               color: FluentianColors.textSecondary.withValues(alpha: 0.5),
             ),

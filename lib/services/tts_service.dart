@@ -5,21 +5,26 @@ class TtsService {
   TtsService._() {
     _player = AudioPlayer();
   }
-  
+
   static final TtsService instance = TtsService._();
 
   late final AudioPlayer _player;
   String? _activeLanguage;
 
-  Future<void> speak(String text, {String language = 'fr'}) async {
+  Future<void> speak(
+    String text, {
+    String language = 'fr',
+    double speed = 1.0,
+  }) async {
     final cleanText = text.trim();
     if (cleanText.isEmpty) return;
 
     try {
       _activeLanguage = language;
       await stop();
-      
-      final String googleTtsUrl = 
+      await _player.setSpeed(speed.clamp(0.6, 1.6));
+
+      final String googleTtsUrl =
           'https://translate.google.com/translate_tts'
           '?ie=UTF-8'
           '&q=${Uri.encodeComponent(cleanText)}'
@@ -47,4 +52,3 @@ class TtsService {
     } catch (_) {}
   }
 }
-

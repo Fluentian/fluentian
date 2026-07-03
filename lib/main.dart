@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
+import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/content_provider.dart';
 import 'screens/splash_screen.dart';
@@ -13,6 +15,7 @@ import 'services/local_push_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -32,11 +35,45 @@ class FluentianApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ContentProvider()),
       ],
-      child: MaterialApp(
-        title: 'Fluentian',
-        debugShowCheckedModeBanner: false,
-        theme: FluentianTheme.lightTheme,
-        home: const _AppRoot(),
+      child: Consumer<AuthProvider>(
+        builder: (context, auth, _) {
+          final user = auth.user;
+          final fontScale = switch (user?.fontScale ?? 1) {
+            0 => 0.92,
+            2 => 1.12,
+            _ => 1.0,
+          };
+          final reduceAnimations = user?.reduceAnimationsEnabled ?? false;
+          final theme = user?.highContrastEnabled == true
+              ? FluentianTheme.lightTheme.copyWith(
+                  colorScheme: FluentianTheme.lightTheme.colorScheme.copyWith(
+                    primary: FluentianColors.primaryDark,
+                    secondary: FluentianColors.primaryDark,
+                  ),
+                  textTheme: FluentianTheme.lightTheme.textTheme.apply(
+                    bodyColor: Colors.black,
+                    displayColor: Colors.black,
+                  ),
+                )
+              : FluentianTheme.lightTheme;
+
+          return MaterialApp(
+            title: 'Fluentian',
+            debugShowCheckedModeBanner: false,
+            theme: theme,
+            builder: (context, child) {
+              final media = MediaQuery.of(context);
+              return MediaQuery(
+                data: media.copyWith(
+                  textScaler: TextScaler.linear(fontScale),
+                  disableAnimations: reduceAnimations,
+                ),
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
+            home: const _AppRoot(),
+          );
+        },
       ),
     );
   }
@@ -54,11 +91,8 @@ class _AppRootState extends State<_AppRoot> {
   @override
   void initState() {
     super.initState();
-    // Start background polling for native notifications
-    LocalPushService.instance.initialize().then((_) {
-      LocalPushService.instance.startPolling();
-    });
-    
+    LocalPushService.instance.initialize();
+
     // Initialize auth on startup (restores tokens or clears stale ones)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AuthProvider>().initialize();
@@ -70,6 +104,22 @@ class _AppRootState extends State<_AppRoot> {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
         Widget child;
+        final user = auth.user;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (auth.status == AuthStatus.authenticated && user != null) {
+            LocalPushService.instance.configure(
+              notificationsEnabled: user.notificationsEnabled,
+              learningReminderEnabled: user.learningReminderEnabled,
+              reminderTime: user.reminderTime,
+            );
+          } else {
+            LocalPushService.instance.configure(
+              notificationsEnabled: false,
+              learningReminderEnabled: false,
+              reminderTime: '08:00',
+            );
+          }
+        });
         switch (auth.status) {
           case AuthStatus.unknown:
             child = const SplashScreen(key: ValueKey('splash'));

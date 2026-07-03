@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 import '../models/course_model.dart';
+import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
 import '../services/tts_service.dart';
 import 'package:just_audio/just_audio.dart';
@@ -24,12 +25,15 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   bool _isLoading = true;
   LessonDetailModel? _lesson;
   late final AudioPlayer _audioPlayer;
+  final ScrollController _scrollController = ScrollController();
   final TtsService _ttsService = TtsService.instance;
+  double _readProgress = 0;
 
   @override
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer();
+    _scrollController.addListener(_updateReadProgress);
     _loadLesson();
   }
 
@@ -47,9 +51,21 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _audioPlayer.dispose();
     _ttsService.stop();
     super.dispose();
+  }
+
+  void _updateReadProgress() {
+    if (!_scrollController.hasClients) return;
+    final max = _scrollController.position.maxScrollExtent;
+    final next = max <= 0
+        ? 1.0
+        : (_scrollController.offset / max).clamp(0.0, 1.0);
+    if ((next - _readProgress).abs() > 0.01) {
+      setState(() => _readProgress = next);
+    }
   }
 
   @override
@@ -88,9 +104,16 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     final blocks = List<BlockModel>.from(_lesson!.blocks)
       ..sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
 
-    final quizQuestions = _lesson!.questions
-        .where((q) => q.questionKind != 'speech_record')
-        .toList();
+    final speakingEnabled =
+        context.watch<AuthProvider>().user?.speakingExercisesEnabled ?? true;
+    final quizQuestions = speakingEnabled
+        ? _lesson!.questions
+        : _lesson!.questions
+              .where((q) => q.questionKind != 'speech_record')
+              .toList();
+    final estimatedMinutes = (blocks.length * 1.4 + quizQuestions.length * 0.5)
+        .ceil()
+        .clamp(2, 18);
 
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
@@ -106,6 +129,15 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(3),
+          child: LinearProgressIndicator(
+            value: blocks.isEmpty ? 1 : _readProgress,
+            minHeight: 3,
+            backgroundColor: FluentianColors.primaryTint,
+            valueColor: const AlwaysStoppedAnimation(FluentianColors.primary),
+          ),
+        ),
       ),
       body: SafeArea(
         child: Stack(
@@ -116,10 +148,18 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   child: blocks.isEmpty
                       ? Center(child: _buildQuizOnlyCard())
                       : ListView.builder(
+                          controller: _scrollController,
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                          itemCount: blocks.length,
+                          itemCount: blocks.length + 1,
                           itemBuilder: (context, index) {
-                            return _buildBlock(blocks[index]);
+                            if (index == 0) {
+                              return _buildLessonHero(
+                                blockCount: blocks.length,
+                                questionCount: quizQuestions.length,
+                                estimatedMinutes: estimatedMinutes,
+                              );
+                            }
+                            return _buildBlock(blocks[index - 1]);
                           },
                         ),
                 ),
@@ -140,14 +180,115 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         'Can you summarize this lesson and tell me what I will learn?',
                   );
                 },
-                child: const Icon(
-                  Icons.psychology_rounded,
-                  color: Colors.white,
-                ),
+                child: const Icon(Iconsax.message5, color: Colors.white),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLessonHero({
+    required int blockCount,
+    required int questionCount,
+    required int estimatedMinutes,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A0A2E), Color(0xFF4E22D4)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [FluentianShadows.card],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Iconsax.book_1,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Lesson path',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white.withValues(alpha: 0.72),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _lesson!.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _HeroMetric(
+                icon: Iconsax.flash_15,
+                label: '${_lesson!.xpReward} XP',
+              ),
+              const SizedBox(width: 8),
+              _HeroMetric(icon: Iconsax.clock, label: '$estimatedMinutes min'),
+              const SizedBox(width: 8),
+              _HeroMetric(
+                icon: Iconsax.task_square,
+                label: '$questionCount quiz',
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: blockCount == 0 ? 0 : 0.18,
+              minHeight: 8,
+              backgroundColor: Colors.white.withValues(alpha: 0.16),
+              valueColor: const AlwaysStoppedAnimation(Colors.white),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Read, listen, ask AI, then prove it in the quiz.',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withValues(alpha: 0.78),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -222,7 +363,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           onPressed: () async {
             if (quizQuestions.isEmpty) {
               setState(() => _isLoading = true);
-              final result = await context.read<ContentProvider>().completeLesson(
+              final result = await context
+                  .read<ContentProvider>()
+                  .completeLesson(
                     lessonId: _lesson!.id,
                     score: 1.0,
                     answers: [],
@@ -262,13 +405,26 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: Text(
-            quizQuestions.isEmpty ? 'Complete Lesson' : 'Continue to Quiz',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                quizQuestions.isEmpty
+                    ? Iconsax.tick_circle
+                    : Iconsax.arrow_right_3,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                quizQuestions.isEmpty ? 'Complete Lesson' : 'Continue to Quiz',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -316,7 +472,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       IconButton(
                         tooltip: 'Listen',
                         icon: const Icon(
-                          Icons.volume_up_rounded,
+                          Iconsax.volume_high,
                           color: FluentianColors.primary,
                         ),
                         onPressed: () => _speakBlock(block),
@@ -324,14 +480,16 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       IconButton(
                         tooltip: 'Ask AI',
                         icon: const Icon(
-                          Icons.psychology_rounded,
+                          Iconsax.message5,
                           color: FluentianColors.primary,
                         ),
                         onPressed: () {
                           AiTutorSheet.show(
                             context,
-                            systemContext: 'You are a language tutor. Explain the text or phrase clearly: "$text"',
-                            initialPrompt: 'Can you explain this phrase to me: "$text"?',
+                            systemContext:
+                                'You are a language tutor. Explain the text or phrase clearly: "$text"',
+                            initialPrompt:
+                                'Can you explain this phrase to me: "$text"?',
                           );
                         },
                       ),
@@ -385,21 +543,23 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(
-                      Icons.volume_up_rounded,
+                      Iconsax.volume_high,
                       color: FluentianColors.primary,
                     ),
                     onPressed: () => _playBlockAudioOrTts(block),
                   ),
                   IconButton(
                     icon: const Icon(
-                      Icons.psychology_rounded,
+                      Iconsax.message5,
                       color: FluentianColors.primary,
                     ),
                     onPressed: () {
                       AiTutorSheet.show(
                         context,
-                        systemContext: 'You are a language tutor. Explain the vocabulary word "$word" which means "$meaning". Give an example sentence.',
-                        initialPrompt: 'Can you give me an example sentence for the word "$word"?',
+                        systemContext:
+                            'You are a language tutor. Explain the vocabulary word "$word" which means "$meaning". Give an example sentence.',
+                        initialPrompt:
+                            'Can you give me an example sentence for the word "$word"?',
                       );
                     },
                   ),
@@ -467,7 +627,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 IconButton(
                   tooltip: 'Listen',
                   icon: const Icon(
-                    Icons.volume_up_rounded,
+                    Iconsax.volume_high,
                     color: FluentianColors.primary,
                   ),
                   onPressed: () => _speakBlock(block),
@@ -539,7 +699,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
                     onPressed: () => _speakBlock(block),
-                    icon: const Icon(Icons.volume_up_rounded, size: 18),
+                    icon: const Icon(Iconsax.volume_high, size: 18),
                     label: const Text('Listen'),
                     style: TextButton.styleFrom(
                       foregroundColor: FluentianColors.primary,
@@ -611,8 +771,13 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
 
   Future<void> _speakBlock(BlockModel block) async {
     try {
+      final ttsSpeed = context.read<AuthProvider>().user?.ttsSpeed ?? 1.0;
       await _audioPlayer.stop();
-      await _ttsService.speak(block.textToSpeak, language: block.ttsLanguage);
+      await _ttsService.speak(
+        block.textToSpeak,
+        language: block.ttsLanguage,
+        speed: ttsSpeed,
+      );
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -636,5 +801,45 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       return first.toString();
     }
     return null;
+  }
+}
+
+class _HeroMetric extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _HeroMetric({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 16),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

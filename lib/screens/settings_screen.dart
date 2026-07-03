@@ -196,7 +196,20 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _emitTestNotification(BuildContext context) async {
-    await LocalPushService.instance.showTestNotification();
+    try {
+      await LocalPushService.instance.showTestNotification();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Test notification sent.')));
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enable notifications before sending a test.'),
+        ),
+      );
+    }
   }
 
   Future<void> _showProfileEditor(BuildContext context) async {

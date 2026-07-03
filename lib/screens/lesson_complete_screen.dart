@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../providers/auth_provider.dart';
@@ -55,7 +56,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                   color: FluentianColors.successTint,
                 ),
                 child: const Icon(
-                  Icons.check_rounded,
+                  Iconsax.tick_circle,
                   size: 42,
                   color: FluentianColors.success,
                 ),
@@ -89,6 +90,8 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                 ),
                 child: Column(
                   children: [
+                    const Icon(Iconsax.flash_15, color: Colors.white, size: 28),
+                    const SizedBox(height: 6),
                     Text(
                       '+${widget.xpEarned} XP',
                       style: GoogleFonts.inter(
@@ -124,7 +127,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
               if (!_feedbackSent)
                 TextButton.icon(
                   onPressed: _showFeedbackSheet,
-                  icon: const Icon(Icons.rate_review_rounded),
+                  icon: const Icon(Iconsax.message_edit),
                   label: const Text('Leave lesson feedback'),
                 )
               else
@@ -138,6 +141,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
               const SizedBox(height: 12),
               FluentianButton(
                 text: 'Continue',
+                icon: Iconsax.arrow_right_3,
                 onPressed: () =>
                     Navigator.of(context).popUntil((r) => r.isFirst),
               ),
@@ -185,9 +189,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                       return IconButton(
                         onPressed: () => setSheetState(() => rating = value),
                         icon: Icon(
-                          value <= rating
-                              ? Icons.star_rounded
-                              : Icons.star_border_rounded,
+                          value <= rating ? Iconsax.star5 : Iconsax.star,
                           color: FluentianColors.accent,
                         ),
                       );

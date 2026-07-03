@@ -59,9 +59,7 @@ class ContentProvider extends ChangeNotifier {
 
       _enrolledCourseIds
         ..clear()
-        ..addAll(
-          enrollments.where((e) => e.isActive).map((e) => e.courseId),
-        );
+        ..addAll(enrollments.where((e) => e.isActive).map((e) => e.courseId));
       _status = ContentStatus.loaded;
     } on ApiException catch (e) {
       _error = e.userMessage;
@@ -112,7 +110,8 @@ class ContentProvider extends ChangeNotifier {
   bool isLessonCompleted(String lessonId) =>
       _progressByLesson[lessonId]?.completed ?? false;
 
-  bool isCourseEnrolled(String courseId) => _enrolledCourseIds.contains(courseId);
+  bool isCourseEnrolled(String courseId) =>
+      _enrolledCourseIds.contains(courseId);
 
   Future<bool> enrollInCourse(String courseId) async {
     try {
@@ -158,7 +157,8 @@ class ContentProvider extends ChangeNotifier {
       for (final unit in course.units) {
         for (int i = 0; i < unit.lessons.length; i++) {
           final lesson = unit.lessons[i];
-          if (!isLessonCompleted(lesson.id) && isLessonUnlocked(unit.lessons, i)) {
+          if (!isLessonCompleted(lesson.id) &&
+              isLessonUnlocked(unit.lessons, i)) {
             incomplete.add(lesson);
             if (incomplete.length >= count) return incomplete;
           }
@@ -185,6 +185,7 @@ class ContentProvider extends ChangeNotifier {
     required double score,
     required List<AnswerPayload> answers,
     required int timeSeconds,
+    int heartsSpent = 0,
   }) async {
     try {
       final result = await _progressApi.completeLesson(
@@ -192,6 +193,7 @@ class ContentProvider extends ChangeNotifier {
         score: score,
         answers: answers,
         timeSeconds: timeSeconds,
+        heartsSpent: heartsSpent,
       );
       // Mark lesson as completed locally immediately
       _progressByLesson[lessonId] = LessonProgressModel(
@@ -242,13 +244,17 @@ class ContentProvider extends ChangeNotifier {
     required int timeSeconds,
   }) async {
     try {
-      final payload = answers.map((a) => {
-        'question_id': a.questionId,
-        'answer': a.answer,
-        'is_correct': a.isCorrect,
-      }).toList();
+      final payload = answers
+          .map(
+            (a) => {
+              'question_id': a.questionId,
+              'answer': a.answer,
+              'is_correct': a.isCorrect,
+            },
+          )
+          .toList();
       final result = await _contentApi.completeSrsReview(payload, timeSeconds);
-      
+
       // Refresh global stats after SRS
       try {
         _stats = await _progressApi.getMyStats();

@@ -73,6 +73,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
+  Future<void> _handleGoogleSignUp() async {
+    await context.read<AuthProvider>().signInWithGoogle();
+  }
+
   void _showLangBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -362,7 +366,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         AuthSocialButton(
                           text: 'Continue with Google',
                           icon: Icons.g_mobiledata,
-                          onPressed: () {},
+                          onPressed: auth.isLoading ? null : _handleGoogleSignUp,
                         ),
                         const SizedBox(height: 12),
                         AuthSocialButton(

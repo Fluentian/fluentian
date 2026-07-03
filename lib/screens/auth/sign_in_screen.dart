@@ -58,6 +58,10 @@ class _SignInScreenState extends State<SignInScreen> {
     // On success, _AppRoot Consumer in main.dart auto-navigates to HomeScreen
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    await context.read<AuthProvider>().signInWithGoogle();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -204,7 +208,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         AuthSocialButton(
                           text: 'Continue with Google',
                           icon: Icons.g_mobiledata,
-                          onPressed: () {},
+                          onPressed: auth.isLoading ? null : _handleGoogleSignIn,
                         ),
                         const SizedBox(height: 12),
                         AuthSocialButton(

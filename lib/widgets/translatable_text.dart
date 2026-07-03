@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../providers/auth_provider.dart';
 
 class SentencePair {
   final String original;
@@ -32,6 +35,9 @@ class _TranslatableParagraphState extends State<TranslatableParagraph> {
       widget.sentences.map((sentence) => sentence.translated).join(' ');
 
   void _toggleSentence(int index) {
+    if (context.read<AuthProvider>().user?.hapticFeedbackEnabled ?? true) {
+      HapticFeedback.selectionClick();
+    }
     setState(() {
       _showParagraphTranslation = false;
       if (_translatedSentences.contains(index)) {
@@ -43,6 +49,9 @@ class _TranslatableParagraphState extends State<TranslatableParagraph> {
   }
 
   void _toggleParagraph() {
+    if (context.read<AuthProvider>().user?.hapticFeedbackEnabled ?? true) {
+      HapticFeedback.mediumImpact();
+    }
     setState(() {
       _translatedSentences.clear();
       _showParagraphTranslation = !_showParagraphTranslation;
@@ -61,7 +70,7 @@ class _TranslatableParagraphState extends State<TranslatableParagraph> {
           color: _showParagraphTranslation
               ? FluentianColors.primaryTint
               : Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: _showParagraphTranslation
                 ? FluentianColors.primary.withValues(alpha: 0.22)
@@ -104,7 +113,7 @@ class _TranslatableParagraphState extends State<TranslatableParagraph> {
   }
 }
 
-class _TranslatableSentence extends StatelessWidget {
+class _TranslatableSentence extends StatefulWidget {
   final SentencePair pair;
   final bool isTranslated;
   final VoidCallback onTap;
@@ -116,49 +125,148 @@ class _TranslatableSentence extends StatelessWidget {
   });
 
   @override
+  State<_TranslatableSentence> createState() => _TranslatableSentenceState();
+}
+
+class _TranslatableSentenceState extends State<_TranslatableSentence> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed == value) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                pair.original,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  height: 1.48,
-                  fontWeight: FontWeight.w500,
-                  color: FluentianColors.textPrimary,
-                ),
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 110),
+        scale: _pressed ? 0.985 : 1,
+        child: InkWell(
+          onTap: widget.onTap,
+          onTapDown: (_) => _setPressed(true),
+          onTapCancel: () => _setPressed(false),
+          onTapUp: (_) => _setPressed(false),
+          borderRadius: BorderRadius.circular(13),
+          splashColor: FluentianColors.primary.withValues(alpha: 0.08),
+          highlightColor: FluentianColors.primary.withValues(alpha: 0.05),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            decoration: BoxDecoration(
+              color: widget.isTranslated
+                  ? FluentianColors.primaryTint
+                  : FluentianColors.pageBg,
+              borderRadius: BorderRadius.circular(13),
+              border: Border.all(
+                color: widget.isTranslated
+                    ? FluentianColors.primary.withValues(alpha: 0.26)
+                    : FluentianColors.border,
               ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                child: isTranslated
-                    ? Padding(
-                        key: const ValueKey('sentence-translation'),
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          pair.translated,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            height: 1.45,
-                            color: FluentianColors.primaryDark,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      )
-                    : const SizedBox.shrink(
-                        key: ValueKey('sentence-translation-empty'),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _WordWrappedText(text: widget.pair.original),
+                    ),
+                    const SizedBox(width: 8),
+                    AnimatedRotation(
+                      turns: widget.isTranslated ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOut,
+                      child: Icon(
+                        Iconsax.arrow_down_1,
+                        size: 16,
+                        color: widget.isTranslated
+                            ? FluentianColors.primary
+                            : FluentianColors.textSecondary.withValues(
+                                alpha: 0.65,
+                              ),
                       ),
-              ),
-            ],
+                    ),
+                  ],
+                ),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  transitionBuilder: (child, animation) {
+                    return SizeTransition(
+                      sizeFactor: animation,
+                      axisAlignment: -1,
+                      child: FadeTransition(opacity: animation, child: child),
+                    );
+                  },
+                  child: widget.isTranslated
+                      ? Padding(
+                          key: const ValueKey('sentence-translation'),
+                          padding: const EdgeInsets.only(top: 9),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(11),
+                              border: Border.all(
+                                color: FluentianColors.primary.withValues(
+                                  alpha: 0.14,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Iconsax.message_text,
+                                  size: 16,
+                                  color: FluentianColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    widget.pair.translated,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      height: 1.45,
+                                      color: FluentianColors.primaryDark,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(
+                          key: ValueKey('sentence-translation-empty'),
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _WordWrappedText extends StatelessWidget {
+  final String text;
+
+  const _WordWrappedText({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: GoogleFonts.inter(
+        fontSize: 16,
+        height: 1.45,
+        fontWeight: FontWeight.w600,
+        color: FluentianColors.textPrimary,
       ),
     );
   }

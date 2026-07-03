@@ -55,9 +55,11 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
   List<Opportunity> get _filteredOpportunities {
     if (_opportunities == null) return [];
     if (_filterIndex == 0) return _opportunities!;
-    
+
     final category = (_filters[_filterIndex]['label'] as String).toLowerCase();
-    return _opportunities!.where((o) => o.type.toLowerCase() == category).toList();
+    return _opportunities!
+        .where((o) => o.type.toLowerCase() == category)
+        .toList();
   }
 
   @override
@@ -124,7 +126,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                   final isSelected = _filterIndex == i;
                   final label = _filters[i]['label'] as String;
                   final icon = _filters[i]['icon'] as IconData;
-                  
+
                   return GestureDetector(
                     onTap: () => setState(() => _filterIndex = i),
                     child: AnimatedContainer(
@@ -132,20 +134,26 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                       margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: isSelected ? FluentianColors.accent : Colors.white,
+                        color: isSelected
+                            ? FluentianColors.accent
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected 
-                              ? FluentianColors.accent 
+                          color: isSelected
+                              ? FluentianColors.accent
                               : Colors.black.withValues(alpha: 0.05),
                         ),
-                        boxShadow: isSelected ? [
-                          BoxShadow(
-                            color: FluentianColors.accent.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          )
-                        ] : [],
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: FluentianColors.accent.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                            : [],
                       ),
                       alignment: Alignment.center,
                       child: Row(
@@ -155,7 +163,9 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                             Icon(
                               icon,
                               size: 16,
-                              color: isSelected ? Colors.white : FluentianColors.textSecondary,
+                              color: isSelected
+                                  ? Colors.white
+                                  : FluentianColors.textSecondary,
                             ),
                             const SizedBox(width: 6),
                           ],
@@ -163,8 +173,12 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                             label,
                             style: GoogleFonts.inter(
                               fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                              color: isSelected ? Colors.white : FluentianColors.textSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? Colors.white
+                                  : FluentianColors.textSecondary,
                             ),
                           ),
                         ],
@@ -178,18 +192,24 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
             const SizedBox(height: 16),
 
             Expanded(
-              child: _isLoading 
-                ? const Center(
-                    child: CircularProgressIndicator(color: FluentianColors.accent)
-                  )
-                : _error != null
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: FluentianColors.accent,
+                      ),
+                    )
+                  : _error != null
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Iconsax.warning_2, size: 48, color: FluentianColors.error),
+                            const Icon(
+                              Iconsax.warning_2,
+                              size: 48,
+                              color: FluentianColors.error,
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'Could not load opportunities',
@@ -202,7 +222,9 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                             Text(
                               _error!,
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(color: FluentianColors.textSecondary),
+                              style: GoogleFonts.inter(
+                                color: FluentianColors.textSecondary,
+                              ),
                             ),
                             const SizedBox(height: 24),
                             ElevatedButton.icon(
@@ -222,32 +244,46 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                       color: FluentianColors.accent,
                       onRefresh: _fetchOpportunities,
                       child: _filteredOpportunities.isEmpty
-                        ? ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            children: [
-                              SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-                              Icon(Iconsax.search_status, size: 64, color: Colors.grey.shade300),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No opportunities found',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: FluentianColors.textSecondary,
+                          ? ListView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              children: [
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.2,
                                 ),
+                                Icon(
+                                  Iconsax.search_status,
+                                  size: 64,
+                                  color: Colors.grey.shade300,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No opportunities found',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: FluentianColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                0,
+                                16,
+                                100,
                               ),
-                            ],
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                            itemCount: _filteredOpportunities.length,
-                            itemBuilder: (context, i) {
-                              final o = _filteredOpportunities[i];
-                              return _OpportunityCard(opportunity: o);
-                            },
-                          ),
+                              physics: const AlwaysScrollableScrollPhysics(
+                                parent: BouncingScrollPhysics(),
+                              ),
+                              itemCount: _filteredOpportunities.length,
+                              itemBuilder: (context, i) {
+                                final o = _filteredOpportunities[i];
+                                return _OpportunityCard(opportunity: o);
+                              },
+                            ),
                     ),
             ),
           ],
@@ -263,30 +299,45 @@ class _OpportunityCard extends StatelessWidget {
 
   IconData _getIconForType(String type) {
     switch (type.toLowerCase()) {
-      case 'scholarships': return Iconsax.teacher;
-      case 'jobs': return Iconsax.briefcase;
-      case 'exchange': return Iconsax.global;
-      case 'events': return Iconsax.calendar_1;
-      case 'volunteer': return Iconsax.heart;
-      default: return Iconsax.document_text;
+      case 'scholarships':
+        return Iconsax.teacher;
+      case 'jobs':
+        return Iconsax.briefcase;
+      case 'exchange':
+        return Iconsax.global;
+      case 'events':
+        return Iconsax.calendar_1;
+      case 'volunteer':
+        return Iconsax.heart;
+      default:
+        return Iconsax.document_text;
     }
   }
 
   Color _getColorForType(String type) {
     switch (type.toLowerCase()) {
-      case 'scholarships': return const Color(0xFF9C27B0); // Purple
-      case 'jobs': return const Color(0xFF0288D1); // Blue
-      case 'exchange': return const Color(0xFF009688); // Teal
-      case 'events': return const Color(0xFFF57C00); // Orange
-      case 'volunteer': return const Color(0xFFE91E63); // Pink
-      default: return FluentianColors.primary;
+      case 'scholarships':
+        return const Color(0xFF9C27B0);
+      case 'jobs':
+        return const Color(0xFF0288D1);
+      case 'exchange':
+        return const Color(0xFF009688);
+      case 'events':
+        return const Color(0xFFF57C00);
+      case 'volunteer':
+        return const Color(0xFFE91E63);
+      default:
+        return FluentianColors.primary;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final typeColor = _getColorForType(opportunity.type);
-    
+    final deadlineText = opportunity.deadline != null
+        ? 'Ends ${opportunity.deadline.toString().split(' ')[0]}'
+        : 'Flexible';
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -301,9 +352,7 @@ class _OpportunityCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.black.withValues(alpha: 0.04),
-          ),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -320,38 +369,53 @@ class _OpportunityCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: typeColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _getIconForType(opportunity.type),
-                              size: 14,
-                              color: typeColor,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              opportunity.type.toUpperCase(),
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 190),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: typeColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _getIconForType(opportunity.type),
+                                size: 14,
                                 color: typeColor,
-                                letterSpacing: 0.5,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  opportunity.type.toUpperCase(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: typeColor,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: FluentianColors.success.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -384,6 +448,8 @@ class _OpportunityCard extends StatelessWidget {
                   const SizedBox(height: 14),
                   Text(
                     opportunity.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -405,23 +471,39 @@ class _OpportunityCard extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
-              height: 1,
-              color: Colors.black.withValues(alpha: 0.04),
-            ),
+            Container(height: 1, color: Colors.black.withValues(alpha: 0.04)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text(
-                    'Deadline: Flexible',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: FluentianColors.textSecondary,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Iconsax.clock,
+                        size: 14,
+                        color: FluentianColors.textSecondary,
+                      ),
+                      const SizedBox(width: 5),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 170),
+                        child: Text(
+                          deadlineText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: FluentianColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -429,7 +511,7 @@ class _OpportunityCard extends StatelessWidget {
                         'View details',
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w800,
                           color: FluentianColors.accent,
                         ),
                       ),
