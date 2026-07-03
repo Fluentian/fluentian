@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../services/learning_api.dart';
+import '../services/sound_effect_service.dart';
 import '../widgets/common_widgets.dart';
 
 class LessonCompleteScreen extends StatefulWidget {
@@ -33,6 +34,12 @@ class LessonCompleteScreen extends StatefulWidget {
 
 class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
   bool _feedbackSent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SoundEffectService.instance.play(SoundEffect.result);
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -9,6 +9,7 @@ import '../models/course_model.dart';
 import '../models/progress_model.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
+import '../services/sound_effect_service.dart';
 import '../services/tts_service.dart';
 import '../widgets/ai_tutor_sheet.dart';
 import 'lesson_complete_screen.dart';
@@ -594,6 +595,9 @@ class _McqScreenState extends State<McqScreen>
       write.whenComplete(() => _pendingHeartWrites.remove(write));
     }
 
+    SoundEffectService.instance.play(
+      isCorrect ? SoundEffect.correct : SoundEffect.wrong,
+    );
     _showResultSheet(isCorrect, correctAnswerText);
   }
 

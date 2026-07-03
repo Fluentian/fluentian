@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 import '../services/ai_service.dart';
+import '../services/sound_effect_service.dart';
 
 class AiTutorSheet extends StatefulWidget {
   final String systemContext;
@@ -81,6 +82,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
               activity: aiResponse.activity,
             ),
           );
+          SoundEffectService.instance.play(SoundEffect.aiResponse);
         } else {
           _messages.add(
             AiMessage(
