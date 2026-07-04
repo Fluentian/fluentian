@@ -405,12 +405,13 @@ class _McqScreenState extends State<McqScreen>
     });
   }
 
-  Future<void> _refreshPersistentHearts() async {
+  Future<int?> _refreshPersistentHearts() async {
     final hearts = await context.read<AuthProvider>().refreshHearts();
-    if (!mounted || hearts == null) return;
+    if (!mounted || hearts == null) return hearts;
     setState(() {
       _hearts = hearts;
     });
+    return hearts;
   }
 
   Future<void> _syncWrongAnswerHeart() async {
@@ -422,7 +423,12 @@ class _McqScreenState extends State<McqScreen>
     });
   }
 
-  void _showOutOfHeartsSheet() {
+  Future<void> _showOutOfHeartsSheet() async {
+    final refreshedHearts = await _refreshPersistentHearts();
+    if (!mounted) return;
+    if ((refreshedHearts ?? _hearts) > 0) {
+      return;
+    }
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -1017,7 +1023,7 @@ class _McqScreenState extends State<McqScreen>
               child: FluentianButton(
                 text: _hearts <= 0 ? 'Hearts refilling' : 'Check',
                 onPressed: _hearts <= 0
-                    ? _showOutOfHeartsSheet
+                    ? () => _showOutOfHeartsSheet()
                     : _isCheckEnabled() && _state == _AnswerState.unanswered
                     ? _check
                     : null,

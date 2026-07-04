@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../providers/auth_provider.dart';
+import '../services/app_logger.dart';
 import '../services/local_push_service.dart';
 import 'auth/sign_in_screen.dart';
 
@@ -155,6 +157,8 @@ class SettingsScreen extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          _SettingsGroup(title: 'Debug', children: [_DebugLogsRow()]),
           const SizedBox(height: 16),
           _DangerAction(
             isLoading: auth.isLoading,
@@ -318,6 +322,30 @@ class SettingsScreen extends StatelessWidget {
     nameController.dispose();
     goalController.dispose();
     bioController.dispose();
+  }
+}
+
+class _DebugLogsRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return _RowShell(
+      icon: Icons.bug_report_rounded,
+      label: 'Copy debug logs',
+      onTap: () async {
+        final logs = await AppLogger.instance.exportText();
+        final text = logs.trim().isEmpty ? 'No debug logs recorded yet.' : logs;
+        await Clipboard.setData(ClipboardData(text: text));
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Debug logs copied.')));
+      },
+      trailing: const Icon(
+        Icons.copy_rounded,
+        color: FluentianColors.textSecondary,
+        size: 20,
+      ),
+    );
   }
 }
 

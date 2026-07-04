@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
+import '../services/app_logger.dart';
 import '../services/auth_api.dart';
 import '../services/api_client.dart';
 
@@ -40,6 +41,7 @@ class AuthProvider extends ChangeNotifier {
   /// Called once at app startup to restore auth state from stored tokens.
   Future<void> initialize() async {
     final startTime = DateTime.now();
+    await AppLogger.instance.info('Auth initialize started');
     try {
       _hasSeenIntro = await _apiClient.hasSeenIntro();
     } catch (e) {
@@ -63,12 +65,14 @@ class AuthProvider extends ChangeNotifier {
         _hasCompletedSetup = _hasCompletedSetup || _hasFinishedSetup(res.user);
         _status = AuthStatus.authenticated;
         await _apiClient.saveUser(res.user);
+        await AppLogger.instance.info('Auth restored for ${res.user.email}');
       } catch (e) {
         if (e is ApiException && (e.statusCode == 401 || e.statusCode == 403)) {
           await _apiClient.clearTokens();
           await _apiClient.clearUser();
           _user = null;
           _status = AuthStatus.unauthenticated;
+          await AppLogger.instance.warning('Stored auth token was rejected');
         } else {
           // Network or server error, use cached session if present
           if (cachedUser != null) {
@@ -80,11 +84,13 @@ class AuthProvider extends ChangeNotifier {
           } else {
             _status = AuthStatus.unauthenticated;
           }
+          await AppLogger.instance.error('Auth restore fallback used', e);
         }
       }
     } else {
       _status = AuthStatus.unauthenticated;
       _user = null;
+      await AppLogger.instance.info('No stored auth token found');
     }
 
     final elapsed = DateTime.now().difference(startTime).inMilliseconds;
@@ -104,6 +110,7 @@ class AuthProvider extends ChangeNotifier {
     _setLoading(true);
     _unverifiedEmail = null;
     try {
+      await AppLogger.instance.info('Registration started for $email');
       await _authApi.register(
         username: username,
         email: email,
@@ -111,15 +118,27 @@ class AuthProvider extends ChangeNotifier {
       );
       _unverifiedEmail = email;
       _errorMessage = null;
+      await AppLogger.instance.info(
+        'Registration created verification for $email',
+      );
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.userMessage;
+      await AppLogger.instance.error('Registration API error for $email', e);
       return false;
     } on NetworkException catch (e) {
       _errorMessage = e.message;
+      await AppLogger.instance.error(
+        'Registration network error for $email',
+        e,
+      );
       return false;
     } catch (e) {
       _errorMessage = 'An unexpected error occurred.';
+      await AppLogger.instance.error(
+        'Registration unexpected error for $email',
+        e,
+      );
       if (kDebugMode) debugPrint('Register error: $e');
       return false;
     } finally {
@@ -189,6 +208,7 @@ class AuthProvider extends ChangeNotifier {
     _setLoading(true);
     _unverifiedEmail = null;
     try {
+      await AppLogger.instance.info('Login started for $email');
       final res = await _authApi.login(email: email, password: password);
       _user = res.user;
       _nextHeartRefillAt = res.user.nextHeartRefillAt;
@@ -196,18 +216,22 @@ class AuthProvider extends ChangeNotifier {
       await _apiClient.saveUser(res.user);
       _status = AuthStatus.authenticated;
       _errorMessage = null;
+      await AppLogger.instance.info('Login succeeded for ${res.user.email}');
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.userMessage;
       if (e.message == 'Email not verified') {
         _unverifiedEmail = e.responseBody?['detail']?.toString() ?? email;
       }
+      await AppLogger.instance.error('Login API error for $email', e);
       return false;
     } on NetworkException catch (e) {
       _errorMessage = e.message;
+      await AppLogger.instance.error('Login network error for $email', e);
       return false;
     } catch (e) {
       _errorMessage = 'An unexpected error occurred.';
+      await AppLogger.instance.error('Login unexpected error for $email', e);
       if (kDebugMode) debugPrint('Login error: $e');
       return false;
     } finally {
@@ -348,16 +372,36 @@ class AuthProvider extends ChangeNotifier {
   /// Log out and clear all state.
   Future<void> logout() async {
     _setLoading(true);
-    await _authApi.logout();
-    await _firebaseAuth.signOut();
-    await _googleSignIn.signOut();
-    await _apiClient.clearUser();
-    _user = null;
-    _nextHeartRefillAt = null;
-    _maxHearts = 5;
-    _status = AuthStatus.unauthenticated;
-    _errorMessage = null;
-    _setLoading(false);
+    final email = _user?.email ?? 'unknown user';
+    await AppLogger.instance.info('Logout started for $email');
+    try {
+      await _authApi.logout();
+    } catch (e) {
+      await AppLogger.instance.error('Backend logout failed for $email', e);
+    }
+    try {
+      await _firebaseAuth.signOut();
+    } catch (e) {
+      await AppLogger.instance.error('Firebase logout failed for $email', e);
+    }
+    try {
+      await _googleSignIn.signOut();
+    } catch (e) {
+      await AppLogger.instance.error('Google logout failed for $email', e);
+    } finally {
+      await _apiClient.clearTokens();
+      await _apiClient.clearUser();
+      await _apiClient.clearSetupComplete();
+      _user = null;
+      _unverifiedEmail = null;
+      _nextHeartRefillAt = null;
+      _maxHearts = 5;
+      _hasCompletedSetup = false;
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = null;
+      _setLoading(false);
+      await AppLogger.instance.info('Local logout cleanup finished for $email');
+    }
   }
 
   /// Update the in-memory user (e.g. after profile save or XP gain).

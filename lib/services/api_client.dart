@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
+import 'app_logger.dart';
 
 /// Central exception class for all API errors.
 class ApiException implements Exception {
@@ -55,7 +56,10 @@ class ApiException implements Exception {
 
 class NetworkException implements Exception {
   final String message;
-  const NetworkException([this.message = 'No internet connection or server is unreachable. Make sure the backend is running.']);
+  const NetworkException([
+    this.message =
+        'No internet connection or server is unreachable. Make sure the backend is running.',
+  ]);
   @override
   String toString() => 'NetworkException: $message';
 }
@@ -144,6 +148,10 @@ class ApiClient {
     await _storage.delete(key: _userKey);
   }
 
+  Future<void> clearSetupComplete() async {
+    await _storage.delete(key: _setupCompleteKey);
+  }
+
   Future<void> setIntroSeen(bool value) async {
     await _storage.write(key: _introKey, value: value.toString());
   }
@@ -190,28 +198,37 @@ class ApiClient {
   Future<Map<String, dynamic>> get(String path, {bool auth = true}) =>
       _request('GET', path, auth: auth);
 
-  Future<Map<String, dynamic>> post(String path, Map<String, dynamic> body,
-          {bool auth = true}) =>
-      _request('POST', path, body: body, auth: auth);
+  Future<Map<String, dynamic>> post(
+    String path,
+    Map<String, dynamic> body, {
+    bool auth = true,
+  }) => _request('POST', path, body: body, auth: auth);
 
-  Future<Map<String, dynamic>> put(String path, Map<String, dynamic> body,
-          {bool auth = true}) =>
-      _request('PUT', path, body: body, auth: auth);
+  Future<Map<String, dynamic>> put(
+    String path,
+    Map<String, dynamic> body, {
+    bool auth = true,
+  }) => _request('PUT', path, body: body, auth: auth);
 
-  Future<Map<String, dynamic>> patch(String path, Map<String, dynamic> body,
-          {bool auth = true}) =>
-      _request('PATCH', path, body: body, auth: auth);
+  Future<Map<String, dynamic>> patch(
+    String path,
+    Map<String, dynamic> body, {
+    bool auth = true,
+  }) => _request('PATCH', path, body: body, auth: auth);
 
   Future<Map<String, dynamic>> delete(String path, {bool auth = true}) =>
       _request('DELETE', path, auth: auth);
 
   /// Generic list response helper (returns list not map).
   Future<List<dynamic>> getList(String path, {bool auth = true}) async {
+    final start = DateTime.now();
+    final uri = Uri.parse('$_baseUrl$path');
     try {
       final headers = await _buildHeaders(auth: auth);
-      final uri = Uri.parse('$_baseUrl$path');
-      final response =
-          await http.get(uri, headers: headers).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 15));
+      await _logResponse('GET', uri, response.statusCode, start);
       _checkStatus(response, uri: uri);
       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
       if (decoded is List) return decoded;
@@ -220,9 +237,11 @@ class ApiClient {
         return decoded['items'] as List<dynamic>;
       }
       return [];
-    } on SocketException {
+    } on SocketException catch (e) {
+      await _logError('GET', uri, start, e);
       throw const NetworkException();
-    } on HttpException {
+    } on HttpException catch (e) {
+      await _logError('GET', uri, start, e);
       throw const NetworkException('Unable to reach server.');
     }
   }
@@ -235,9 +254,10 @@ class ApiClient {
     Map<String, dynamic>? body,
     bool auth = true,
   }) async {
+    final start = DateTime.now();
+    final uri = Uri.parse('$_baseUrl$path');
     try {
       final headers = await _buildHeaders(auth: auth);
-      final uri = Uri.parse('$_baseUrl$path');
 
       http.Response response;
       switch (method) {
@@ -265,17 +285,25 @@ class ApiClient {
           throw ApiException(0, 'Unknown HTTP method: $method');
       }
 
+      await _logResponse(method, uri, response.statusCode, start);
       _checkStatus(response, uri: uri);
       if (response.body.isEmpty) return {};
-      return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-    } on SocketException {
+      return jsonDecode(utf8.decode(response.bodyBytes))
+          as Map<String, dynamic>;
+    } on SocketException catch (e) {
+      await _logError(method, uri, start, e);
       throw const NetworkException();
-    } on HttpException {
+    } on HttpException catch (e) {
+      await _logError(method, uri, start, e);
       throw const NetworkException('Unable to reach server.');
-    } on http.ClientException {
-      throw const NetworkException('Connection refused. Is the backend running?');
+    } on http.ClientException catch (e) {
+      await _logError(method, uri, start, e);
+      throw const NetworkException(
+        'Connection refused. Is the backend running?',
+      );
     } catch (e) {
       if (e.toString().contains('TimeoutException')) {
+        await _logError(method, uri, start, e);
         throw const NetworkException('Request timed out. Please try again.');
       }
       rethrow;
@@ -304,7 +332,8 @@ class ApiClient {
       final body = jsonDecode(utf8.decode(response.bodyBytes));
       if (body is Map) {
         responseBody = Map<String, dynamic>.from(body);
-        message = body['message']?.toString() ??
+        message =
+            body['message']?.toString() ??
             body['detail']?.toString() ??
             message;
       }
@@ -321,5 +350,30 @@ class ApiClient {
       }
     }
     throw ApiException(response.statusCode, message, responseBody);
+  }
+
+  Future<void> _logResponse(
+    String method,
+    Uri uri,
+    int statusCode,
+    DateTime start,
+  ) async {
+    final elapsedMs = DateTime.now().difference(start).inMilliseconds;
+    await AppLogger.instance.info(
+      'API $method ${uri.path} -> $statusCode (${elapsedMs}ms)',
+    );
+  }
+
+  Future<void> _logError(
+    String method,
+    Uri uri,
+    DateTime start,
+    Object error,
+  ) async {
+    final elapsedMs = DateTime.now().difference(start).inMilliseconds;
+    await AppLogger.instance.error(
+      'API $method ${uri.path} failed (${elapsedMs}ms)',
+      error,
+    );
   }
 }
