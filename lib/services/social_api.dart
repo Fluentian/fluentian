@@ -1,4 +1,5 @@
 import 'api_client.dart';
+import '../core/livekit_config.dart';
 
 class SpeakingCallSession {
   final String roomToken;
@@ -17,10 +18,13 @@ class SpeakingCallSession {
 
   factory SpeakingCallSession.fromJson(Map<String, dynamic> json) {
     final prompts = json['prompts'];
+    final serverUrl = json['server_url']?.toString().trim();
     return SpeakingCallSession(
       roomToken: json['room_token']?.toString() ?? '',
       providerRoomName: json['provider_room_name']?.toString() ?? '',
-      serverUrl: json['server_url']?.toString() ?? '',
+      serverUrl: serverUrl == null || serverUrl.isEmpty
+          ? LiveKitConfig.serverUrl
+          : serverUrl,
       durationSeconds: (json['duration_seconds'] as num?)?.toInt() ?? 240,
       prompts: prompts is List
           ? prompts.map((item) => item.toString()).toList()

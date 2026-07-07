@@ -7,6 +7,7 @@ import 'package:livekit_client/livekit_client.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../core/theme.dart';
+import '../services/api_client.dart';
 import '../services/social_api.dart';
 
 class CallScreen extends StatefulWidget {
@@ -54,7 +55,9 @@ class _CallScreenState extends State<CallScreen> {
     try {
       final mic = await Permission.microphone.request();
       if (!mic.isGranted) {
-        throw Exception('Microphone permission is required for audio practice.');
+        throw Exception(
+          'Microphone permission is required for audio practice.',
+        );
       }
       if (widget.isVideo) {
         final camera = await Permission.camera.request();
@@ -120,10 +123,21 @@ class _CallScreenState extends State<CallScreen> {
       if (!mounted) return;
       setState(() {
         _isConnecting = false;
-        _error = e.toString().replaceFirst('Exception: ', '');
+        _error = _formatCallError(e);
         _status = 'Could not join call';
       });
     }
+  }
+
+  String _formatCallError(Object error) {
+    if (error is ApiException) {
+      if (error.statusCode == 422 &&
+          error.message.toLowerCase().contains('livekit is not configured')) {
+        return 'Live speaking is not configured on the backend yet. Add LIVEKIT_API_KEY and LIVEKIT_API_SECRET on the server, then restart it.';
+      }
+      return error.userMessage;
+    }
+    return error.toString().replaceFirst('Exception: ', '');
   }
 
   void _startTimer() {
@@ -157,7 +171,8 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   void _refreshLocalVideoTrack() {
-    final publications = _room?.localParticipant?.videoTrackPublications ?? const [];
+    final publications =
+        _room?.localParticipant?.videoTrackPublications ?? const [];
     for (final publication in publications) {
       final track = publication.track;
       if (track is LocalVideoTrack) {
@@ -234,7 +249,10 @@ class _CallScreenState extends State<CallScreen> {
                   children: [
                     IconButton(
                       tooltip: 'Close',
-                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Colors.white,
+                      ),
                       onPressed: _leave,
                     ),
                     Expanded(
@@ -436,7 +454,9 @@ class _CallScreenState extends State<CallScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          ...prompts.take(3).map(
+          ...prompts
+              .take(3)
+              .map(
                 (prompt) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
@@ -480,12 +500,18 @@ class _CallScreenState extends State<CallScreen> {
         decoration: BoxDecoration(
           color: FluentianColors.error.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: FluentianColors.error.withValues(alpha: 0.35)),
+          border: Border.all(
+            color: FluentianColors.error.withValues(alpha: 0.35),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Iconsax.warning_2, color: FluentianColors.error, size: 34),
+            const Icon(
+              Iconsax.warning_2,
+              color: FluentianColors.error,
+              size: 34,
+            ),
             const SizedBox(height: 12),
             Text(
               _error!,
@@ -569,8 +595,11 @@ class _CallControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ??
-        (isActive ? Colors.white.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.06));
+    final bg =
+        backgroundColor ??
+        (isActive
+            ? Colors.white.withValues(alpha: 0.14)
+            : Colors.white.withValues(alpha: 0.06));
     return Tooltip(
       message: tooltip,
       child: InkWell(
