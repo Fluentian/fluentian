@@ -22,7 +22,7 @@ class ChatDetailScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CallScreen()),
+                MaterialPageRoute(builder: (_) => CallScreen(topic: title)),
               );
             },
           ),
@@ -32,7 +32,7 @@ class ChatDetailScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const CallScreen(isVideo: true),
+                  builder: (_) => CallScreen(topic: title, isVideo: true),
                 ),
               );
             },

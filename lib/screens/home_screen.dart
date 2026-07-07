@@ -18,6 +18,7 @@ import 'lesson_list_screen.dart';
 import 'lesson_detail_screen.dart';
 import 'opportunity_screen.dart';
 import 'explore_screen.dart';
+import 'live_call_screen.dart';
 import 'notifications_screen.dart';
 import 'srs_review_screen.dart';
 
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final screens = [
       _HomeContent(),
       const ExploreScreen(),
+      const LiveCallScreen(),
       const OpportunityScreen(),
       const ProfileScreen(),
     ];

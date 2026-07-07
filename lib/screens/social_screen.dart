@@ -65,12 +65,12 @@ class _SocialScreenState extends State<SocialScreen> {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       children: [
-                        _ActiveCallCard('French Corner', 4, [
+                        _ActiveCallCard('French Corner', 4, null, [
                           FluentianColors.primary,
                           FluentianColors.accent,
                           FluentianColors.info,
                         ]),
-                        _ActiveCallCard('Débutants', 2, [
+                        _ActiveCallCard('Beginners Welcome', 2, 'A1', [
                           FluentianColors.success,
                           FluentianColors.primary,
                         ]),
@@ -273,8 +273,9 @@ class _SocialScreenState extends State<SocialScreen> {
 class _ActiveCallCard extends StatelessWidget {
   final String name;
   final int count;
+  final String? level;
   final List<Color> colors;
-  const _ActiveCallCard(this.name, this.count, this.colors);
+  const _ActiveCallCard(this.name, this.count, this.level, this.colors);
 
   @override
   Widget build(BuildContext context) {
@@ -282,7 +283,9 @@ class _ActiveCallCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => CallScreen()),
+          MaterialPageRoute(
+            builder: (_) => CallScreen(topic: name, level: level),
+          ),
         );
       },
       child: Container(

@@ -111,8 +111,11 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
   void _syncTimer() {
     _timer?.cancel();
     _tick();
-    if (widget.nextRefillAt != null && widget.hearts < widget.maxHearts) {
-      _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    if (widget.hearts < widget.maxHearts) {
+      final interval = widget.nextRefillAt == null
+          ? const Duration(seconds: 15)
+          : const Duration(seconds: 1);
+      _timer = Timer.periodic(interval, (_) => _tick());
     }
   }
 
@@ -126,10 +129,10 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
         _remaining = remaining.isNegative ? Duration.zero : remaining;
       });
     }
-    if (remaining <= Duration.zero &&
-        target != null &&
+    final needsRefresh =
         widget.hearts < widget.maxHearts &&
-        !_refreshQueued) {
+        (target == null || remaining <= Duration.zero);
+    if (needsRefresh && !_refreshQueued) {
       _refreshQueued = true;
       Future.sync(() => widget.onRefreshDue?.call()).whenComplete(() {
         if (!mounted) return;
@@ -140,7 +143,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
 
   String get _countdown {
     if (widget.hearts >= widget.maxHearts) return _fullHeartMessage;
-    if (widget.nextRefillAt == null) return 'Refilling';
+    if (widget.nextRefillAt == null) return 'Checking...';
     final hours = _remaining.inHours;
     final minutes = _remaining.inMinutes.remainder(60);
     final seconds = _remaining.inSeconds.remainder(60);
@@ -178,9 +181,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(FluentianRadius.pill),
-        border: Border.all(
-          color: activeColor.withValues(alpha: 0.18),
-        ),
+        border: Border.all(color: activeColor.withValues(alpha: 0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -195,7 +196,9 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
                   child: Icon(
                     i < widget.hearts ? Iconsax.heart5 : Iconsax.heart,
                     size: widget.compact ? 15 : 17,
-                    color: i < widget.hearts ? activeColor : Colors.grey.shade400,
+                    color: i < widget.hearts
+                        ? activeColor
+                        : Colors.grey.shade400,
                   ),
                 ),
               ),

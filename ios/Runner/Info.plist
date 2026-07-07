@@ -50,5 +50,9 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Fluentian uses your camera for optional video speaking practice.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Fluentian uses your microphone for speaking practice.</string>
 </dict>
 </plist>

@@ -16,6 +16,7 @@ class FluentianBottomNav extends StatelessWidget {
   static const _tabs = [
     _NavItem(Iconsax.home_1, 'Home'),
     _NavItem(Iconsax.global, 'Explore'),
+    _NavItem(Iconsax.microphone_2, 'Live'),
     _NavItem(Iconsax.briefcase, 'Board'),
     _NavItem(Iconsax.user, 'Profile'),
   ];
@@ -37,7 +38,7 @@ class FluentianBottomNav extends StatelessWidget {
             onTap: () => onTap(index),
             behavior: HitTestBehavior.opaque,
             child: SizedBox(
-              width: 64,
+              width: 58,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
