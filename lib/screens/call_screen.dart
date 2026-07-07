@@ -232,6 +232,7 @@ class _CallScreenState extends State<CallScreen> {
   Widget build(BuildContext context) {
     final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
+    final time = '$minutes:$seconds';
 
     return PopScope(
       canPop: false,
@@ -241,85 +242,109 @@ class _CallScreenState extends State<CallScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFF101014),
         body: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      tooltip: 'Close',
-                      icon: const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Colors.white,
-                      ),
-                      onPressed: _leave,
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Text(
-                            widget.topic,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            _status,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              color: Colors.white60,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 48),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 8),
-                      if (widget.isVideo)
-                        _buildVideoStage('$minutes:$seconds')
-                      else ...[
-                        _buildTimer('$minutes:$seconds'),
-                        const SizedBox(height: 20),
-                        _buildRoomAvatar(),
-                      ],
-                      const SizedBox(height: 16),
-                      Text(
-                        '$_participantCount speaking now',
-                        style: GoogleFonts.inter(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Expanded(
-                        child: _error != null
-                            ? _buildError()
-                            : _buildPromptPanel(),
-                      ),
-                    ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final wide = constraints.maxWidth >= 720;
+              return Column(
+                children: [
+                  _buildHeader(wide: wide),
+                  Expanded(
+                    child: wide
+                        ? _buildWideLayout(time)
+                        : _buildPhoneLayout(time),
                   ),
-                ),
-              ),
-              _buildControls(),
-            ],
+                  _buildControls(wide: wide),
+                ],
+              );
+            },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader({required bool wide}) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(wide ? 28 : 16, 12, wide ? 28 : 16, 8),
+      child: Row(
+        children: [
+          IconButton(
+            tooltip: 'Close',
+            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+            onPressed: _leave,
+          ),
+          Expanded(
+            child: Column(
+              children: [
+                Text(
+                  widget.topic,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: wide ? 18 : 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  _status,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          _StatusPill(icon: Iconsax.profile_2user, label: '$_participantCount'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhoneLayout(String time) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          if (widget.isVideo)
+            _buildVideoStage(time)
+          else
+            _buildAudioStage(time, compact: true),
+          const SizedBox(height: 16),
+          _buildSessionStrip(),
+          const SizedBox(height: 14),
+          Expanded(child: _error != null ? _buildError() : _buildPromptPanel()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWideLayout(String time) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 12, 28, 22),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 6,
+            child: Column(
+              children: [
+                Expanded(
+                  child: widget.isVideo
+                      ? _buildWideVideoStage(time)
+                      : _buildAudioStage(time, compact: false),
+                ),
+                const SizedBox(height: 18),
+                _buildSessionStrip(),
+              ],
+            ),
+          ),
+          const SizedBox(width: 24),
+          SizedBox(
+            width: 360,
+            child: _error != null ? _buildError() : _buildPracticePanel(),
+          ),
+        ],
       ),
     );
   }
@@ -356,6 +381,47 @@ class _CallScreenState extends State<CallScreen> {
         border: Border.all(color: Colors.white24, width: 4),
       ),
       child: const Icon(Iconsax.microphone_2, color: Colors.white, size: 46),
+    );
+  }
+
+  Widget _buildAudioStage(String time, {required bool compact}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 18 : 28,
+        vertical: compact ? 20 : 28,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(compact ? 22 : 26),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildTimer(time),
+          SizedBox(height: compact ? 18 : 26),
+          _buildRoomAvatar(),
+          SizedBox(height: compact ? 14 : 22),
+          Text(
+            '$_participantCount speaking now',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: compact ? 15 : 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            widget.level == null
+                ? 'Guided French conversation'
+                : '${widget.level} guided French conversation',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+          ),
+          if (!compact) ...[const SizedBox(height: 30), _buildWaveform()],
+        ],
+      ),
     );
   }
 
@@ -419,6 +485,50 @@ class _CallScreenState extends State<CallScreen> {
     );
   }
 
+  Widget _buildWideVideoStage(String time) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(26),
+      child: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.black,
+            child: _remoteVideoTrack == null
+                ? Center(child: _buildAudioStage(time, compact: false))
+                : VideoTrackRenderer(
+                    _remoteVideoTrack!,
+                    fit: VideoViewFit.cover,
+                  ),
+          ),
+          Positioned(
+            top: 16,
+            left: 16,
+            child: _StatusPill(icon: Iconsax.timer_1, label: time),
+          ),
+          Positioned(
+            right: 16,
+            bottom: 16,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: 150,
+                height: 200,
+                color: const Color(0xFF1D1D22),
+                child: _localVideoTrack == null
+                    ? const Icon(Iconsax.video_slash, color: Colors.white54)
+                    : VideoTrackRenderer(
+                        _localVideoTrack!,
+                        fit: VideoViewFit.cover,
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPromptPanel() {
     if (_isConnecting) {
       return const Center(
@@ -454,39 +564,93 @@ class _CallScreenState extends State<CallScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          ...prompts
-              .take(3)
-              .map(
-                (prompt) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(
-                        Iconsax.message_question,
-                        color: FluentianColors.primaryLight,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          prompt,
-                          style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            height: 1.35,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+          ...prompts.take(3).map(_buildPromptRow),
           const Spacer(),
+          _buildQuickActions(),
+          const SizedBox(height: 14),
           Text(
             _roomName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPracticePanel() {
+    if (_isConnecting) {
+      return const Center(
+        child: CircularProgressIndicator(color: FluentianColors.primaryLight),
+      );
+    }
+    final prompts = _prompts.isEmpty
+        ? const [
+            'Introduce yourself in French.',
+            'Ask your partner one simple question.',
+            'Say one sentence about today.',
+          ]
+        : _prompts;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Practice guide',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Use one prompt, then pass the turn.',
+            style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+          ),
+          const SizedBox(height: 18),
+          ...prompts.take(4).map(_buildPromptRow),
+          const Spacer(),
+          _buildCallStatsGrid(),
+          const SizedBox(height: 16),
+          _buildQuickActions(),
+          const SizedBox(height: 14),
+          Text(
+            _roomName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPromptRow(String prompt) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Iconsax.message_question,
+            color: FluentianColors.primaryLight,
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              prompt,
+              style: GoogleFonts.inter(color: Colors.white70, height: 1.35),
+            ),
           ),
         ],
       ),
@@ -535,15 +699,15 @@ class _CallScreenState extends State<CallScreen> {
     );
   }
 
-  Widget _buildControls() {
+  Widget _buildControls({required bool wide}) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+      padding: EdgeInsets.fromLTRB(wide ? 40 : 24, 18, wide ? 40 : 24, 24),
       decoration: const BoxDecoration(
         color: Colors.black,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _CallControl(
             icon: _speakerOn ? Iconsax.volume_high : Iconsax.volume_slash,
@@ -556,6 +720,7 @@ class _CallScreenState extends State<CallScreen> {
             isActive: !_isMuted,
             onTap: _room == null ? null : _toggleMute,
           ),
+          _ControlGap(wide: wide),
           if (widget.isVideo)
             _CallControl(
               icon: _isCameraOff ? Iconsax.video_slash : Iconsax.video,
@@ -563,6 +728,7 @@ class _CallScreenState extends State<CallScreen> {
               isActive: !_isCameraOff,
               onTap: _room == null ? null : _toggleCamera,
             ),
+          if (widget.isVideo) _ControlGap(wide: wide),
           _CallControl(
             icon: Icons.call_end,
             tooltip: 'End call',
@@ -574,6 +740,122 @@ class _CallScreenState extends State<CallScreen> {
       ),
     );
   }
+
+  Widget _buildSessionStrip() {
+    return Row(
+      children: [
+        Expanded(
+          child: _MiniStat(
+            icon: Iconsax.microphone_2,
+            label: _isMuted ? 'Muted' : 'Mic live',
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _MiniStat(
+            icon: Iconsax.profile_2user,
+            label: '$_participantCount here',
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _MiniStat(
+            icon: Iconsax.flash_1,
+            label: widget.isVideo ? 'Video room' : 'Audio room',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _SmallAction(icon: Iconsax.message_text, label: 'Prompt'),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _SmallAction(icon: Iconsax.teacher, label: 'Turn'),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _SmallAction(icon: Iconsax.star, label: 'Focus'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCallStatsGrid() {
+    return Row(
+      children: [
+        Expanded(
+          child: _MiniStat(icon: Iconsax.timer_1, label: '4 min sprint'),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _MiniStat(icon: Iconsax.volume_high, label: 'Clear audio'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWaveform() {
+    const bars = [
+      0.26,
+      0.58,
+      0.42,
+      0.72,
+      0.36,
+      0.64,
+      0.92,
+      0.48,
+      0.74,
+      0.38,
+      0.68,
+      0.52,
+      0.84,
+      0.45,
+      0.62,
+      0.78,
+      0.34,
+      0.56,
+      0.88,
+      0.46,
+      0.7,
+      0.4,
+      0.6,
+      0.76,
+    ];
+    return SizedBox(
+      height: 62,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: bars
+            .map(
+              (height) => Container(
+                width: 5,
+                height: 46 * height,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.32),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _ControlGap extends StatelessWidget {
+  final bool wide;
+
+  const _ControlGap({required this.wide});
+
+  @override
+  Widget build(BuildContext context) => SizedBox(width: wide ? 22 : 14);
 }
 
 class _CallControl extends StatelessWidget {
@@ -611,6 +893,113 @@ class _CallControl extends StatelessWidget {
           decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
           child: Icon(icon, color: iconColor ?? Colors.white, size: 26),
         ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _StatusPill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 38,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white70, size: 16),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniStat extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _MiniStat({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: FluentianColors.primaryLight, size: 17),
+          const SizedBox(width: 7),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                color: Colors.white70,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SmallAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _SmallAction({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 42,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white70, size: 17),
+          const SizedBox(width: 7),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
       ),
     );
   }
