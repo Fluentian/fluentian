@@ -14,12 +14,14 @@ class CallScreen extends StatefulWidget {
   final String topic;
   final String? level;
   final bool isVideo;
+  final bool smartMatch;
 
   const CallScreen({
     super.key,
     this.topic = 'French Corner',
     this.level,
     this.isVideo = false,
+    this.smartMatch = false,
   });
 
   @override
@@ -39,6 +41,9 @@ class _CallScreenState extends State<CallScreen> {
   String? _error;
   String _status = 'Preparing your French speaking room...';
   String _roomName = '';
+  String? _matchedTopic;
+  String? _matchedLevel;
+  String? _matchReason;
   int _remainingSeconds = 240;
   int _participantCount = 1;
   List<String> _prompts = const [];
@@ -70,6 +75,7 @@ class _CallScreenState extends State<CallScreen> {
         topic: widget.topic,
         level: widget.level,
         callKind: widget.isVideo ? 'video' : 'audio',
+        smartMatch: widget.smartMatch,
       );
       final room = Room();
       final listener = room.createListener()
@@ -101,9 +107,14 @@ class _CallScreenState extends State<CallScreen> {
         _room = room;
         _listener = listener;
         _roomName = session.providerRoomName;
+        _matchedTopic = session.topic;
+        _matchedLevel = session.level;
+        _matchReason = session.matchReason;
         _prompts = session.prompts;
         _remainingSeconds = session.durationSeconds;
-        _status = 'Joining ${widget.topic}...';
+        _status = widget.smartMatch
+            ? 'Matched with ${session.level ?? 'your'} level speakers'
+            : 'Joining ${widget.topic}...';
       });
 
       await room.connect(session.serverUrl, session.roomToken);
@@ -264,6 +275,7 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   Widget _buildHeader({required bool wide}) {
+    final title = _matchedTopic ?? widget.topic;
     return Padding(
       padding: EdgeInsets.fromLTRB(wide ? 28 : 16, 12, wide ? 28 : 16, 8),
       child: Row(
@@ -277,7 +289,7 @@ class _CallScreenState extends State<CallScreen> {
             child: Column(
               children: [
                 Text(
-                  widget.topic,
+                  title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
@@ -413,9 +425,9 @@ class _CallScreenState extends State<CallScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            widget.level == null
+            _matchedLevel == null
                 ? 'Guided French conversation'
-                : '${widget.level} guided French conversation',
+                : '$_matchedLevel guided French conversation',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
           ),
@@ -564,6 +576,10 @@ class _CallScreenState extends State<CallScreen> {
             ),
           ),
           const SizedBox(height: 14),
+          if (_matchReason != null) ...[
+            _buildMatchReason(),
+            const SizedBox(height: 14),
+          ],
           ...prompts.take(3).map(_buildPromptRow),
           const Spacer(),
           _buildQuickActions(),
@@ -617,6 +633,10 @@ class _CallScreenState extends State<CallScreen> {
             style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
           ),
           const SizedBox(height: 18),
+          if (_matchReason != null) ...[
+            _buildMatchReason(),
+            const SizedBox(height: 18),
+          ],
           ...prompts.take(4).map(_buildPromptRow),
           const Spacer(),
           _buildCallStatsGrid(),
@@ -650,6 +670,42 @@ class _CallScreenState extends State<CallScreen> {
             child: Text(
               prompt,
               style: GoogleFonts.inter(color: Colors.white70, height: 1.35),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMatchReason() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: FluentianColors.primaryLight.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: FluentianColors.primaryLight.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Iconsax.magic_star,
+            color: FluentianColors.primaryLight,
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _matchReason!,
+              style: GoogleFonts.inter(
+                color: Colors.white70,
+                fontSize: 12,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

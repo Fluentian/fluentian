@@ -18,6 +18,7 @@ class FluentianBottomNav extends StatelessWidget {
     _NavItem(Iconsax.global, 'Explore'),
     _NavItem(Iconsax.microphone_2, 'Live'),
     _NavItem(Iconsax.briefcase, 'Board'),
+    _NavItem(Iconsax.heart, 'Social'),
     _NavItem(Iconsax.user, 'Profile'),
   ];
 

@@ -57,7 +57,8 @@ class LiveCallScreen extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           _LiveHero(
-            onStart: () => _openCall(context, topic: 'French Corner'),
+            onStart: () =>
+                _openCall(context, topic: 'Everyday French', smartMatch: true),
           ),
           const SizedBox(height: 22),
           Text(
@@ -80,6 +81,7 @@ class LiveCallScreen extends StatelessWidget {
     required String topic,
     String? level,
     bool isVideo = false,
+    bool smartMatch = false,
   }) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -87,6 +89,7 @@ class LiveCallScreen extends StatelessWidget {
           topic: topic,
           level: level,
           isVideo: isVideo,
+          smartMatch: smartMatch,
         ),
       ),
     );
@@ -130,7 +133,7 @@ class _LiveHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Audio first',
+                      'Smart match',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 17,
@@ -138,7 +141,7 @@ class _LiveHero extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '4-minute rooms with guided prompts',
+                      'Find the best room for your level',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
@@ -158,7 +161,7 @@ class _LiveHero extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onStart,
               icon: const Icon(Iconsax.call, size: 19),
-              label: const Text('Join French Corner'),
+              label: const Text('Find my speaking partner'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: FluentianColors.primary,
