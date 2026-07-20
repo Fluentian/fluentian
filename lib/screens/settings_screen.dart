@@ -97,27 +97,43 @@ class SettingsScreen extends StatelessWidget {
             children: [
               _SwitchRow(
                 icon: Icons.notifications_rounded,
-                label: 'Learning announcements',
+                label: 'Allow notifications',
                 value: user.notificationsEnabled,
                 onChanged: (value) =>
                     _save(context, {'notifications_enabled': value}),
               ),
               _SwitchRow(
                 icon: Icons.alarm_rounded,
-                label: 'Daily reminder',
+                label: 'Daily lesson reminder',
                 value: user.learningReminderEnabled,
-                onChanged: (value) =>
-                    _save(context, {'learning_reminder_enabled': value}),
+                onChanged: user.notificationsEnabled
+                    ? (value) =>
+                          _save(context, {'learning_reminder_enabled': value})
+                    : null,
               ),
               _TimeRow(
                 time: user.reminderTime,
-                enabled: user.learningReminderEnabled,
+                enabled:
+                    user.notificationsEnabled && user.learningReminderEnabled,
                 onTap: () => _pickReminderTime(context, user.reminderTime),
+              ),
+              _SwitchRow(
+                icon: Icons.work_outline_rounded,
+                label: 'New Board opportunities',
+                value: user.opportunityNotificationsEnabled,
+                onChanged: user.notificationsEnabled
+                    ? (value) => _save(context, {
+                        'opportunity_notifications_enabled': value,
+                      })
+                    : null,
               ),
               _RowShell(
                 icon: Icons.send_to_mobile_rounded,
                 label: 'Test notification',
-                onTap: () => _emitTestNotification(context),
+                enabled: user.notificationsEnabled,
+                onTap: user.notificationsEnabled
+                    ? () => _emitTestNotification(context)
+                    : null,
                 trailing: const Icon(
                   Icons.chevron_right_rounded,
                   color: FluentianColors.textSecondary,
@@ -179,6 +195,9 @@ class SettingsScreen extends StatelessWidget {
 
   Future<void> _save(BuildContext context, Map<String, dynamic> data) async {
     final ok = await context.read<AuthProvider>().updateSettings(data);
+    if (ok && data['haptic_feedback_enabled'] == true && context.mounted) {
+      HapticFeedback.selectionClick();
+    }
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(
         context,
@@ -577,7 +596,7 @@ class _SwitchRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   const _SwitchRow({
     required this.icon,

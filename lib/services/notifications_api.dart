@@ -28,4 +28,18 @@ class NotificationsApi {
   Future<void> markAllRead() async {
     await _client.patch('/notifications/read-all', {});
   }
+
+  Future<void> registerDevice(String token, String platform) async {
+    await _client.post('/notifications/devices', {
+      'token': token,
+      'platform': platform,
+    });
+  }
+
+  Future<void> unregisterDevice(String token, String platform) async {
+    await _client.delete(
+      '/notifications/devices',
+      body: {'token': token, 'platform': platform},
+    );
+  }
 }

@@ -19,6 +19,16 @@ class _SignInScreenState extends State<SignInScreen> {
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
 
+  void _dismissMessages() {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    context.read<AuthProvider>().clearError();
+  }
+
+  void _openAuthPage(Widget page) {
+    _dismissMessages();
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -36,7 +46,10 @@ class _SignInScreenState extends State<SignInScreen> {
           // ignore: invalid_use_of_protected_member
           .clearError();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields.')),
+        const SnackBar(
+          content: Text('Please fill in all fields.'),
+          duration: AuthProvider.errorDisplayDuration,
+        ),
       );
       return;
     }
@@ -65,8 +78,12 @@ class _SignInScreenState extends State<SignInScreen> {
     final message = auth.errorMessage;
     if (message != null && message.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
+        SnackBar(
+          content: Text(message),
+          duration: AuthProvider.errorDisplayDuration,
+        ),
       );
+      auth.clearError();
     }
   }
 
@@ -122,6 +139,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           keyboardType: TextInputType.emailAddress,
                           controller: _emailController,
                           enabled: !auth.isLoading,
+                          onChanged: (_) => _dismissMessages(),
                         ),
                         const SizedBox(height: 16),
 
@@ -132,6 +150,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           isPassword: true,
                           controller: _passwordController,
                           enabled: !auth.isLoading,
+                          onChanged: (_) => _dismissMessages(),
                           onSubmitted: (_) => _handleSignIn(),
                         ),
 
@@ -139,12 +158,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ForgotPasswordScreen(),
-                              ),
-                            ),
+                            onTap: () =>
+                                _openAuthPage(const ForgotPasswordScreen()),
                             child: Text(
                               'Forgot password?',
                               style: GoogleFonts.inter(
@@ -216,7 +231,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         AuthSocialButton(
                           text: 'Continue with Google',
                           icon: Icons.g_mobiledata,
-                          onPressed: auth.isLoading ? null : _handleGoogleSignIn,
+                          onPressed: auth.isLoading
+                              ? null
+                              : _handleGoogleSignIn,
                         ),
                         const SizedBox(height: 12),
                         AuthSocialButton(
@@ -229,10 +246,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   const SizedBox(height: 24),
                   GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SignUpScreen()),
-                    ),
+                    onTap: () => _openAuthPage(const SignUpScreen()),
                     child: RichText(
                       text: TextSpan(
                         style: GoogleFonts.inter(

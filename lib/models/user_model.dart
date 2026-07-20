@@ -22,6 +22,7 @@ class UserModel {
   final bool soundEnabled;
   final bool learningReminderEnabled;
   final String reminderTime;
+  final bool opportunityNotificationsEnabled;
   final bool phoneticHintsEnabled;
   final bool speakingExercisesEnabled;
   final bool highContrastEnabled;
@@ -51,6 +52,7 @@ class UserModel {
     this.soundEnabled = true,
     this.learningReminderEnabled = true,
     this.reminderTime = '08:00',
+    this.opportunityNotificationsEnabled = true,
     this.phoneticHintsEnabled = true,
     this.speakingExercisesEnabled = true,
     this.highContrastEnabled = false,
@@ -92,6 +94,8 @@ class UserModel {
       learningReminderEnabled:
           settings?['learning_reminder_enabled'] as bool? ?? true,
       reminderTime: settings?['reminder_time']?.toString() ?? '08:00',
+      opportunityNotificationsEnabled:
+          settings?['opportunity_notifications_enabled'] as bool? ?? true,
       phoneticHintsEnabled:
           settings?['phonetic_hints_enabled'] as bool? ?? true,
       speakingExercisesEnabled:
@@ -128,6 +132,7 @@ class UserModel {
       'sound_enabled': soundEnabled,
       'learning_reminder_enabled': learningReminderEnabled,
       'reminder_time': reminderTime,
+      'opportunity_notifications_enabled': opportunityNotificationsEnabled,
       'phonetic_hints_enabled': phoneticHintsEnabled,
       'speaking_exercises_enabled': speakingExercisesEnabled,
       'high_contrast_enabled': highContrastEnabled,
@@ -160,6 +165,7 @@ class UserModel {
     bool? soundEnabled,
     bool? learningReminderEnabled,
     String? reminderTime,
+    bool? opportunityNotificationsEnabled,
     bool? phoneticHintsEnabled,
     bool? speakingExercisesEnabled,
     bool? highContrastEnabled,
@@ -191,6 +197,8 @@ class UserModel {
     learningReminderEnabled:
         learningReminderEnabled ?? this.learningReminderEnabled,
     reminderTime: reminderTime ?? this.reminderTime,
+    opportunityNotificationsEnabled:
+        opportunityNotificationsEnabled ?? this.opportunityNotificationsEnabled,
     phoneticHintsEnabled: phoneticHintsEnabled ?? this.phoneticHintsEnabled,
     speakingExercisesEnabled:
         speakingExercisesEnabled ?? this.speakingExercisesEnabled,

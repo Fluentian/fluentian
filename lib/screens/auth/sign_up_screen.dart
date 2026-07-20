@@ -27,6 +27,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   static const _stepCount = 4;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<AuthProvider>().clearError();
+    });
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _usernameController.dispose();
@@ -118,9 +126,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: AuthProvider.errorDisplayDuration,
+        ),
+      );
       return false;
     }
     return true;
@@ -151,9 +163,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!mounted || success) return;
     final message = auth.errorMessage;
     if (message != null && message.isNotEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: AuthProvider.errorDisplayDuration,
+        ),
+      );
+      auth.clearError();
     }
   }
 

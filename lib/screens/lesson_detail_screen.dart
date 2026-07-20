@@ -25,15 +25,13 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   bool _isLoading = true;
   LessonDetailModel? _lesson;
   late final AudioPlayer _audioPlayer;
-  final ScrollController _scrollController = ScrollController();
   final TtsService _ttsService = TtsService.instance;
-  double _readProgress = 0;
+  int _currentStep = 0;
 
   @override
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer();
-    _scrollController.addListener(_updateReadProgress);
     _loadLesson();
   }
 
@@ -51,21 +49,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _audioPlayer.dispose();
     _ttsService.stop();
     super.dispose();
-  }
-
-  void _updateReadProgress() {
-    if (!_scrollController.hasClients) return;
-    final max = _scrollController.position.maxScrollExtent;
-    final next = max <= 0
-        ? 1.0
-        : (_scrollController.offset / max).clamp(0.0, 1.0);
-    if ((next - _readProgress).abs() > 0.01) {
-      setState(() => _readProgress = next);
-    }
   }
 
   @override
@@ -132,7 +118,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(3),
           child: LinearProgressIndicator(
-            value: blocks.isEmpty ? 1 : _readProgress,
+            value: blocks.isEmpty
+                ? 1
+                : ((_currentStep + 1) / (blocks.length + 1)).clamp(0, 1),
             minHeight: 3,
             backgroundColor: FluentianColors.primaryTint,
             valueColor: const AlwaysStoppedAnimation(FluentianColors.primary),
@@ -147,23 +135,55 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 Expanded(
                   child: blocks.isEmpty
                       ? Center(child: _buildQuizOnlyCard())
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                          itemCount: blocks.length + 1,
-                          itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return _buildLessonHero(
-                                blockCount: blocks.length,
-                                questionCount: quizQuestions.length,
-                                estimatedMinutes: estimatedMinutes,
-                              );
-                            }
-                            return _buildBlock(blocks[index - 1]);
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            final horizontalPadding = constraints.maxWidth > 700
+                                ? (constraints.maxWidth - 640) / 2
+                                : 16.0;
+                            return AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              transitionBuilder: (child, animation) =>
+                                  FadeTransition(
+                                    opacity: animation,
+                                    child: SlideTransition(
+                                      position:
+                                          Tween<Offset>(
+                                            begin: const Offset(0.04, 0),
+                                            end: Offset.zero,
+                                          ).animate(
+                                            CurvedAnimation(
+                                              parent: animation,
+                                              curve: Curves.easeOutCubic,
+                                            ),
+                                          ),
+                                      child: child,
+                                    ),
+                                  ),
+                              child: SingleChildScrollView(
+                                key: ValueKey(_currentStep),
+                                padding: EdgeInsets.fromLTRB(
+                                  horizontalPadding,
+                                  20,
+                                  horizontalPadding,
+                                  108,
+                                ),
+                                child: _currentStep == 0
+                                    ? _buildLessonHero(
+                                        blockCount: blocks.length,
+                                        questionCount: quizQuestions.length,
+                                        estimatedMinutes: estimatedMinutes,
+                                      )
+                                    : _buildFocusedStep(
+                                        blocks[_currentStep - 1],
+                                        step: _currentStep,
+                                        total: blocks.length,
+                                      ),
+                              ),
+                            );
                           },
                         ),
                 ),
-                _buildBottomActionBar(quizQuestions),
+                _buildBottomActionBar(quizQuestions, blocks.length),
               ],
             ),
             Positioned(
@@ -342,7 +362,10 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     );
   }
 
-  Widget _buildBottomActionBar(List<QuestionModel> quizQuestions) {
+  Widget _buildBottomActionBar(
+    List<QuestionModel> quizQuestions,
+    int blockCount,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -355,79 +378,252 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           ),
         ],
       ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 54,
-        child: ElevatedButton(
-          onPressed: () async {
-            if (quizQuestions.isEmpty) {
-              setState(() => _isLoading = true);
-              final result = await context
-                  .read<ContentProvider>()
-                  .completeLesson(
-                    lessonId: _lesson!.id,
-                    score: 1.0,
-                    answers: [],
-                    timeSeconds: 5,
-                  );
-              if (!mounted) return;
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (_) => LessonCompleteScreen(
-                    lessonId: _lesson!.id,
-                    xpEarned: result?.xpEarned ?? _lesson!.xpReward,
-                    newXpTotal: result?.newXpTotal ?? 0,
-                    accuracy: 1.0,
-                    timeSeconds: 5,
-                    correctCount: 0,
-                    totalQuestions: 0,
+      child: Row(
+        children: [
+          if (_currentStep > 0) ...[
+            SizedBox(
+              width: 54,
+              height: 54,
+              child: OutlinedButton(
+                onPressed: _isLoading
+                    ? null
+                    : () => setState(() => _currentStep--),
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  side: const BorderSide(color: FluentianColors.border),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-              );
-              return;
-            }
-
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => McqScreen(
-                  lessonId: _lesson!.id,
-                  questions: quizQuestions,
-                  xpReward: _lesson!.xpReward,
+                child: const Icon(
+                  Iconsax.arrow_left_2,
+                  color: FluentianColors.textPrimary,
                 ),
               ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: FluentianColors.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+            ),
+            const SizedBox(width: 10),
+          ],
+          Expanded(
+            child: SizedBox(
+              height: 54,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_currentStep < blockCount) {
+                    setState(() => _currentStep++);
+                    return;
+                  }
+                  if (quizQuestions.isEmpty) {
+                    setState(() => _isLoading = true);
+                    final result = await context
+                        .read<ContentProvider>()
+                        .completeLesson(
+                          lessonId: _lesson!.id,
+                          score: 1.0,
+                          answers: [],
+                          timeSeconds: 5,
+                        );
+                    if (!mounted) return;
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (_) => LessonCompleteScreen(
+                          lessonId: _lesson!.id,
+                          xpEarned: result?.xpEarned ?? _lesson!.xpReward,
+                          newXpTotal: result?.newXpTotal ?? 0,
+                          accuracy: 1.0,
+                          timeSeconds: 5,
+                          correctCount: 0,
+                          totalQuestions: 0,
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => McqScreen(
+                        lessonId: _lesson!.id,
+                        questions: quizQuestions,
+                        xpReward: _lesson!.xpReward,
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: FluentianColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _currentStep < blockCount
+                          ? Iconsax.arrow_right_3
+                          : quizQuestions.isEmpty
+                          ? Iconsax.tick_circle
+                          : Iconsax.arrow_right_3,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _currentStep < blockCount
+                          ? (_currentStep == 0 ? 'Start Lesson' : 'Next Lesson')
+                          : quizQuestions.isEmpty
+                          ? 'Complete Lesson'
+                          : 'Continue to Quiz',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                quizQuestions.isEmpty
-                    ? Iconsax.tick_circle
-                    : Iconsax.arrow_right_3,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                quizQuestions.isEmpty ? 'Complete Lesson' : 'Continue to Quiz',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
+  }
+
+  Widget _buildFocusedStep(
+    BlockModel block, {
+    required int step,
+    required int total,
+  }) {
+    final presentation = _blockPresentation(block.blockKind);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: FluentianColors.primaryTint,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                'STEP $step OF $total',
+                style: GoogleFonts.inter(
+                  color: FluentianColors.primary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.7,
+                ),
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${((step / total) * 100).round()}%',
+              style: GoogleFonts.inter(
+                color: FluentianColors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: presentation.color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Icon(
+                presentation.icon,
+                color: presentation.color,
+                size: 23,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    presentation.title,
+                    style: GoogleFonts.inter(
+                      color: FluentianColors.textPrimary,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      height: 1.15,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    presentation.instruction,
+                    style: GoogleFonts.inter(
+                      color: FluentianColors.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 22),
+        _buildBlock(block),
+        const SizedBox(height: 6),
+        Text(
+          step == total
+              ? 'Great work — the quiz is next.'
+              : 'Take your time. Continue when this feels clear.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            color: FluentianColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  _BlockPresentation _blockPresentation(String kind) {
+    switch (kind) {
+      case 'vocabulary':
+        return const _BlockPresentation(
+          title: 'Build your vocabulary',
+          instruction: 'Listen, repeat, and connect the word to its meaning.',
+          icon: Iconsax.translate,
+          color: FluentianColors.primary,
+        );
+      case 'sentence_pair':
+        return const _BlockPresentation(
+          title: 'Learn the phrase',
+          instruction: 'Read the French first, then compare the meaning.',
+          icon: Iconsax.message_text,
+          color: FluentianColors.info,
+        );
+      case 'grammar_note':
+        return const _BlockPresentation(
+          title: 'Understand the pattern',
+          instruction: 'Focus on the rule and see how it works in context.',
+          icon: Iconsax.book_1,
+          color: FluentianColors.accent,
+        );
+      default:
+        return const _BlockPresentation(
+          title: 'Explore the concept',
+          instruction: 'Read this idea carefully before moving forward.',
+          icon: Iconsax.note_1,
+          color: FluentianColors.primary,
+        );
+    }
   }
 
   String _aiLessonContext({String? focus}) {
@@ -440,26 +636,34 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       ].join('\n');
     }
 
-    final blockSummaries = lesson.blocks.take(8).map((block) {
-      final payload = block.blockPayload;
-      final text = payload['text'] ??
-          payload['word'] ??
-          payload['target'] ??
-          payload['base'] ??
-          payload['meaning'] ??
-          payload['source'] ??
-          payload['en'] ??
-          '';
-      return '- ${block.blockKind}: ${text.toString()}';
-    }).where((line) => line.trim().length > 3);
+    final blockSummaries = lesson.blocks
+        .take(8)
+        .map((block) {
+          final payload = block.blockPayload;
+          final text =
+              payload['text'] ??
+              payload['word'] ??
+              payload['target'] ??
+              payload['base'] ??
+              payload['meaning'] ??
+              payload['source'] ??
+              payload['en'] ??
+              '';
+          return '- ${block.blockKind}: ${text.toString()}';
+        })
+        .where((line) => line.trim().length > 3);
 
-    final questionSummaries = lesson.questions.take(5).map((q) {
-      final prompt = q.promptPayload['question'] ??
-          q.promptPayload['text'] ??
-          q.promptPayload['prompt'] ??
-          '';
-      return '- ${prompt.toString()}';
-    }).where((line) => line.trim().length > 2);
+    final questionSummaries = lesson.questions
+        .take(5)
+        .map((q) {
+          final prompt =
+              q.promptPayload['question'] ??
+              q.promptPayload['text'] ??
+              q.promptPayload['prompt'] ??
+              '';
+          return '- ${prompt.toString()}';
+        })
+        .where((line) => line.trim().length > 2);
 
     return [
       'Target language: French.',
@@ -468,7 +672,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       'Lesson kind: ${lesson.lessonKind}',
       'Lesson XP: ${lesson.xpReward}',
       if (focus != null) 'Current focus: $focus',
-      if (blockSummaries.isNotEmpty) 'Lesson content:\n${blockSummaries.join('\n')}',
+      if (blockSummaries.isNotEmpty)
+        'Lesson content:\n${blockSummaries.join('\n')}',
       if (questionSummaries.isNotEmpty)
         'Existing lesson questions:\n${questionSummaries.join('\n')}',
       'Tutor behavior: explain French clearly, use lesson vocabulary, and make quizzes about this French lesson only.',
@@ -549,6 +754,13 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       case 'vocabulary':
         final word = block.blockPayload['word']?.toString() ?? '';
         final meaning = block.blockPayload['meaning']?.toString() ?? '';
+        final phonetic =
+            block.blockPayload['phonetic']?.toString() ??
+            block.blockPayload['ipa']?.toString() ??
+            block.blockPayload['pronunciation']?.toString() ??
+            '';
+        final showPhonetic =
+            context.watch<AuthProvider>().user?.phoneticHintsEnabled ?? true;
         return Container(
           margin: const EdgeInsets.only(bottom: 20),
           padding: const EdgeInsets.all(18),
@@ -572,6 +784,18 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         color: FluentianColors.textPrimary,
                       ),
                     ),
+                    if (showPhonetic && phonetic.trim().isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        phonetic,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w600,
+                          color: FluentianColors.primary,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       meaning,
@@ -890,4 +1114,18 @@ class _HeroMetric extends StatelessWidget {
       ),
     );
   }
+}
+
+class _BlockPresentation {
+  final String title;
+  final String instruction;
+  final IconData icon;
+  final Color color;
+
+  const _BlockPresentation({
+    required this.title,
+    required this.instruction,
+    required this.icon,
+    required this.color,
+  });
 }

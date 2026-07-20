@@ -3,285 +3,167 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../core/theme.dart';
+import '../services/api_client.dart';
+import '../services/social_api.dart';
 import 'call_screen.dart';
 
-class LiveCallScreen extends StatelessWidget {
+class LiveCallScreen extends StatefulWidget {
   const LiveCallScreen({super.key});
+
+  @override
+  State<LiveCallScreen> createState() => _LiveCallScreenState();
+}
+
+class _LiveCallScreenState extends State<LiveCallScreen> {
+  late Future<List<LiveRoomModel>> _rooms;
+
+  @override
+  void initState() {
+    super.initState();
+    _rooms = SocialApi.instance.getLiveRooms();
+  }
+
+  Future<void> _refresh() async {
+    final request = SocialApi.instance.getLiveRooms();
+    setState(() {
+      _rooms = request;
+    });
+    await request;
+  }
+
+  void _join(LiveRoomModel room, {bool video = false}) {
+    if (!room.eligible || !room.isOpen) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CallScreen(
+          topic: room.title,
+          isVideo: video,
+          smartMatch: room.roomType == 'match',
+          liveRoomId: room.id,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Live practice',
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: FluentianColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Join short French speaking rooms',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: FluentianColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: FluentianColors.primaryTint,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Iconsax.microphone_2,
-                  color: FluentianColors.primary,
-                  size: 22,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          _LiveHero(
-            onStart: () =>
-                _openCall(context, topic: 'Everyday French', smartMatch: true),
-          ),
-          const SizedBox(height: 22),
-          Text(
-            'Speaking rooms',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: FluentianColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ..._topics.map((topic) => _TopicTile(topic: topic)),
-        ],
-      ),
-    );
-  }
-
-  static void _openCall(
-    BuildContext context, {
-    required String topic,
-    String? level,
-    bool isVideo = false,
-    bool smartMatch = false,
-  }) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => CallScreen(
-          topic: topic,
-          level: level,
-          isVideo: isVideo,
-          smartMatch: smartMatch,
-        ),
-      ),
-    );
-  }
-}
-
-class _LiveHero extends StatelessWidget {
-  final VoidCallback onStart;
-
-  const _LiveHero({required this.onStart});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: FluentianColors.headerGradient,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Iconsax.volume_high,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Smart match',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    Text(
-                      'Find the best room for your level',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.72),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 46,
-            child: ElevatedButton.icon(
-              onPressed: onStart,
-              icon: const Icon(Iconsax.call, size: 19),
-              label: const Text('Find my speaking partner'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: FluentianColors.primary,
-                minimumSize: const Size(double.infinity, 46),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TopicTile extends StatelessWidget {
-  final _LiveTopic topic;
-
-  const _TopicTile({required this.topic});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: FluentianColors.border),
-          boxShadow: [FluentianShadows.subtle],
-        ),
-        child: Row(
+      child: RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: topic.color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(topic.icon, color: topic.color, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        child: Text(
-                          topic.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            color: FluentianColors.textPrimary,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
+                      Text(
+                        'Live practice',
+                        style: GoogleFonts.inter(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: FluentianColors.textPrimary,
                         ),
                       ),
-                      if (topic.level != null) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: FluentianColors.primaryTint,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            topic.level!,
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              color: FluentianColors.primary,
-                            ),
-                          ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Open rooms for your level and learning streak',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: FluentianColors.textSecondary,
                         ),
-                      ],
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    topic.subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      color: FluentianColors.textSecondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+                ),
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: FluentianColors.primaryTint,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ],
-              ),
+                  child: const Icon(
+                    Iconsax.microphone_2,
+                    color: FluentianColors.primary,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            _RoundAction(
-              icon: Iconsax.call,
-              tooltip: 'Audio',
-              onTap: () => LiveCallScreen._openCall(
-                context,
-                topic: topic.title,
-                level: topic.level,
-              ),
-            ),
-            const SizedBox(width: 8),
-            _RoundAction(
-              icon: Iconsax.video,
-              tooltip: 'Video',
-              onTap: () => LiveCallScreen._openCall(
-                context,
-                topic: topic.title,
-                level: topic.level,
-                isVideo: true,
-              ),
+            const SizedBox(height: 18),
+            FutureBuilder<List<LiveRoomModel>>(
+              future: _rooms,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(60),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (snapshot.hasError) {
+                  final detail = snapshot.error is ApiException
+                      ? (snapshot.error as ApiException).userMessage
+                      : 'Check your connection and try again.';
+                  return _MessageCard(
+                    message: 'Could not load live rooms. $detail',
+                    onRetry: _refresh,
+                  );
+                }
+                final rooms = snapshot.data ?? const [];
+                if (rooms.isEmpty) {
+                  return _MessageCard(
+                    message: 'No live rooms are available.',
+                    onRetry: _refresh,
+                  );
+                }
+                final matches = rooms.where((r) => r.roomType == 'match');
+                final special = rooms.where((r) => r.roomType == 'special');
+                final eligible = rooms.where(
+                  (r) =>
+                      r.roomType != 'match' &&
+                      r.roomType != 'special' &&
+                      r.eligible,
+                );
+                final locked = rooms.where(
+                  (r) =>
+                      r.roomType != 'match' &&
+                      r.roomType != 'special' &&
+                      !r.eligible,
+                );
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (matches.isNotEmpty)
+                      _MatchCard(
+                        room: matches.first,
+                        onJoin: () => _join(matches.first),
+                      ),
+                    if (special.isNotEmpty) ...[
+                      const SizedBox(height: 18),
+                      _RoomCard(
+                        room: special.first,
+                        onAudio: () => _join(special.first),
+                        onVideo: () => _join(special.first, video: true),
+                      ),
+                    ],
+                    const _Heading('Your always-open rooms'),
+                    ...eligible.map(
+                      (r) => _RoomCard(
+                        room: r,
+                        onAudio: () => _join(r),
+                        onVideo: () => _join(r, video: true),
+                      ),
+                    ),
+                    const _Heading('Other communities'),
+                    ...locked.map(
+                      (r) => _RoomCard(room: r, onAudio: () {}, onVideo: () {}),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -290,73 +172,190 @@ class _TopicTile extends StatelessWidget {
   }
 }
 
-class _RoundAction extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onTap;
+class _Heading extends StatelessWidget {
+  final String text;
+  const _Heading(this.text);
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(0, 22, 0, 10),
+    child: Text(
+      text,
+      style: GoogleFonts.inter(
+        fontSize: 16,
+        fontWeight: FontWeight.w800,
+        color: FluentianColors.textPrimary,
+      ),
+    ),
+  );
+}
 
-  const _RoundAction({
-    required this.icon,
-    required this.tooltip,
-    required this.onTap,
+class _MatchCard extends StatelessWidget {
+  final LiveRoomModel room;
+  final VoidCallback onJoin;
+  const _MatchCard({required this.room, required this.onJoin});
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      gradient: FluentianColors.headerGradient,
+      borderRadius: BorderRadius.circular(18),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Iconsax.people, color: Colors.white, size: 30),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    room.title,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    'Private · 2 people · ${room.eligibilityLabel}',
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Text(
+          room.description,
+          style: GoogleFonts.inter(color: Colors.white, height: 1.4),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: onJoin,
+            icon: const Icon(Iconsax.call),
+            label: const Text('Find my partner'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: FluentianColors.primary,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _RoomCard extends StatelessWidget {
+  final LiveRoomModel room;
+  final VoidCallback onAudio, onVideo;
+  const _RoomCard({
+    required this.room,
+    required this.onAudio,
+    required this.onVideo,
   });
-
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 38,
-          height: 38,
-          decoration: const BoxDecoration(
-            color: FluentianColors.primaryTint,
-            shape: BoxShape.circle,
+    final enabled = room.eligible && room.isOpen;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: enabled ? Colors.white : const Color(0xFFF5F3F8),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: FluentianColors.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: FluentianColors.primaryTint,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              room.roomType == 'streak'
+                  ? Iconsax.flash_1
+                  : room.roomType == 'special'
+                  ? Iconsax.crown_1
+                  : Iconsax.teacher,
+              color: FluentianColors.primary,
+            ),
           ),
-          child: Icon(icon, color: FluentianColors.primary, size: 19),
-        ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  room.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: FluentianColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  enabled
+                      ? '${room.eligibilityLabel} · Open now'
+                      : room.isOpen
+                      ? 'Locked · ${room.eligibilityLabel}'
+                      : room.scheduledAt == null
+                      ? 'Closed by admin'
+                      : 'Scheduled ${room.scheduledAt!.toLocal()}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: FluentianColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (enabled) ...[
+            IconButton(
+              onPressed: onAudio,
+              icon: const Icon(Iconsax.call, color: FluentianColors.primary),
+            ),
+            IconButton(
+              onPressed: onVideo,
+              icon: const Icon(Iconsax.video, color: FluentianColors.primary),
+            ),
+          ] else
+            const Icon(Iconsax.lock, color: FluentianColors.textSecondary),
+        ],
       ),
     );
   }
 }
 
-class _LiveTopic {
-  final String title;
-  final String subtitle;
-  final String? level;
-  final IconData icon;
-  final Color color;
-
-  const _LiveTopic({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    this.level,
-  });
+class _MessageCard extends StatelessWidget {
+  final String message;
+  final Future<void> Function() onRetry;
+  const _MessageCard({required this.message, required this.onRetry});
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(30),
+    child: Column(
+      children: [
+        Text(message),
+        const SizedBox(height: 12),
+        OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+      ],
+    ),
+  );
 }
-
-const _topics = [
-  _LiveTopic(
-    title: 'French Corner',
-    subtitle: 'Open conversation with guided prompts',
-    icon: Iconsax.people,
-    color: FluentianColors.primary,
-  ),
-  _LiveTopic(
-    title: 'Beginners Welcome',
-    subtitle: 'Greetings, names, numbers, and simple questions',
-    level: 'A1',
-    icon: Iconsax.emoji_happy,
-    color: FluentianColors.success,
-  ),
-  _LiveTopic(
-    title: 'A2 Practice',
-    subtitle: 'Daily routines, cafes, and weekend plans',
-    level: 'A2',
-    icon: Iconsax.teacher,
-    color: FluentianColors.info,
-  ),
-];

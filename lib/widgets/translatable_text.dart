@@ -16,11 +16,13 @@ class SentencePair {
 class TranslatableParagraph extends StatefulWidget {
   final List<SentencePair> sentences;
   final String translationLabel;
+  final void Function(String word, SentencePair sentence)? onWordTap;
 
   const TranslatableParagraph({
     super.key,
     required this.sentences,
     this.translationLabel = 'Base language',
+    this.onWordTap,
   });
 
   @override
@@ -89,6 +91,9 @@ class _TranslatableParagraphState extends State<TranslatableParagraph> {
                 pair: pair,
                 isTranslated: isTranslated,
                 onTap: () => _toggleSentence(index),
+                onWordTap: widget.onWordTap == null
+                    ? null
+                    : (word) => widget.onWordTap!(word, pair),
               );
             }),
             AnimatedSwitcher(
@@ -117,11 +122,13 @@ class _TranslatableSentence extends StatefulWidget {
   final SentencePair pair;
   final bool isTranslated;
   final VoidCallback onTap;
+  final ValueChanged<String>? onWordTap;
 
   const _TranslatableSentence({
     required this.pair,
     required this.isTranslated,
     required this.onTap,
+    this.onWordTap,
   });
 
   @override
@@ -172,7 +179,10 @@ class _TranslatableSentenceState extends State<_TranslatableSentence> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: _WordWrappedText(text: widget.pair.original),
+                      child: _WordWrappedText(
+                        text: widget.pair.original,
+                        onWordTap: widget.onWordTap,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     AnimatedRotation(
@@ -196,7 +206,7 @@ class _TranslatableSentenceState extends State<_TranslatableSentence> {
                   transitionBuilder: (child, animation) {
                     return SizeTransition(
                       sizeFactor: animation,
-                      axisAlignment: -1,
+                      alignment: Alignment.topCenter,
                       child: FadeTransition(opacity: animation, child: child),
                     );
                   },
@@ -255,19 +265,32 @@ class _TranslatableSentenceState extends State<_TranslatableSentence> {
 
 class _WordWrappedText extends StatelessWidget {
   final String text;
+  final ValueChanged<String>? onWordTap;
 
-  const _WordWrappedText({required this.text});
+  const _WordWrappedText({required this.text, this.onWordTap});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: GoogleFonts.inter(
-        fontSize: 16,
-        height: 1.45,
-        fontWeight: FontWeight.w600,
-        color: FluentianColors.textPrimary,
-      ),
+    final style = GoogleFonts.inter(
+      fontSize: 16,
+      height: 1.45,
+      fontWeight: FontWeight.w600,
+      color: FluentianColors.textPrimary,
+    );
+    if (onWordTap == null) return Text(text, style: style);
+    return Wrap(
+      spacing: 4,
+      runSpacing: 2,
+      children: text.split(RegExp(r'\s+')).map((word) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => onWordTap!(word),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 1),
+            child: Text(word, style: style),
+          ),
+        );
+      }).toList(),
     );
   }
 }

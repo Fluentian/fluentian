@@ -24,6 +24,8 @@ class _SocialScreenState extends State<SocialScreen> {
   List<FriendRequest> _requests = const [];
   List<FriendActivity> _activity = const [];
   List<FriendChallenge> _challenges = const [];
+  List<AccountabilityPartnership> _partnerships = const [];
+  List<ChatRoomModel> _chatRooms = const [];
 
   @override
   void initState() {
@@ -50,6 +52,8 @@ class _SocialScreenState extends State<SocialScreen> {
         _api.getFriendRequests(),
         _api.getFriendActivity(),
         _api.getChallenges(),
+        _api.getChatRooms(),
+        _api.getPartnerships(),
       ]);
       if (!mounted) return;
       setState(() {
@@ -57,6 +61,8 @@ class _SocialScreenState extends State<SocialScreen> {
         _requests = results[1] as List<FriendRequest>;
         _activity = results[2] as List<FriendActivity>;
         _challenges = results[3] as List<FriendChallenge>;
+        _chatRooms = results[4] as List<ChatRoomModel>;
+        _partnerships = results[5] as List<AccountabilityPartnership>;
         _loading = false;
       });
     } catch (e) {
@@ -231,6 +237,24 @@ class _SocialScreenState extends State<SocialScreen> {
           ...outgoing.map(_buildRequestCard),
           const SizedBox(height: 18),
         ],
+        _SectionTitle(
+          title: 'Accountability partners',
+          action:
+              '${_partnerships.where((item) => item.status == 'active').length} active',
+        ),
+        const SizedBox(height: 10),
+        if (_partnerships.isEmpty)
+          _EmptyPanel(
+            icon: Iconsax.people,
+            title: 'Reach your goals together',
+            body:
+                'Invite a friend, choose a shared weekly goal, and keep each other moving.',
+            actionLabel: _friends.isEmpty ? null : 'Choose a partner',
+            onAction: _friends.isEmpty ? null : _showPartnerSheet,
+          )
+        else
+          ..._partnerships.take(4).map(_buildPartnershipCard),
+        const SizedBox(height: 18),
         _SectionTitle(title: 'Friends', action: '${_friends.length} total'),
         const SizedBox(height: 10),
         if (_friends.isEmpty)
@@ -292,7 +316,14 @@ class _SocialScreenState extends State<SocialScreen> {
         const SizedBox(height: 22),
         _SectionTitle(title: 'Chat rooms'),
         const SizedBox(height: 10),
-        ..._rooms.map(_buildRoomTile),
+        if (_chatRooms.isEmpty)
+          const _EmptyPanel(
+            icon: Iconsax.message,
+            title: 'No chat rooms yet',
+            body: 'Public learning communities will appear here.',
+          )
+        else
+          ..._chatRooms.map(_buildRoomTile),
       ],
     );
   }
@@ -537,7 +568,315 @@ class _SocialScreenState extends State<SocialScreen> {
     );
   }
 
-  Widget _buildRoomTile(_Room room) {
+  Widget _buildPartnershipCard(AccountabilityPartnership item) {
+    final unit = item.goalKind == 'xp' ? 'XP' : 'lessons';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: FluentianColors.primary.withValues(alpha: .12),
+        ),
+        boxShadow: [FluentianShadows.subtle],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: FluentianColors.headerGradient,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Iconsax.people, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.partner.displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      item.status == 'pending'
+                          ? (item.direction == 'incoming'
+                                ? 'Invited you to team up'
+                                : 'Invitation waiting')
+                          : '${item.durationDays}-day shared goal',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: FluentianColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: item.status == 'active'
+                      ? const Color(0xFFEAF8F0)
+                      : FluentianColors.primaryTint,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  item.status.toUpperCase(),
+                  style: GoogleFonts.inter(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    color: item.status == 'active'
+                        ? FluentianColors.success
+                        : FluentianColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (item.message.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              '“${item.message}”',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: FluentianColors.textSecondary,
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          if (item.status == 'active') ...[
+            _PartnerProgress(
+              name: 'You',
+              value: item.myProgress,
+              target: item.targetValue,
+              unit: unit,
+              ratio: item.myRatio,
+            ),
+            const SizedBox(height: 10),
+            _PartnerProgress(
+              name: item.partner.displayName,
+              value: item.partnerProgress,
+              target: item.targetValue,
+              unit: unit,
+              ratio: item.partnerRatio,
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => _updatePartnership(item, 'ended'),
+                child: const Text('End partnership'),
+              ),
+            ),
+          ] else if (item.direction == 'incoming')
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _updatePartnership(item, 'declined'),
+                    child: const Text('Not now'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _updatePartnership(item, 'active'),
+                    child: const Text('Team up'),
+                  ),
+                ),
+              ],
+            )
+          else
+            Text(
+              'Goal: ${item.targetValue} $unit in ${item.durationDays} days',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: FluentianColors.primaryDark,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _updatePartnership(
+    AccountabilityPartnership item,
+    String status,
+  ) async {
+    await _api.updatePartnership(item.id, status);
+    await _loadSocialGraph();
+  }
+
+  Future<void> _showPartnerSheet() async {
+    if (_friends.isEmpty) return;
+    FriendSummary selected = _friends.first;
+    String kind = 'lessons';
+    int target = 5, days = 7;
+    final messageController = TextEditingController();
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) => Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            12,
+            20,
+            20 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: FluentianColors.border,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Choose your accountability partner',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'You both opt in and work toward the same goal.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: FluentianColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                DropdownButtonFormField<FriendSummary>(
+                  initialValue: selected,
+                  decoration: const InputDecoration(
+                    labelText: 'Partner',
+                    prefixIcon: Icon(Iconsax.people),
+                    border: OutlineInputBorder(),
+                  ),
+                  items: _friends
+                      .map(
+                        (friend) => DropdownMenuItem(
+                          value: friend,
+                          child: Text(friend.displayName),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) setSheetState(() => selected = value);
+                  },
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ChoiceChip(
+                        label: 'Lessons',
+                        selected: kind == 'lessons',
+                        onTap: () => setSheetState(() {
+                          kind = 'lessons';
+                          target = 5;
+                        }),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _ChoiceChip(
+                        label: 'XP',
+                        selected: kind == 'xp',
+                        onTap: () => setSheetState(() {
+                          kind = 'xp';
+                          target = 250;
+                        }),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _StepperRow(
+                  label: kind == 'xp' ? 'Target XP each' : 'Lessons each',
+                  value: target,
+                  step: kind == 'xp' ? 50 : 1,
+                  min: 1,
+                  onChanged: (value) => setSheetState(() => target = value),
+                ),
+                const SizedBox(height: 10),
+                _StepperRow(
+                  label: 'Duration (days)',
+                  value: days,
+                  step: 1,
+                  min: 1,
+                  onChanged: (value) =>
+                      setSheetState(() => days = value.clamp(1, 90)),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: messageController,
+                  maxLength: 280,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Encouragement (optional)',
+                    hintText: 'Let’s stay consistent this week!',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await _api.createPartnership(
+                        partnerId: selected.id,
+                        goalKind: kind,
+                        targetValue: target,
+                        durationDays: days,
+                        message: messageController.text,
+                      );
+                      if (sheetContext.mounted) Navigator.pop(sheetContext);
+                      await _loadSocialGraph();
+                    },
+                    icon: const Icon(Iconsax.send_1),
+                    label: const Text('Send invitation'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    messageController.dispose();
+  }
+
+  Widget _buildRoomTile(ChatRoomModel room) {
+    final isLevelRoom = room.roomKind == 'level_based';
+    final color = isLevelRoom ? FluentianColors.primary : FluentianColors.info;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
@@ -545,7 +884,8 @@ class _SocialScreenState extends State<SocialScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => ChatDetailScreen(title: room.name),
+              builder: (_) =>
+                  ChatDetailScreen(roomId: room.id, title: room.title),
             ),
           );
         },
@@ -557,10 +897,14 @@ class _SocialScreenState extends State<SocialScreen> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: room.color.withValues(alpha: 0.13),
+                  color: color.withValues(alpha: 0.13),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(room.icon, size: 21, color: room.color),
+                child: Icon(
+                  isLevelRoom ? Iconsax.teacher : Iconsax.people,
+                  size: 21,
+                  color: color,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -568,7 +912,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      room.name,
+                      room.title,
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.w900,
@@ -576,7 +920,9 @@ class _SocialScreenState extends State<SocialScreen> {
                       ),
                     ),
                     Text(
-                      '${room.members} members · ${room.preview}',
+                      isLevelRoom
+                          ? 'Level community · Tap to join the conversation'
+                          : 'Public community · Tap to join the conversation',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
@@ -595,8 +941,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          CallScreen(topic: room.name, level: room.level),
+                      builder: (_) => CallScreen(topic: room.title),
                     ),
                   );
                 },
@@ -612,7 +957,9 @@ class _SocialScreenState extends State<SocialScreen> {
     _searchController.clear();
     List<FriendSummary> results = const [];
     var searching = false;
+    var hasSearched = false;
     String? message;
+    final sendingRequests = <String>{};
 
     await showModalBottomSheet<void>(
       context: context,
@@ -627,6 +974,7 @@ class _SocialScreenState extends State<SocialScreen> {
             if (query.length < 2) return;
             setSheetState(() {
               searching = true;
+              hasSearched = true;
               message = null;
             });
             try {
@@ -644,110 +992,204 @@ class _SocialScreenState extends State<SocialScreen> {
           }
 
           Future<void> add(FriendSummary user) async {
+            setSheetState(() {
+              sendingRequests.add(user.id);
+              message = null;
+            });
             try {
               await _api.sendFriendRequest(user.username);
-              setSheetState(
-                () => message = 'Request sent to ${user.displayName}.',
-              );
+              setSheetState(() {
+                sendingRequests.remove(user.id);
+                results = results.where((item) => item.id != user.id).toList();
+                message = 'Request sent to ${user.displayName}.';
+              });
               await _loadSocialGraph();
             } catch (e) {
               setSheetState(() {
+                sendingRequests.remove(user.id);
                 message = e is ApiException ? e.userMessage : e.toString();
               });
             }
           }
 
-          return Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              20,
-              20,
-              MediaQuery.of(context).viewInsets.bottom + 24,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Add a friend',
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: FluentianColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _searchController,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (_) => search(),
-                  decoration: InputDecoration(
-                    hintText: 'Search username or email',
-                    prefixIcon: const Icon(Iconsax.search_normal_1),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Iconsax.arrow_right_1),
-                      onPressed: search,
-                    ),
-                  ),
-                ),
-                if (message != null) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    message!,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: FluentianColors.textSecondary,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 14),
-                if (searching)
-                  const Center(child: CircularProgressIndicator())
-                else
-                  ...results.map(
-                    (user) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _Surface(
-                        child: Row(
-                          children: [
-                            _Avatar(
-                              name: user.displayName,
-                              color: FluentianColors.info,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    user.displayName,
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w900,
-                                      color: FluentianColors.textPrimary,
-                                    ),
-                                  ),
-                                  Text(
-                                    '@${user.username} · ${user.currentLevel}',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: FluentianColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            _TinyAction(
-                              icon: Iconsax.user_add,
-                              color: FluentianColors.primary,
-                              onTap: () => add(user),
-                            ),
-                          ],
+          final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+          return AnimatedPadding(
+            duration: const Duration(milliseconds: 180),
+            padding: EdgeInsets.only(bottom: bottomInset),
+            child: FractionallySizedBox(
+              heightFactor: 0.78,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: FluentianColors.border,
+                          borderRadius: BorderRadius.circular(999),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: FluentianColors.primaryTint,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: const Icon(
+                            Iconsax.user_search,
+                            color: FluentianColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Find a learning partner',
+                                style: GoogleFonts.inter(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  color: FluentianColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Search by username or email address',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: FluentianColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Close',
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 22),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF7F5FC),
+                        borderRadius: BorderRadius.circular(17),
+                        border: Border.all(
+                          color: FluentianColors.primary.withValues(
+                            alpha: 0.14,
+                          ),
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        autofocus: true,
+                        textInputAction: TextInputAction.search,
+                        onSubmitted: (_) => search(),
+                        onChanged: (_) {
+                          if (message != null) {
+                            setSheetState(() => message = null);
+                          }
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Username or email',
+                          hintStyle: GoogleFonts.inter(
+                            color: FluentianColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          prefixIcon: const Icon(
+                            Iconsax.search_normal_1,
+                            color: FluentianColors.primary,
+                          ),
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: IconButton.filled(
+                              tooltip: 'Search',
+                              onPressed: searching ? null : search,
+                              style: IconButton.styleFrom(
+                                backgroundColor: FluentianColors.primary,
+                                foregroundColor: Colors.white,
+                              ),
+                              icon: searching
+                                  ? const SizedBox(
+                                      width: 17,
+                                      height: 17,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(Icons.arrow_forward_rounded),
+                            ),
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 17,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (message != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: FluentianColors.primaryTint,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          message!,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: FluentianColors.primaryDark,
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: searching
+                          ? const Center(child: CircularProgressIndicator())
+                          : results.isEmpty
+                          ? _FriendSearchEmpty(hasSearched: hasSearched)
+                          : ListView.separated(
+                              keyboardDismissBehavior:
+                                  ScrollViewKeyboardDismissBehavior.onDrag,
+                              itemCount: results.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 10),
+                              itemBuilder: (_, index) {
+                                final user = results[index];
+                                final sending = sendingRequests.contains(
+                                  user.id,
+                                );
+                                return _FriendSearchResult(
+                                  user: user,
+                                  sending: sending,
+                                  onAdd: () => add(user),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         },
@@ -895,11 +1337,265 @@ class _SocialScreenState extends State<SocialScreen> {
   }
 }
 
+class _FriendSearchEmpty extends StatelessWidget {
+  final bool hasSearched;
+
+  const _FriendSearchEmpty({required this.hasSearched});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 76,
+              height: 76,
+              decoration: const BoxDecoration(
+                color: FluentianColors.primaryTint,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                hasSearched ? Iconsax.user_remove : Iconsax.people,
+                size: 32,
+                color: FluentianColors.primary,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              hasSearched ? 'No learners found' : 'Build your French circle',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+                color: FluentianColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 7),
+            Text(
+              hasSearched
+                  ? 'Check the spelling or try another username or email.'
+                  : 'Search for a learner, connect, and motivate each other as you progress.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                height: 1.45,
+                color: FluentianColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendSearchResult extends StatelessWidget {
+  final FriendSummary user;
+  final bool sending;
+  final VoidCallback onAdd;
+
+  const _FriendSearchResult({
+    required this.user,
+    required this.sending,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = user.displayName.trim().isEmpty
+        ? user.username
+        : user.displayName.trim();
+    final initial = name.isEmpty ? '?' : name.characters.first.toUpperCase();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.055)),
+        boxShadow: [
+          BoxShadow(
+            color: FluentianColors.primary.withValues(alpha: 0.055),
+            blurRadius: 18,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [FluentianColors.primary, Color(0xFF8A5CFF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              initial,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    color: FluentianColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '@${user.username}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: FluentianColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 5,
+                  children: [
+                    _FriendStat(label: user.currentLevel.toUpperCase()),
+                    _FriendStat(label: '${user.xpTotal} XP'),
+                    _FriendStat(label: '${user.streakDays} day streak'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 43,
+            height: 43,
+            child: IconButton.filled(
+              tooltip: 'Add ${user.displayName}',
+              onPressed: sending ? null : onAdd,
+              style: IconButton.styleFrom(
+                backgroundColor: FluentianColors.primary,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: FluentianColors.primaryTint,
+              ),
+              icon: sending
+                  ? const SizedBox(
+                      width: 17,
+                      height: 17,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: FluentianColors.primary,
+                      ),
+                    )
+                  : const Icon(Iconsax.user_add, size: 19),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendStat extends StatelessWidget {
+  final String label;
+
+  const _FriendStat({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: FluentianColors.primaryTint,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+          color: FluentianColors.primaryDark,
+        ),
+      ),
+    );
+  }
+}
+
 class _ActivityStyle {
   final IconData icon;
   final Color color;
 
   const _ActivityStyle(this.icon, this.color);
+}
+
+class _PartnerProgress extends StatelessWidget {
+  final String name, unit;
+  final int value, target;
+  final double ratio;
+  const _PartnerProgress({
+    required this.name,
+    required this.unit,
+    required this.value,
+    required this.target,
+    required this.ratio,
+  });
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          Text(
+            '$value / $target $unit',
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: FluentianColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 6),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(99),
+        child: LinearProgressIndicator(
+          value: ratio,
+          minHeight: 7,
+          backgroundColor: FluentianColors.primaryTint,
+          color: FluentianColors.primary,
+        ),
+      ),
+    ],
+  );
 }
 
 class _FriendCard extends StatelessWidget {
@@ -1504,65 +2200,4 @@ class _TinyStepperButton extends StatelessWidget {
       ),
     );
   }
-}
-
-final _rooms = [
-  _Room(
-    'French Corner',
-    Iconsax.people,
-    FluentianColors.info,
-    42,
-    'Salut tout le monde!',
-    null,
-  ),
-  _Room(
-    'A2 Practice',
-    Iconsax.teacher,
-    FluentianColors.primary,
-    18,
-    'Daily conversation drills',
-    'A2',
-  ),
-  _Room(
-    'Grammar Help',
-    Iconsax.edit_2,
-    FluentianColors.accent,
-    31,
-    'Ask and explain tricky rules',
-    null,
-  ),
-  _Room(
-    'Beginners Welcome',
-    Iconsax.emoji_happy,
-    FluentianColors.success,
-    56,
-    'Start with simple phrases',
-    'A1',
-  ),
-  _Room(
-    'Exam Prep B2',
-    Iconsax.award,
-    FluentianColors.primary,
-    12,
-    'DELF practice and tips',
-    'B2',
-  ),
-];
-
-class _Room {
-  final String name;
-  final IconData icon;
-  final Color color;
-  final int members;
-  final String preview;
-  final String? level;
-
-  const _Room(
-    this.name,
-    this.icon,
-    this.color,
-    this.members,
-    this.preview,
-    this.level,
-  );
 }

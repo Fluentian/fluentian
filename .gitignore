@@ -44,3 +44,11 @@ app.*.map.json
 /android/key.properties
 /android/app/*.jks
 /android/app/*.keystore
+
+# Only the runtime source of the patched LiveKit dependency is vendored.
+/vendor/livekit_client/example/
+/vendor/livekit_client/test/
+/vendor/livekit_client/scripts/
+/vendor/livekit_client/android/.gradle/
+/vendor/livekit_client/linux/flutter/
+/vendor/livekit_client/pubspec.lock

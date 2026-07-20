@@ -117,6 +117,7 @@ class _HomeContentState extends State<_HomeContent> {
 
           final xpForNextLevel = 500; // Simplified for MVP
           final xpProgress = xp % xpForNextLevel;
+          final nextLessons = content.getIncompleteLessons(3);
 
           return SingleChildScrollView(
             child: Column(
@@ -323,62 +324,61 @@ class _HomeContentState extends State<_HomeContent> {
                   },
                 ),
 
-                // Continue learning
-                SectionHeader(
-                  title: 'Continue learning',
-                  actionText: 'View all',
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const LessonListScreen(),
+                // Continue learning uses a compact success state when there is
+                // nothing pending, avoiding a large blank horizontal-list area.
+                if (nextLessons.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _AllCaughtUpCard(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const LessonListScreen(),
+                        ),
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 132,
-                  child: Builder(
-                    builder: (context) {
-                      final nextLessons = content.getIncompleteLessons(3);
-                      if (nextLessons.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'All caught up!',
-                            style: GoogleFonts.inter(
-                              color: FluentianColors.textSecondary,
-                            ),
-                          ),
-                        );
-                      }
-                      return ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        children: nextLessons.map((l) {
-                          return _LessonCard(
-                            title: l.title,
-                            unit: 'Next up',
-                            iconData: Iconsax.book_1,
-                            xp: '${l.xpReward} XP',
-                            progress: 0.0,
-                            color: FluentianColors.primary,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      LessonDetailScreen(lessonId: l.id),
-                                ),
-                              );
-                            },
-                          );
-                        }).toList(),
+                    ),
+                  )
+                else ...[
+                  SectionHeader(
+                    title: 'Continue learning',
+                    actionText: 'View all',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const LessonListScreen(),
+                        ),
                       );
                     },
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 132,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: nextLessons.map((l) {
+                        return _LessonCard(
+                          title: l.title,
+                          unit: 'Next up',
+                          iconData: Iconsax.book_1,
+                          xp: '${l.xpReward} XP',
+                          progress: 0.0,
+                          color: FluentianColors.primary,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    LessonDetailScreen(lessonId: l.id),
+                              ),
+                            );
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
                 // Daily challenge
                 Padding(
@@ -521,8 +521,8 @@ class _HomeContentState extends State<_HomeContent> {
             opacity: locked ? 0.4 : 1.0,
             duration: const Duration(milliseconds: 200),
             child: Container(
-              height: 80,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              constraints: const BoxConstraints(minHeight: 88),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -572,8 +572,10 @@ class _HomeContentState extends State<_HomeContent> {
                       children: [
                         Text(
                           u.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: FluentianColors.textPrimary,
                           ),
@@ -619,6 +621,92 @@ class _HomeContentState extends State<_HomeContent> {
         ),
       );
     }).toList();
+  }
+}
+
+class _AllCaughtUpCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AllCaughtUpCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFFF0FBF5),
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: FluentianColors.success.withValues(alpha: .18),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Iconsax.tick_circle5,
+                  color: FluentianColors.success,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'You’re all caught up',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: FluentianColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Your completed lessons are ready to revisit.',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: FluentianColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: FluentianColors.success,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

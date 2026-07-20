@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../providers/auth_provider.dart';
 import '../services/ai_service.dart';
 import '../services/sound_effect_service.dart';
 
@@ -64,7 +66,8 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
       if (!isInitial) _controller.clear();
       _isLoading = true;
     });
-    if (!isInitial) {
+    if (!isInitial &&
+        (context.read<AuthProvider>().user?.soundEnabled ?? true)) {
       SoundEffectService.instance.play(SoundEffect.aiResponse);
     }
     _scrollToBottom();
@@ -85,7 +88,9 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
               activity: aiResponse.activity,
             ),
           );
-          SoundEffectService.instance.play(SoundEffect.aiResponse);
+          if (context.read<AuthProvider>().user?.soundEnabled ?? true) {
+            SoundEffectService.instance.play(SoundEffect.aiResponse);
+          }
         } else {
           _messages.add(
             AiMessage(
@@ -636,17 +641,22 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
             final selected = _selectedIndex == index;
             final correct = option.isCorrect == true;
             final wrongSelection =
-                selected && option.isCorrect != null && option.isCorrect == false;
+                selected &&
+                option.isCorrect != null &&
+                option.isCorrect == false;
             final showResult = _selectedIndex != null;
-            final optionVotes = (option.votes ?? 0) + (selected && isPoll ? 1 : 0);
-            final percent = adjustedVotes <= 0 ? 0.0 : optionVotes / adjustedVotes;
+            final optionVotes =
+                (option.votes ?? 0) + (selected && isPoll ? 1 : 0);
+            final percent = adjustedVotes <= 0
+                ? 0.0
+                : optionVotes / adjustedVotes;
             final accent = isPoll
                 ? FluentianColors.primary
                 : correct
-                    ? FluentianColors.success
-                    : wrongSelection
-                        ? FluentianColors.error
-                        : FluentianColors.primary;
+                ? FluentianColors.success
+                : wrongSelection
+                ? FluentianColors.error
+                : FluentianColors.primary;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -676,7 +686,9 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                                   ? Iconsax.tick_circle
                                   : Iconsax.record_circle,
                               size: 18,
-                              color: selected ? accent : FluentianColors.textSecondary,
+                              color: selected
+                                  ? accent
+                                  : FluentianColors.textSecondary,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -733,7 +745,8 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
               child: Text(
                 [
                   if (!isPoll && selectedOption?.isCorrect == true) 'Correct!',
-                  if (!isPoll && selectedOption?.isCorrect == false) 'Good try.',
+                  if (!isPoll && selectedOption?.isCorrect == false)
+                    'Good try.',
                   if (selectedOption?.feedback?.trim().isNotEmpty == true)
                     selectedOption!.feedback!.trim(),
                   if (activity.explanation.trim().isNotEmpty)

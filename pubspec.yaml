@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   firebase_core: ^3.15.2
   firebase_auth: ^5.7.0
+  firebase_messaging: ^15.2.10
   google_sign_in: ^6.3.0
   google_fonts: ^6.2.1
   smooth_page_indicator: ^1.2.0+3
@@ -19,7 +20,8 @@ dependencies:
   iconsax: ^0.0.8
   lottie: ^3.3.3
   rive: ^0.14.6
-  livekit_client: ^2.5.0
+  livekit_client:
+    path: vendor/livekit_client
   permission_handler: ^11.3.1
   http: ^1.2.1
   provider: ^6.1.2
@@ -29,6 +31,8 @@ dependencies:
   flutter_tts: ^4.2.3
   video_player: ^2.8.6
   flutter_local_notifications: ^17.1.2
+  timezone: ^0.9.4
+  flutter_timezone: ^4.1.1
   flutter_markdown: ^0.7.7+1
 dev_dependencies:
   flutter_test:

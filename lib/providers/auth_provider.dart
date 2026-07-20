@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -11,9 +13,11 @@ enum AuthStatus { unknown, authenticated, unauthenticated }
 
 /// Global auth state — consumed via Provider throughout the app.
 class AuthProvider extends ChangeNotifier {
+  static const errorDisplayDuration = Duration(seconds: 2);
   AuthStatus _status = AuthStatus.unknown;
   UserModel? _user;
   String? _errorMessage;
+  Timer? _errorDismissTimer;
   bool _isLoading = false;
   bool _hasSeenIntro = false;
   bool _hasCompletedSetup = false;
@@ -556,13 +560,33 @@ class AuthProvider extends ChangeNotifier {
 
   /// Clear error so the UI can reset after showing a snackbar.
   void clearError() {
+    _errorDismissTimer?.cancel();
+    if (_errorMessage == null) return;
     _errorMessage = null;
     notifyListeners();
   }
 
+  void _scheduleErrorDismissal() {
+    _errorDismissTimer?.cancel();
+    if (_errorMessage == null) return;
+    _errorDismissTimer = Timer(errorDisplayDuration, clearError);
+  }
+
   void _setLoading(bool val) {
+    if (val) {
+      _errorDismissTimer?.cancel();
+      _errorMessage = null;
+    } else if (_errorMessage != null) {
+      _scheduleErrorDismissal();
+    }
     _isLoading = val;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _errorDismissTimer?.cancel();
+    super.dispose();
   }
 
   bool _hasFinishedSetup(UserModel user) =>

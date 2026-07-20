@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:timezone/data/latest.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 
 import 'in_app_notification_service.dart';
 import 'notifications_api.dart';
@@ -13,34 +16,53 @@ class LocalPushService {
   final Set<String> _notifiedIds = {};
 
   Timer? _pollTimer;
-  Timer? _reminderTimer;
   bool _initialized = false;
+  Future<void>? _initializationFuture;
   bool _notificationsEnabled = true;
   bool _learningReminderEnabled = true;
   String _reminderTime = '08:00';
-  String? _lastReminderKey;
+  static const _dailyReminderId = 1001;
+  String? _configurationKey;
 
-  Future<void> initialize() async {
-    if (_initialized) return;
+  Future<void> initialize() {
+    if (_initialized) return Future<void>.value();
+    return _initializationFuture ??= _initialize();
+  }
 
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
-    const iosSettings = DarwinInitializationSettings();
-    const settings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+  Future<void> _initialize() async {
+    try {
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
+      const iosSettings = DarwinInitializationSettings();
+      const settings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      );
 
-    await _plugin.initialize(settings);
+      await _plugin.initialize(settings);
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.requestNotificationsPermission();
+      tz_data.initializeTimeZones();
+      try {
+        final localTimezone = await FlutterTimezone.getLocalTimezone();
+        tz.setLocalLocation(tz.getLocation(localTimezone));
+      } catch (_) {
+        // tz.local remains a valid fallback; scheduling still succeeds.
+      }
 
-    _initialized = true;
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.requestNotificationsPermission();
+
+      _initialized = true;
+    } catch (_) {
+      // Permit a later retry if initialization or the system permission dialog
+      // could not complete.
+      _initializationFuture = null;
+      rethrow;
+    }
   }
 
   Future<void> configure({
@@ -50,11 +72,14 @@ class LocalPushService {
   }) async {
     await initialize();
 
-    final reminderChanged = _reminderTime != reminderTime;
+    final configurationKey =
+        '$notificationsEnabled|$learningReminderEnabled|$reminderTime';
+    if (_configurationKey == configurationKey) return;
+    _configurationKey = configurationKey;
+
     _notificationsEnabled = notificationsEnabled;
     _learningReminderEnabled = learningReminderEnabled;
     _reminderTime = reminderTime;
-    if (reminderChanged) _lastReminderKey = null;
 
     if (_notificationsEnabled) {
       startPolling();
@@ -63,9 +88,9 @@ class LocalPushService {
     }
 
     if (_notificationsEnabled && _learningReminderEnabled) {
-      _startReminderWatcher();
+      await _scheduleDailyReminder();
     } else {
-      _stopReminderWatcher();
+      await _plugin.cancel(_dailyReminderId);
     }
   }
 
@@ -81,21 +106,7 @@ class LocalPushService {
   void stopPolling() {
     _pollTimer?.cancel();
     _pollTimer = null;
-    _stopReminderWatcher();
-  }
-
-  void _startReminderWatcher() {
-    if (_reminderTimer != null) return;
-    _reminderTimer = Timer.periodic(
-      const Duration(minutes: 1),
-      (_) => _checkDailyReminder(),
-    );
-    _checkDailyReminder();
-  }
-
-  void _stopReminderWatcher() {
-    _reminderTimer?.cancel();
-    _reminderTimer = null;
+    _plugin.cancel(_dailyReminderId);
   }
 
   Future<void> _checkNotifications() async {
@@ -120,27 +131,48 @@ class LocalPushService {
     }
   }
 
-  Future<void> _checkDailyReminder() async {
-    if (!_notificationsEnabled || !_learningReminderEnabled) return;
-
+  Future<void> _scheduleDailyReminder() async {
     final parts = _reminderTime.split(':');
     final hour = int.tryParse(parts.first);
     final minute = parts.length > 1 ? int.tryParse(parts[1]) : 0;
     if (hour == null || minute == null) return;
 
-    final now = DateTime.now();
-    if (now.hour != hour || now.minute != minute) return;
-
-    final key =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} $_reminderTime';
-    if (_lastReminderKey == key) return;
-    _lastReminderKey = key;
-
-    await _showNotification(
-      id: 1001,
-      title: 'Daily practice reminder',
-      body: 'A short French session keeps your streak moving.',
-      inAppId: 'daily-reminder-$key',
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+    if (!scheduled.isAfter(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+    await _plugin.cancel(_dailyReminderId);
+    await _plugin.zonedSchedule(
+      _dailyReminderId,
+      'Daily practice reminder',
+      'A short French session keeps your streak moving.',
+      scheduled,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'fluentian_reminders',
+          'Learning reminders',
+          channelDescription: 'Your scheduled Fluentian learning reminders',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(
+          presentSound: true,
+          presentAlert: true,
+          presentBadge: true,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.wallClockTime,
+      matchDateTimeComponents: DateTimeComponents.time,
     );
   }
 
@@ -189,6 +221,19 @@ class LocalPushService {
       title: 'Time to learn!',
       body: 'Your daily goal is waiting for you.',
       inAppId: 'test-${DateTime.now().millisecondsSinceEpoch}',
+    );
+  }
+
+  Future<void> showRemoteNotification({
+    required String title,
+    required String body,
+  }) async {
+    await initialize();
+    await _showNotification(
+      id: DateTime.now().millisecondsSinceEpoch.remainder(2147483647),
+      title: title,
+      body: body,
+      persistInApp: false,
     );
   }
 }

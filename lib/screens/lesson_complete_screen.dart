@@ -38,7 +38,12 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
   @override
   void initState() {
     super.initState();
-    SoundEffectService.instance.play(SoundEffect.result);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (context.read<AuthProvider>().user?.soundEnabled ?? true) {
+        SoundEffectService.instance.play(SoundEffect.result);
+      }
+    });
   }
 
   @override
@@ -51,7 +56,9 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
         ? widget.accuracy.clamp(0.0, 1.0)
         : 0.0;
     final accuracyPercent = (accuracy * 100).round();
-    final totalQuestions = widget.totalQuestions < 1 ? 1 : widget.totalQuestions;
+    final totalQuestions = widget.totalQuestions < 1
+        ? 1
+        : widget.totalQuestions;
     final correctCount = widget.correctCount.clamp(0, totalQuestions).toInt();
 
     return Scaffold(
@@ -69,103 +76,106 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 12),
-              Container(
-                width: 80,
-                height: 80,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: FluentianColors.successTint,
-                ),
-                child: const Icon(
-                  Iconsax.tick_circle,
-                  size: 42,
-                  color: FluentianColors.success,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Lesson complete',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: FluentianColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                user == null ? 'Nice work.' : 'Nice work, ${user.displayName}.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  color: FluentianColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 28),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: FluentianColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    const Icon(Iconsax.flash_15, color: Colors.white, size: 28),
-                    const SizedBox(height: 6),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: FluentianColors.successTint,
+                      ),
+                      child: const Icon(
+                        Iconsax.tick_circle,
+                        size: 42,
+                        color: FluentianColors.success,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     Text(
-                      '+$xpEarned XP',
+                      'Lesson complete',
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
-                        fontSize: 44,
+                        fontSize: 30,
                         fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                        color: FluentianColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '$previousXp -> $newXpTotal total XP',
+                      user == null
+                          ? 'Nice work.'
+                          : 'Nice work, ${user.displayName}.',
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 16,
+                        color: FluentianColors.textSecondary,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _StatColumn('$accuracyPercent%', 'Accuracy'),
-                  _StatColumn(_formatTime(widget.timeSeconds), 'Time'),
-                  _StatColumn(
-                    '$correctCount/$totalQuestions',
-                    'Correct',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
-              if (!_feedbackSent)
-                TextButton.icon(
-                  onPressed: _showFeedbackSheet,
-                  icon: const Icon(Iconsax.message_edit),
-                  label: const Text('Leave lesson feedback'),
-                )
-              else
-                Text(
-                  'Feedback sent. Thank you.',
-                  style: GoogleFonts.inter(
-                    color: FluentianColors.success,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              const SizedBox(height: 12),
-              FluentianButton(
-                text: 'Continue',
-                icon: Iconsax.arrow_right_3,
-                onPressed: () =>
-                    Navigator.of(context).popUntil((r) => r.isFirst),
-              ),
+                    const SizedBox(height: 28),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: FluentianColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Iconsax.flash_15,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '+$xpEarned XP',
+                            style: GoogleFonts.inter(
+                              fontSize: 44,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '$previousXp -> $newXpTotal total XP',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _StatColumn('$accuracyPercent%', 'Accuracy'),
+                        _StatColumn(_formatTime(widget.timeSeconds), 'Time'),
+                        _StatColumn('$correctCount/$totalQuestions', 'Correct'),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+                    if (!_feedbackSent)
+                      TextButton.icon(
+                        onPressed: _showFeedbackSheet,
+                        icon: const Icon(Iconsax.message_edit),
+                        label: const Text('Leave lesson feedback'),
+                      )
+                    else
+                      Text(
+                        'Feedback sent. Thank you.',
+                        style: GoogleFonts.inter(
+                          color: FluentianColors.success,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+                    FluentianButton(
+                      text: 'Continue',
+                      icon: Iconsax.arrow_right_3,
+                      onPressed: () =>
+                          Navigator.of(context).popUntil((r) => r.isFirst),
+                    ),
                     const SizedBox(height: 12),
                   ],
                 ),

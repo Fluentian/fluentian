@@ -12,6 +12,7 @@ import 'screens/auth/sign_in_screen.dart';
 import 'screens/level_setup_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/local_push_service.dart';
+import 'services/remote_push_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -91,7 +92,6 @@ class _AppRootState extends State<_AppRoot> {
   @override
   void initState() {
     super.initState();
-    LocalPushService.instance.initialize();
 
     // Initialize auth on startup (restores tokens or clears stale ones)
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,6 +111,9 @@ class _AppRootState extends State<_AppRoot> {
               notificationsEnabled: user.notificationsEnabled,
               learningReminderEnabled: user.learningReminderEnabled,
               reminderTime: user.reminderTime,
+            );
+            RemotePushService.instance.configure(
+              enabled: user.notificationsEnabled,
             );
           } else {
             LocalPushService.instance.configure(

@@ -15,6 +15,7 @@ class CallScreen extends StatefulWidget {
   final String? level;
   final bool isVideo;
   final bool smartMatch;
+  final String? liveRoomId;
 
   const CallScreen({
     super.key,
@@ -22,10 +23,86 @@ class CallScreen extends StatefulWidget {
     this.level,
     this.isVideo = false,
     this.smartMatch = false,
+    this.liveRoomId,
   });
 
   @override
   State<CallScreen> createState() => _CallScreenState();
+}
+
+class _SafetyAction extends StatelessWidget {
+  final IconData icon;
+  final String title, subtitle;
+  final VoidCallback onTap;
+  final bool danger;
+  const _SafetyAction({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.danger = false,
+  });
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        padding: const EdgeInsets.all(13),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .07),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: (danger ? Colors.red : FluentianColors.primary)
+                    .withValues(alpha: .17),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: danger
+                    ? Colors.red.shade300
+                    : FluentianColors.primaryLight,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      color: Colors.white54,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.white38),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _CallScreenState extends State<CallScreen> {
@@ -71,12 +148,17 @@ class _CallScreenState extends State<CallScreen> {
         }
       }
 
-      final session = await _socialApi.createSpeakingCall(
-        topic: widget.topic,
-        level: widget.level,
-        callKind: widget.isVideo ? 'video' : 'audio',
-        smartMatch: widget.smartMatch,
-      );
+      final session = widget.liveRoomId != null
+          ? await _socialApi.joinLiveRoom(
+              roomId: widget.liveRoomId!,
+              callKind: widget.isVideo ? 'video' : 'audio',
+            )
+          : await _socialApi.createSpeakingCall(
+              topic: widget.topic,
+              level: widget.level,
+              callKind: widget.isVideo ? 'video' : 'audio',
+              smartMatch: widget.smartMatch,
+            );
       final room = Room();
       final listener = room.createListener()
         ..on<RoomConnectedEvent>((_) => _setStatus('Connected. Say bonjour!'))
@@ -112,7 +194,7 @@ class _CallScreenState extends State<CallScreen> {
         _matchReason = session.matchReason;
         _prompts = session.prompts;
         _remainingSeconds = session.durationSeconds;
-        _status = widget.smartMatch
+        _status = widget.smartMatch || widget.liveRoomId == 'match'
             ? 'Matched with ${session.level ?? 'your'} level speakers'
             : 'Joining ${widget.topic}...';
       });
@@ -153,6 +235,8 @@ class _CallScreenState extends State<CallScreen> {
 
   void _startTimer() {
     _timer?.cancel();
+    // A zero duration from always-open rooms means unlimited, not expired.
+    if (_remainingSeconds <= 0) return;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       if (_remainingSeconds <= 0) {
@@ -243,7 +327,7 @@ class _CallScreenState extends State<CallScreen> {
   Widget build(BuildContext context) {
     final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
-    final time = '$minutes:$seconds';
+    final time = _remainingSeconds <= 0 ? 'LIVE' : '$minutes:$seconds';
 
     return PopScope(
       canPop: false,
@@ -308,9 +392,329 @@ class _CallScreenState extends State<CallScreen> {
             ),
           ),
           _StatusPill(icon: Iconsax.profile_2user, label: '$_participantCount'),
+          const SizedBox(width: 6),
+          IconButton(
+            tooltip: 'Safety center',
+            onPressed: _showSafetyCenter,
+            icon: const Icon(Iconsax.shield_tick, color: Colors.white),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _showSafetyCenter() async {
+    final participants =
+        _room?.remoteParticipants.values.toList() ??
+        const <RemoteParticipant>[];
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1B1B22),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: FluentianColors.primary.withValues(alpha: .2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: const Icon(
+                      Iconsax.shield_tick,
+                      color: FluentianColors.primaryLight,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Safety center',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        Text(
+                          'You are always in control of your room',
+                          style: GoogleFonts.inter(
+                            color: Colors.white60,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              _SafetyAction(
+                icon: _speakerOn ? Iconsax.volume_slash : Iconsax.volume_high,
+                title: _speakerOn ? 'Mute room audio' : 'Restore room audio',
+                subtitle: 'Immediately stop or restore audio from everyone',
+                onTap: () async {
+                  await _toggleSpeaker();
+                  if (sheetContext.mounted) Navigator.pop(sheetContext);
+                },
+              ),
+              const SizedBox(height: 9),
+              _SafetyAction(
+                icon: Iconsax.logout,
+                title: 'Leave quietly',
+                subtitle: 'Exit immediately without notifying the room',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _leave();
+                },
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'PEOPLE IN THIS ROOM',
+                style: GoogleFonts.inter(
+                  color: Colors.white54,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 10),
+              if (participants.isEmpty)
+                Text(
+                  'No other participants are connected yet.',
+                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+                )
+              else
+                ...participants.map(
+                  (participant) => _SafetyAction(
+                    icon: Iconsax.profile_circle,
+                    title: participant.name.isEmpty
+                        ? 'Learner'
+                        : participant.name,
+                    subtitle: 'Report or block this person',
+                    danger: true,
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      _showReportSheet(participant);
+                    },
+                  ),
+                ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(13),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: .06),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Iconsax.info_circle,
+                      color: FluentianColors.primaryLight,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Reports are confidential. Blocking prevents future direct matching and is saved to your account.',
+                        style: GoogleFonts.inter(
+                          color: Colors.white60,
+                          fontSize: 11,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showReportSheet(RemoteParticipant participant) async {
+    String category = 'harassment';
+    bool block = true, submitting = false;
+    final details = TextEditingController();
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) => Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            12,
+            20,
+            20 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: FluentianColors.border,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Report ${participant.name.isEmpty ? 'learner' : participant.name}',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Choose the reason that best describes what happened.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: FluentianColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  initialValue: category,
+                  decoration: const InputDecoration(
+                    labelText: 'Reason',
+                    prefixIcon: Icon(Iconsax.warning_2),
+                    border: OutlineInputBorder(),
+                  ),
+                  items:
+                      const {
+                            'harassment': 'Harassment or bullying',
+                            'hate': 'Hate speech',
+                            'sexual': 'Sexual content',
+                            'spam': 'Spam or scam',
+                            'impersonation': 'Impersonation',
+                            'unsafe': 'Unsafe behavior',
+                            'other': 'Something else',
+                          }.entries
+                          .map(
+                            (entry) => DropdownMenuItem(
+                              value: entry.key,
+                              child: Text(entry.value),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (value) {
+                    if (value != null) setSheetState(() => category = value);
+                  },
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: details,
+                  maxLines: 3,
+                  maxLength: 2000,
+                  decoration: const InputDecoration(
+                    labelText: 'What happened? (optional)',
+                    alignLabelWithHint: true,
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: block,
+                  activeTrackColor: FluentianColors.primary,
+                  title: const Text('Block this learner'),
+                  subtitle: const Text('Avoid future direct matching'),
+                  onChanged: (value) => setSheetState(() => block = value),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                    ),
+                    onPressed: submitting
+                        ? null
+                        : () async {
+                            setSheetState(() => submitting = true);
+                            try {
+                              await _socialApi.reportUser(
+                                roomName: _roomName,
+                                reportedUserId: participant.identity,
+                                category: category,
+                                details: details.text,
+                                blockUser: block,
+                              );
+                              if (sheetContext.mounted) {
+                                Navigator.pop(sheetContext);
+                              }
+                              if (mounted) {
+                                ScaffoldMessenger.of(this.context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Report received. Thank you for helping keep Fluentian safe.',
+                                    ),
+                                  ),
+                                );
+                              }
+                            } catch (_) {
+                              if (sheetContext.mounted) {
+                                setSheetState(() => submitting = false);
+                              }
+                            }
+                          },
+                    icon: submitting
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Iconsax.shield_cross),
+                    label: const Text('Submit confidential report'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    details.dispose();
   }
 
   Widget _buildPhoneLayout(String time) {
@@ -564,8 +968,8 @@ class _CallScreenState extends State<CallScreen> {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.white12),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
+        padding: EdgeInsets.zero,
         children: [
           Text(
             'Speaking prompts',
@@ -581,7 +985,7 @@ class _CallScreenState extends State<CallScreen> {
             const SizedBox(height: 14),
           ],
           ...prompts.take(3).map(_buildPromptRow),
-          const Spacer(),
+          const SizedBox(height: 8),
           _buildQuickActions(),
           const SizedBox(height: 14),
           Text(
@@ -616,8 +1020,8 @@ class _CallScreenState extends State<CallScreen> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white12),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
+        padding: EdgeInsets.zero,
         children: [
           Text(
             'Practice guide',
@@ -638,7 +1042,7 @@ class _CallScreenState extends State<CallScreen> {
             const SizedBox(height: 18),
           ],
           ...prompts.take(4).map(_buildPromptRow),
-          const Spacer(),
+          const SizedBox(height: 12),
           _buildCallStatsGrid(),
           const SizedBox(height: 16),
           _buildQuickActions(),
@@ -757,42 +1161,53 @@ class _CallScreenState extends State<CallScreen> {
 
   Widget _buildControls({required bool wide}) {
     return Container(
-      padding: EdgeInsets.fromLTRB(wide ? 40 : 24, 18, wide ? 40 : 24, 24),
+      padding: EdgeInsets.fromLTRB(wide ? 40 : 16, 14, wide ? 40 : 16, 18),
       decoration: const BoxDecoration(
         color: Colors.black,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _CallControl(
-            icon: _speakerOn ? Iconsax.volume_high : Iconsax.volume_slash,
-            tooltip: _speakerOn ? 'Speaker on' : 'Speaker off',
-            onTap: _room == null ? null : _toggleSpeaker,
-          ),
-          _CallControl(
-            icon: _isMuted ? Iconsax.microphone_slash : Iconsax.microphone,
-            tooltip: _isMuted ? 'Unmute' : 'Mute',
-            isActive: !_isMuted,
-            onTap: _room == null ? null : _toggleMute,
-          ),
-          _ControlGap(wide: wide),
-          if (widget.isVideo)
-            _CallControl(
-              icon: _isCameraOff ? Iconsax.video_slash : Iconsax.video,
-              tooltip: _isCameraOff ? 'Camera off' : 'Camera on',
-              isActive: !_isCameraOff,
-              onTap: _room == null ? null : _toggleCamera,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _CallControl(
+                  icon: _speakerOn ? Iconsax.volume_high : Iconsax.volume_slash,
+                  tooltip: _speakerOn ? 'Speaker on' : 'Speaker off',
+                  onTap: _room == null ? null : _toggleSpeaker,
+                ),
+                _ControlGap(wide: wide),
+                _CallControl(
+                  icon: _isMuted
+                      ? Iconsax.microphone_slash
+                      : Iconsax.microphone,
+                  tooltip: _isMuted ? 'Unmute' : 'Mute',
+                  isActive: !_isMuted,
+                  onTap: _room == null ? null : _toggleMute,
+                ),
+                _ControlGap(wide: wide),
+                if (widget.isVideo) ...[
+                  _CallControl(
+                    icon: _isCameraOff ? Iconsax.video_slash : Iconsax.video,
+                    tooltip: _isCameraOff ? 'Camera off' : 'Camera on',
+                    isActive: !_isCameraOff,
+                    onTap: _room == null ? null : _toggleCamera,
+                  ),
+                  _ControlGap(wide: wide),
+                ],
+                _CallControl(
+                  icon: Icons.call_end,
+                  tooltip: 'End call',
+                  backgroundColor: FluentianColors.error,
+                  iconColor: Colors.white,
+                  onTap: _leave,
+                ),
+              ],
             ),
-          if (widget.isVideo) _ControlGap(wide: wide),
-          _CallControl(
-            icon: Icons.call_end,
-            tooltip: 'End call',
-            backgroundColor: FluentianColors.error,
-            iconColor: Colors.white,
-            onTap: _leave,
           ),
-        ],
+        ),
       ),
     );
   }

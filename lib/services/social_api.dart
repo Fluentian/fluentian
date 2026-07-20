@@ -51,6 +51,25 @@ class SocialApi {
 
   final _api = ApiClient.instance;
 
+  Future<List<LiveRoomModel>> getLiveRooms() async {
+    final items = await _api.getList('/social/live-rooms');
+    return items
+        .whereType<Map>()
+        .map((item) => LiveRoomModel.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
+
+  Future<SpeakingCallSession> joinLiveRoom({
+    required String roomId,
+    String callKind = 'audio',
+  }) async {
+    final data = await _api.post('/social/live-rooms/join', {
+      'room_id': roomId,
+      'call_kind': callKind,
+    });
+    return SpeakingCallSession.fromJson(data);
+  }
+
   Future<SpeakingCallSession> createSpeakingCall({
     required String topic,
     String? level,
@@ -64,6 +83,41 @@ class SocialApi {
       'smart_match': smartMatch,
     });
     return SpeakingCallSession.fromJson(data);
+  }
+
+  Future<List<ChatRoomModel>> getChatRooms() async {
+    final data = await _api.get('/social/rooms?size=50');
+    final items = data['items'];
+    if (items is! List) return const [];
+    return items
+        .whereType<Map>()
+        .map((item) => ChatRoomModel.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
+
+  Future<List<ChatMessageModel>> getChatMessages(String roomId) async {
+    final data = await _api.get('/social/rooms/$roomId/messages?size=50');
+    final items = data['items'];
+    if (items is! List) return const [];
+    return items
+        .whereType<Map>()
+        .map(
+          (item) => ChatMessageModel.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .toList()
+        .reversed
+        .toList();
+  }
+
+  Future<ChatMessageModel> sendChatMessage({
+    required String roomId,
+    required String body,
+  }) async {
+    final data = await _api.post('/social/rooms/$roomId/messages', {
+      'body': body.trim(),
+      'message_kind': 'text',
+    });
+    return ChatMessageModel.fromJson(data);
   }
 
   Future<List<FriendSummary>> getFriends() async {
@@ -154,6 +208,234 @@ class SocialApi {
     });
     return FriendChallenge.fromJson(data);
   }
+
+  Future<List<VocabularyItem>> getVocabulary() async {
+    final items = await _api.getList('/social/vocabulary');
+    return items
+        .whereType<Map>()
+        .map((item) => VocabularyItem.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
+
+  Future<VocabularyItem> saveVocabulary({
+    required String word,
+    required String storyId,
+    required String sourceSentence,
+    required String translatedSentence,
+    String translation = '',
+  }) async {
+    final data = await _api.post('/social/vocabulary', {
+      'word': word,
+      'story_id': storyId,
+      'translation': translation,
+      'source_sentence': sourceSentence,
+      'translated_sentence': translatedSentence,
+    });
+    return VocabularyItem.fromJson(data);
+  }
+
+  Future<void> deleteVocabulary(String id) =>
+      _api.delete('/social/vocabulary/$id');
+
+  Future<List<AccountabilityPartnership>> getPartnerships() async {
+    final items = await _api.getList('/social/accountability');
+    return items
+        .whereType<Map>()
+        .map(
+          (item) => AccountabilityPartnership.fromJson(
+            Map<String, dynamic>.from(item),
+          ),
+        )
+        .toList();
+  }
+
+  Future<AccountabilityPartnership> createPartnership({
+    required String partnerId,
+    required String goalKind,
+    required int targetValue,
+    required int durationDays,
+    String message = '',
+  }) async {
+    final data = await _api.post('/social/accountability', {
+      'partner_id': partnerId,
+      'goal_kind': goalKind,
+      'target_value': targetValue,
+      'duration_days': durationDays,
+      'message': message,
+    });
+    return AccountabilityPartnership.fromJson(data);
+  }
+
+  Future<AccountabilityPartnership> updatePartnership(
+    String id,
+    String status,
+  ) async {
+    final data = await _api.patch('/social/accountability/$id', {
+      'status': status,
+    });
+    return AccountabilityPartnership.fromJson(data);
+  }
+
+  Future<void> blockUser(String userId) =>
+      _api.post('/social/safety/blocks/$userId', {});
+
+  Future<void> reportUser({
+    required String roomName,
+    required String category,
+    String? reportedUserId,
+    String details = '',
+    bool blockUser = false,
+  }) => _api.post('/social/safety/reports', {
+    'room_name': roomName,
+    'category': category,
+    if (reportedUserId != null) 'reported_user_id': reportedUserId,
+    'details': details,
+    'block_user': blockUser,
+  });
+}
+
+class VocabularyItem {
+  final String id, word, translation, sourceSentence, translatedSentence;
+  final int masteryLevel, reviewCount;
+  const VocabularyItem({
+    required this.id,
+    required this.word,
+    required this.translation,
+    required this.sourceSentence,
+    required this.translatedSentence,
+    required this.masteryLevel,
+    required this.reviewCount,
+  });
+  factory VocabularyItem.fromJson(Map<String, dynamic> json) => VocabularyItem(
+    id: json['id']?.toString() ?? '',
+    word: json['word']?.toString() ?? '',
+    translation: json['translation']?.toString() ?? '',
+    sourceSentence: json['source_sentence']?.toString() ?? '',
+    translatedSentence: json['translated_sentence']?.toString() ?? '',
+    masteryLevel: (json['mastery_level'] as num?)?.toInt() ?? 0,
+    reviewCount: (json['review_count'] as num?)?.toInt() ?? 0,
+  );
+}
+
+class AccountabilityPartnership {
+  final String id, status, direction, goalKind, message;
+  final int targetValue, durationDays, myProgress, partnerProgress;
+  final DateTime? endsAt;
+  final FriendSummary partner;
+  const AccountabilityPartnership({
+    required this.id,
+    required this.status,
+    required this.direction,
+    required this.goalKind,
+    required this.message,
+    required this.targetValue,
+    required this.durationDays,
+    required this.myProgress,
+    required this.partnerProgress,
+    required this.partner,
+    this.endsAt,
+  });
+  double get myRatio =>
+      targetValue == 0 ? 0 : (myProgress / targetValue).clamp(0, 1);
+  double get partnerRatio =>
+      targetValue == 0 ? 0 : (partnerProgress / targetValue).clamp(0, 1);
+  factory AccountabilityPartnership.fromJson(Map<String, dynamic> json) =>
+      AccountabilityPartnership(
+        id: json['id']?.toString() ?? '',
+        status: json['status']?.toString() ?? 'pending',
+        direction: json['direction']?.toString() ?? 'incoming',
+        goalKind: json['goal_kind']?.toString() ?? 'lessons',
+        message: json['message']?.toString() ?? '',
+        targetValue: (json['target_value'] as num?)?.toInt() ?? 5,
+        durationDays: (json['duration_days'] as num?)?.toInt() ?? 7,
+        myProgress: (json['my_progress'] as num?)?.toInt() ?? 0,
+        partnerProgress: (json['partner_progress'] as num?)?.toInt() ?? 0,
+        endsAt: DateTime.tryParse(json['ends_at']?.toString() ?? ''),
+        partner: FriendSummary.fromJson(
+          Map<String, dynamic>.from(json['partner'] as Map? ?? const {}),
+        ),
+      );
+}
+
+class LiveRoomModel {
+  final String id, title, description, roomType, eligibilityLabel;
+  final bool eligible, isOpen;
+  final int? capacity;
+  final DateTime? scheduledAt;
+  const LiveRoomModel({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.roomType,
+    required this.eligibilityLabel,
+    required this.eligible,
+    required this.isOpen,
+    this.capacity,
+    this.scheduledAt,
+  });
+  factory LiveRoomModel.fromJson(Map<String, dynamic> json) => LiveRoomModel(
+    id: json['id']?.toString() ?? '',
+    title: json['title']?.toString() ?? '',
+    description: json['description']?.toString() ?? '',
+    roomType: json['room_type']?.toString() ?? '',
+    eligibilityLabel: json['eligibility_label']?.toString() ?? '',
+    eligible: json['eligible'] == true,
+    isOpen: json['is_open'] == true,
+    capacity: (json['capacity'] as num?)?.toInt(),
+    scheduledAt: DateTime.tryParse(json['scheduled_at']?.toString() ?? ''),
+  );
+}
+
+class ChatRoomModel {
+  final String id;
+  final String title;
+  final String roomKind;
+  final String? targetLanguageId;
+  final DateTime? createdAt;
+
+  const ChatRoomModel({
+    required this.id,
+    required this.title,
+    required this.roomKind,
+    this.targetLanguageId,
+    this.createdAt,
+  });
+
+  factory ChatRoomModel.fromJson(Map<String, dynamic> json) => ChatRoomModel(
+    id: json['id']?.toString() ?? '',
+    title: json['title']?.toString() ?? 'Chat room',
+    roomKind: json['room_kind']?.toString() ?? 'group',
+    targetLanguageId: json['target_language_id']?.toString(),
+    createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
+  );
+}
+
+class ChatMessageModel {
+  final String id;
+  final String roomId;
+  final String senderUserId;
+  final String messageKind;
+  final String body;
+  final DateTime? createdAt;
+
+  const ChatMessageModel({
+    required this.id,
+    required this.roomId,
+    required this.senderUserId,
+    required this.messageKind,
+    required this.body,
+    this.createdAt,
+  });
+
+  factory ChatMessageModel.fromJson(Map<String, dynamic> json) =>
+      ChatMessageModel(
+        id: json['id']?.toString() ?? '',
+        roomId: json['room_id']?.toString() ?? '',
+        senderUserId: json['sender_user_id']?.toString() ?? '',
+        messageKind: json['message_kind']?.toString() ?? 'text',
+        body: json['body']?.toString() ?? '',
+        createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
+      );
 }
 
 class FriendSummary {

@@ -601,9 +601,11 @@ class _McqScreenState extends State<McqScreen>
       write.whenComplete(() => _pendingHeartWrites.remove(write));
     }
 
-    SoundEffectService.instance.play(
-      isCorrect ? SoundEffect.correct : SoundEffect.wrong,
-    );
+    if (context.read<AuthProvider>().user?.soundEnabled ?? true) {
+      SoundEffectService.instance.play(
+        isCorrect ? SoundEffect.correct : SoundEffect.wrong,
+      );
+    }
     _showResultSheet(isCorrect, correctAnswerText);
   }
 

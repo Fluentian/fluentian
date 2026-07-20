@@ -70,10 +70,17 @@ class ApiClient {
   static final ApiClient instance = ApiClient._();
 
   // ── Configuration ────────────────────────────────────
-  static const String _baseUrl = String.fromEnvironment(
+  static const String _configuredBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.fluentianapp.binovatechnologies.com/api/v1',
+    defaultValue: '',
   );
+  static final String _baseUrl = _configuredBaseUrl.isNotEmpty
+      ? _configuredBaseUrl
+      : kReleaseMode
+      ? 'https://api.fluentianapp.binovatechnologies.com/api/v1'
+      : Platform.isAndroid
+      ? 'http://10.0.2.2:8000/api/v1'
+      : 'http://127.0.0.1:8000/api/v1';
   static final Uri _baseUri = Uri.parse(_baseUrl);
 
   static String? resolveMediaUrl(String? value) {
@@ -216,8 +223,11 @@ class ApiClient {
     bool auth = true,
   }) => _request('PATCH', path, body: body, auth: auth);
 
-  Future<Map<String, dynamic>> delete(String path, {bool auth = true}) =>
-      _request('DELETE', path, auth: auth);
+  Future<Map<String, dynamic>> delete(
+    String path, {
+    bool auth = true,
+    Map<String, dynamic>? body,
+  }) => _request('DELETE', path, body: body, auth: auth);
 
   /// Generic list response helper (returns list not map).
   Future<List<dynamic>> getList(String path, {bool auth = true}) async {
@@ -279,7 +289,11 @@ class ApiClient {
               .timeout(const Duration(seconds: 15));
         case 'DELETE':
           response = await http
-              .delete(uri, headers: headers)
+              .delete(
+                uri,
+                headers: headers,
+                body: body == null ? null : jsonEncode(body),
+              )
               .timeout(const Duration(seconds: 15));
         default:
           throw ApiException(0, 'Unknown HTTP method: $method');

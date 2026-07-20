@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../core/theme.dart';
 import '../models/culture_story_model.dart';
+import '../providers/auth_provider.dart';
 import '../services/content_api.dart';
+import '../services/social_api.dart';
+import '../services/tts_service.dart';
 import '../widgets/translatable_text.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -21,6 +25,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
   late Future<List<CultureStoryModel>> _storiesFuture;
   int _currentStory = 0;
 
+  // Kept as editorial sample data only; production Explore never falls back to it.
+  // ignore: unused_field
   static final List<CultureStoryModel> _fallbackStories = [
     const CultureStoryModel(
       id: 'fallback-cafe',
@@ -187,13 +193,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   Future<List<CultureStoryModel>> _loadStories() async {
-    try {
-      final stories = await ContentApi.instance.getCultureStories();
-      if (stories.isNotEmpty) return stories;
-    } catch (_) {
-      // Keep Explore usable while a deployed backend is still catching up.
-    }
-    return _fallbackStories;
+    return ContentApi.instance.getCultureStories();
   }
 
   Future<void> _refreshStories() async {
@@ -203,6 +203,159 @@ class _ExploreScreenState extends State<ExploreScreen> {
     });
     await _storiesFuture;
   }
+
+  Future<void> _openWord(
+    String word,
+    SentencePair sentence,
+    String storyId,
+  ) async {
+    final cleaned = word.replaceAll(
+      RegExp(r'^[^\p{L}]+|[^\p{L}\-’]+$', unicode: true),
+      '',
+    );
+    if (cleaned.isEmpty) return;
+    var saving = false;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) => Container(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            10,
+            20,
+            20 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: FluentianColors.border,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: FluentianColors.headerGradient,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Iconsax.book_saved, color: Colors.white),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          cleaned,
+                          style: GoogleFonts.inter(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            color: FluentianColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          'From this Explore story',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: FluentianColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              _WordContext(
+                label: 'IN CONTEXT',
+                text: sentence.original,
+                icon: Iconsax.message_text,
+              ),
+              const SizedBox(height: 10),
+              _WordContext(
+                label: 'TRANSLATION',
+                text: sentence.translated,
+                icon: Iconsax.translate,
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton.icon(
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          setSheetState(() => saving = true);
+                          try {
+                            await SocialApi.instance.saveVocabulary(
+                              word: cleaned,
+                              storyId: storyId,
+                              sourceSentence: sentence.original,
+                              translatedSentence: sentence.translated,
+                            );
+                            if (!sheetContext.mounted) return;
+                            Navigator.pop(sheetContext);
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(this.context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '$cleaned added to your word bank',
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          } catch (e) {
+                            if (sheetContext.mounted) {
+                              setSheetState(() => saving = false);
+                            }
+                          }
+                        },
+                  icon: saving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Iconsax.add_circle),
+                  label: const Text('Save to my word bank'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showWordBank() => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const _VocabularyScreen()),
+  );
 
   @override
   void dispose() {
@@ -258,6 +411,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       ],
                     ),
                   ),
+                  IconButton.filledTonal(
+                    tooltip: 'My word bank',
+                    onPressed: _showWordBank,
+                    icon: const Icon(Iconsax.book_saved),
+                  ),
                 ],
               ),
             ),
@@ -273,7 +431,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     );
                   }
 
-                  final stories = snapshot.data ?? _fallbackStories;
+                  if (snapshot.hasError) {
+                    return _ExploreEmptyState(onRetry: _refreshStories);
+                  }
+                  final stories = snapshot.data ?? const <CultureStoryModel>[];
                   if (stories.isEmpty) {
                     return _ExploreEmptyState(onRetry: _refreshStories);
                   }
@@ -288,7 +449,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         _currentStory = index;
                       }),
                       itemBuilder: (context, index) {
-                        return _CultureStoryView(story: stories[index]);
+                        return _CultureStoryView(
+                          story: stories[index],
+                          onWordTap: (word, sentence) =>
+                              _openWord(word, sentence, stories[index].id),
+                        );
                       },
                     ),
                   );
@@ -298,7 +463,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
             FutureBuilder<List<CultureStoryModel>>(
               future: _storiesFuture,
               builder: (context, snapshot) {
-                final count = (snapshot.data ?? _fallbackStories).length;
+                final count =
+                    (snapshot.data ?? const <CultureStoryModel>[]).length;
                 if (count <= 1) return const SizedBox(height: 20);
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(18, 6, 18, 14),
@@ -318,8 +484,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
 class _CultureStoryView extends StatelessWidget {
   final CultureStoryModel story;
+  final void Function(String word, SentencePair sentence) onWordTap;
 
-  const _CultureStoryView({required this.story});
+  const _CultureStoryView({required this.story, required this.onWordTap});
 
   @override
   Widget build(BuildContext context) {
@@ -381,7 +548,10 @@ class _CultureStoryView extends StatelessWidget {
                 ...story.paragraphs.map(
                   (paragraph) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: TranslatableParagraph(sentences: paragraph),
+                    child: TranslatableParagraph(
+                      sentences: paragraph,
+                      onWordTap: onWordTap,
+                    ),
                   ),
                 ),
               ],
@@ -434,6 +604,434 @@ class _TranslateHintCard extends StatelessWidget {
   }
 }
 
+class _WordContext extends StatelessWidget {
+  final String label, text;
+  final IconData icon;
+  const _WordContext({
+    required this.label,
+    required this.text,
+    required this.icon,
+  });
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: FluentianColors.pageBg,
+      borderRadius: BorderRadius.circular(15),
+      border: Border.all(color: FluentianColors.border),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 15, color: FluentianColors.primary),
+            const SizedBox(width: 7),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+                color: FluentianColors.primary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          text,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            height: 1.45,
+            fontWeight: FontWeight.w600,
+            color: FluentianColors.textPrimary,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _VocabularyScreen extends StatefulWidget {
+  const _VocabularyScreen();
+  @override
+  State<_VocabularyScreen> createState() => _VocabularyScreenState();
+}
+
+class _VocabularyScreenState extends State<_VocabularyScreen> {
+  late Future<List<VocabularyItem>> _items;
+  @override
+  void initState() {
+    super.initState();
+    _items = SocialApi.instance.getVocabulary();
+  }
+
+  void _reload() => setState(() => _items = SocialApi.instance.getVocabulary());
+
+  Future<void> _speak(String text) async {
+    try {
+      final speed = context.read<AuthProvider>().user?.ttsSpeed ?? 1.0;
+      await TtsService.instance.speak(text, speed: speed);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not play pronunciation. Check the device speech settings.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _openWord(VocabularyItem item) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(sheetContext).height * .84,
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: FluentianColors.border,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    gradient: FluentianColors.headerGradient,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'SAVED WORD',
+                              style: GoogleFonts.inter(
+                                color: Colors.white70,
+                                fontSize: 10,
+                                letterSpacing: 1.2,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              item.word,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 29,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            if (item.translation.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                item.translation,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      IconButton.filled(
+                        tooltip: 'Hear pronunciation',
+                        onPressed: () => _speak(item.word),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: FluentianColors.primary,
+                          minimumSize: const Size(50, 50),
+                        ),
+                        icon: const Icon(Iconsax.volume_high),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _WordContext(
+                  label: 'FRENCH CONTEXT',
+                  text: item.sourceSentence.isEmpty
+                      ? item.word
+                      : item.sourceSentence,
+                  icon: Iconsax.message_text,
+                ),
+                if (item.translatedSentence.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  _WordContext(
+                    label: 'TRANSLATION',
+                    text: item.translatedSentence,
+                    icon: Iconsax.translate,
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: FluentianColors.primaryTint,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Iconsax.lamp_on,
+                        color: FluentianColors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Listen, then say the word and the full sentence aloud.',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            height: 1.4,
+                            fontWeight: FontWeight.w700,
+                            color: FluentianColors.primaryDark,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          await SocialApi.instance.deleteVocabulary(item.id);
+                          if (!sheetContext.mounted) return;
+                          Navigator.pop(sheetContext);
+                          _reload();
+                        },
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Remove'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red.shade600,
+                          minimumSize: const Size.fromHeight(50),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _speak(
+                          item.sourceSentence.isEmpty
+                              ? item.word
+                              : item.sourceSentence,
+                        ),
+                        icon: const Icon(Iconsax.volume_high),
+                        label: const Text('Hear sentence'),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(50),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: FluentianColors.pageBg,
+    appBar: AppBar(
+      title: const Text('My word bank'),
+      backgroundColor: FluentianColors.pageBg,
+      surfaceTintColor: Colors.transparent,
+    ),
+    body: FutureBuilder<List<VocabularyItem>>(
+      future: _items,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final items = snapshot.data ?? const [];
+        if (items.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 82,
+                    height: 82,
+                    decoration: const BoxDecoration(
+                      color: FluentianColors.primaryTint,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Iconsax.book_saved,
+                      size: 36,
+                      color: FluentianColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    'Your word bank is ready',
+                    style: GoogleFonts.inter(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tap any word in an Explore story to save it with its real context.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      height: 1.45,
+                      color: FluentianColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+          itemCount: items.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          itemBuilder: (_, index) {
+            final item = items[index];
+            return Dismissible(
+              key: ValueKey(item.id),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 22),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade400,
+                  borderRadius: BorderRadius.circular(17),
+                ),
+                child: const Icon(Icons.delete_outline, color: Colors.white),
+              ),
+              onDismissed: (_) async {
+                await SocialApi.instance.deleteVocabulary(item.id);
+                _reload();
+              },
+              child: Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(17),
+                child: InkWell(
+                  onTap: () => _openWord(item),
+                  borderRadius: BorderRadius.circular(17),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(17),
+                      border: Border.all(
+                        color: FluentianColors.primary.withValues(alpha: .13),
+                      ),
+                      boxShadow: [FluentianShadows.subtle],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: FluentianColors.primaryTint,
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Text(
+                            item.word.characters.first.toUpperCase(),
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: FluentianColors.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 13),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.word,
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item.sourceSentence,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  height: 1.35,
+                                  color: FluentianColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: FluentianColors.primaryTint,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.chevron_right_rounded,
+                            color: FluentianColors.primary,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ),
+  );
+}
+
 class _CultureMediaCarousel extends StatefulWidget {
   final List<CultureMediaModel> media;
 
@@ -447,6 +1045,16 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
   final PageController _mediaController = PageController();
   int _currentMedia = 0;
 
+  void _goToMedia(int index) {
+    if (widget.media.isEmpty) return;
+    final target = index.clamp(0, widget.media.length - 1);
+    _mediaController.animateToPage(
+      target,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   @override
   void dispose() {
     _mediaController.dispose();
@@ -455,6 +1063,22 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.media.isEmpty) {
+      return Container(
+        height: 260,
+        decoration: BoxDecoration(
+          color: FluentianColors.divider,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: Icon(
+            Iconsax.gallery_slash,
+            size: 42,
+            color: FluentianColors.textSecondary,
+          ),
+        ),
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: AspectRatio(
@@ -464,6 +1088,7 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
           children: [
             PageView.builder(
               controller: _mediaController,
+              physics: const PageScrollPhysics(),
               itemCount: widget.media.length,
               onPageChanged: (index) => setState(() {
                 _currentMedia = index;
@@ -503,20 +1128,66 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
               },
             ),
             Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.05),
-                      Colors.black.withValues(alpha: 0.55),
-                    ],
-                    stops: const [0.45, 1.0],
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.05),
+                        Colors.black.withValues(alpha: 0.55),
+                      ],
+                      stops: const [0.45, 1.0],
+                    ),
                   ),
                 ),
               ),
             ),
+            if (widget.media.length > 1) ...[
+              Positioned(
+                top: 14,
+                right: 14,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '${_currentMedia + 1}/${widget.media.length}',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+              if (_currentMedia > 0)
+                Positioned(
+                  left: 10,
+                  top: 0,
+                  bottom: 0,
+                  child: _CarouselArrow(
+                    icon: Icons.chevron_left_rounded,
+                    onTap: () => _goToMedia(_currentMedia - 1),
+                  ),
+                ),
+              if (_currentMedia < widget.media.length - 1)
+                Positioned(
+                  right: 10,
+                  top: 0,
+                  bottom: 0,
+                  child: _CarouselArrow(
+                    icon: Icons.chevron_right_rounded,
+                    onTap: () => _goToMedia(_currentMedia + 1),
+                  ),
+                ),
+            ],
             Positioned(
               left: 14,
               right: 14,
@@ -543,6 +1214,7 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
                     currentIndex: _currentMedia,
                     activeColor: Colors.white,
                     inactiveColor: Colors.white54,
+                    onTap: _goToMedia,
                   ),
                 ],
               ),
@@ -739,12 +1411,14 @@ class _StoryIndicator extends StatelessWidget {
   final int currentIndex;
   final Color activeColor;
   final Color inactiveColor;
+  final ValueChanged<int>? onTap;
 
   const _StoryIndicator({
     required this.count,
     required this.currentIndex,
     this.activeColor = FluentianColors.primary,
     this.inactiveColor = FluentianColors.border,
+    this.onTap,
   });
 
   @override
@@ -754,17 +1428,48 @@ class _StoryIndicator extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (index) {
         final selected = index == currentIndex;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: selected ? 20 : 7,
-          height: 7,
-          decoration: BoxDecoration(
-            color: selected ? activeColor : inactiveColor,
-            borderRadius: BorderRadius.circular(8),
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap == null ? null : () => onTap!(index),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: selected ? 20 : 7,
+              height: 7,
+              decoration: BoxDecoration(
+                color: selected ? activeColor : inactiveColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
           ),
         );
       }),
     );
   }
+}
+
+class _CarouselArrow extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _CarouselArrow({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Material(
+      color: Colors.black.withValues(alpha: 0.48),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          width: 38,
+          height: 38,
+          child: Icon(icon, color: Colors.white, size: 24),
+        ),
+      ),
+    ),
+  );
 }
