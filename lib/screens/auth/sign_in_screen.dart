@@ -58,6 +58,17 @@ class _SignInScreenState extends State<SignInScreen> {
     final success = await authProvider.login(email: email, password: password);
 
     if (!mounted) return;
+    if (success) {
+      // Sign in can be reached from a pushed Sign Up/Forgot Password route.
+      // AuthProvider has already switched _AppRoot to Home, so remove any
+      // auth pages that would otherwise continue covering it.
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).popUntil((route) => route.isFirst);
+      return;
+    }
+
     if (!success) {
       if (authProvider.unverifiedEmail != null) {
         Navigator.of(context).push(
@@ -66,6 +77,19 @@ class _SignInScreenState extends State<SignInScreen> {
                 OtpVerificationScreen(email: authProvider.unverifiedEmail!),
           ),
         );
+      } else {
+        final message =
+            authProvider.errorMessage ??
+            'Sign in failed. Check your connection and try again.';
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(message),
+              duration: AuthProvider.errorDisplayDuration,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
       }
     }
     // On success, _AppRoot Consumer in main.dart auto-navigates to HomeScreen
@@ -74,7 +98,14 @@ class _SignInScreenState extends State<SignInScreen> {
   Future<void> _handleGoogleSignIn() async {
     final auth = context.read<AuthProvider>();
     final success = await auth.signInWithGoogle();
-    if (!mounted || success) return;
+    if (!mounted) return;
+    if (success) {
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).popUntil((route) => route.isFirst);
+      return;
+    }
     final message = auth.errorMessage;
     if (message != null && message.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

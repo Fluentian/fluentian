@@ -6,7 +6,6 @@ import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../services/app_logger.dart';
 import '../services/local_push_service.dart';
-import 'auth/sign_in_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -181,10 +180,14 @@ class SettingsScreen extends StatelessWidget {
             onSignOut: () async {
               await auth.logout();
               if (context.mounted) {
-                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const SignInScreen()),
-                  (route) => false,
-                );
+                // AuthProvider drives _AppRoot back to SignInScreen. Only
+                // remove pages opened above the app root; pushing a standalone
+                // sign-in route here would remain above Home after the next
+                // successful login and make account switching appear broken.
+                Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).popUntil((route) => route.isFirst);
               }
             },
           ),
@@ -463,8 +466,15 @@ class _SettingsGroup extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          decoration: _panelDecoration(),
+        Material(
+          color: Colors.white,
+          elevation: 1,
+          shadowColor: FluentianColors.primary.withValues(alpha: 0.08),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+          ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             children: List.generate(children.length * 2 - 1, (index) {
               if (index.isOdd) {
