@@ -323,7 +323,10 @@ class _SocialScreenState extends State<SocialScreen> {
             body: 'Public learning communities will appear here.',
           )
         else
-          ..._chatRooms.map(_buildRoomTile),
+          ...([
+            ..._chatRooms.where((room) => room.eligible),
+            ..._chatRooms.where((room) => !room.eligible),
+          ]).map(_buildRoomTile),
       ],
     );
   }
@@ -875,20 +878,29 @@ class _SocialScreenState extends State<SocialScreen> {
   }
 
   Widget _buildRoomTile(ChatRoomModel room) {
-    final isLevelRoom = room.roomKind == 'level_based';
-    final color = isLevelRoom ? FluentianColors.primary : FluentianColors.info;
+    final isLevelRoom = room.eligibilityKind == 'level';
+    final isStreakRoom = room.eligibilityKind == 'streak';
+    final color = !room.eligible
+        ? FluentianColors.textSecondary
+        : isStreakRoom
+        ? FluentianColors.accent
+        : isLevelRoom
+        ? FluentianColors.primary
+        : FluentianColors.info;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  ChatDetailScreen(roomId: room.id, title: room.title),
-            ),
-          );
-        },
+        onTap: room.eligible
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        ChatDetailScreen(roomId: room.id, title: room.title),
+                  ),
+                );
+              }
+            : null,
         borderRadius: BorderRadius.circular(16),
         child: _Surface(
           child: Row(
@@ -901,7 +913,13 @@ class _SocialScreenState extends State<SocialScreen> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
-                  isLevelRoom ? Iconsax.teacher : Iconsax.people,
+                  !room.eligible
+                      ? Iconsax.lock
+                      : isStreakRoom
+                      ? Iconsax.flash_1
+                      : isLevelRoom
+                      ? Iconsax.teacher
+                      : Iconsax.people,
                   size: 21,
                   color: color,
                 ),
@@ -920,9 +938,9 @@ class _SocialScreenState extends State<SocialScreen> {
                       ),
                     ),
                     Text(
-                      isLevelRoom
-                          ? 'Level community · Tap to join the conversation'
-                          : 'Public community · Tap to join the conversation',
+                      room.eligible
+                          ? '${room.eligibilityLabel} · Tap to join'
+                          : 'Locked · ${room.eligibilityLabel}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
@@ -934,18 +952,25 @@ class _SocialScreenState extends State<SocialScreen> {
                   ],
                 ),
               ),
-              _TinyAction(
-                icon: Iconsax.call,
-                color: FluentianColors.primary,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CallScreen(topic: room.title),
-                    ),
-                  );
-                },
-              ),
+              if (room.eligible)
+                _TinyAction(
+                  icon: Iconsax.call,
+                  color: FluentianColors.primary,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CallScreen(topic: room.title),
+                      ),
+                    );
+                  },
+                )
+              else
+                Icon(
+                  Iconsax.lock,
+                  size: 18,
+                  color: FluentianColors.textSecondary,
+                ),
             ],
           ),
         ),

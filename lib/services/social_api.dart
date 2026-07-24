@@ -390,6 +390,10 @@ class ChatRoomModel {
   final String id;
   final String title;
   final String roomKind;
+  final String eligibilityKind;
+  final String? eligibilityValue;
+  final String eligibilityLabel;
+  final bool eligible;
   final String? targetLanguageId;
   final DateTime? createdAt;
 
@@ -397,6 +401,10 @@ class ChatRoomModel {
     required this.id,
     required this.title,
     required this.roomKind,
+    required this.eligibilityKind,
+    required this.eligibilityLabel,
+    required this.eligible,
+    this.eligibilityValue,
     this.targetLanguageId,
     this.createdAt,
   });
@@ -405,6 +413,11 @@ class ChatRoomModel {
     id: json['id']?.toString() ?? '',
     title: json['title']?.toString() ?? 'Chat room',
     roomKind: json['room_kind']?.toString() ?? 'group',
+    eligibilityKind: json['eligibility_kind']?.toString() ?? 'open',
+    eligibilityValue: json['eligibility_value']?.toString(),
+    eligibilityLabel:
+        json['eligibility_label']?.toString() ?? 'Open to all learners',
+    eligible: json['eligible'] != false,
     targetLanguageId: json['target_language_id']?.toString(),
     createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
   );
