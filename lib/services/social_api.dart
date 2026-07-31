@@ -45,6 +45,34 @@ class SpeakingCallSession {
   }
 }
 
+class MatchQueueResult {
+  final String ticketId;
+  final String status;
+  final String matchReason;
+  final SpeakingCallSession? session;
+
+  const MatchQueueResult({
+    required this.ticketId,
+    required this.status,
+    required this.matchReason,
+    this.session,
+  });
+
+  bool get isMatched => status == 'matched' && session != null;
+
+  factory MatchQueueResult.fromJson(Map<String, dynamic> json) {
+    final session = json['session'];
+    return MatchQueueResult(
+      ticketId: json['ticket_id']?.toString() ?? '',
+      status: json['status']?.toString() ?? 'waiting',
+      matchReason: json['match_reason']?.toString() ?? 'Looking for a partner…',
+      session: session is Map
+          ? SpeakingCallSession.fromJson(Map<String, dynamic>.from(session))
+          : null,
+    );
+  }
+}
+
 class SocialApi {
   SocialApi._();
   static final SocialApi instance = SocialApi._();
@@ -57,6 +85,26 @@ class SocialApi {
         .whereType<Map>()
         .map((item) => LiveRoomModel.fromJson(Map<String, dynamic>.from(item)))
         .toList();
+  }
+
+  Future<void> leaveLiveRooms() async {
+    await _api.delete('/social/live-rooms/presence');
+  }
+
+  Future<MatchQueueResult> enterMatchQueue({String callKind = 'audio'}) async {
+    final data = await _api.post('/social/live-rooms/match/queue', {
+      'call_kind': callKind,
+    });
+    return MatchQueueResult.fromJson(data);
+  }
+
+  Future<MatchQueueResult> pollMatchQueue(String ticketId) async {
+    final data = await _api.get('/social/live-rooms/match/queue/$ticketId');
+    return MatchQueueResult.fromJson(data);
+  }
+
+  Future<void> cancelMatchQueue(String ticketId) async {
+    await _api.delete('/social/live-rooms/match/queue/$ticketId');
   }
 
   Future<SpeakingCallSession> joinLiveRoom({

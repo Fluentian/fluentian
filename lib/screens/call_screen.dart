@@ -110,11 +110,14 @@ class _CallScreenState extends State<CallScreen> {
   Room? _room;
   EventsListener<RoomEvent>? _listener;
   Timer? _timer;
+  String? _matchTicketId;
 
   bool _isConnecting = true;
   bool _isMuted = false;
   bool _isCameraOff = false;
   bool _speakerOn = true;
+  bool _timerStarted = false;
+  bool _isPrivateMatch = false;
   String? _error;
   String _status = 'Preparing your French speaking room...';
   String _roomName = '';
@@ -148,7 +151,9 @@ class _CallScreenState extends State<CallScreen> {
         }
       }
 
-      final session = widget.liveRoomId != null
+      final session = widget.liveRoomId == 'match'
+          ? await _waitForMatch()
+          : widget.liveRoomId != null
           ? await _socialApi.joinLiveRoom(
               roomId: widget.liveRoomId!,
               callKind: widget.isVideo ? 'video' : 'audio',
@@ -194,6 +199,7 @@ class _CallScreenState extends State<CallScreen> {
         _matchReason = session.matchReason;
         _prompts = session.prompts;
         _remainingSeconds = session.durationSeconds;
+        _isPrivateMatch = widget.liveRoomId == 'match';
         _status = widget.smartMatch || widget.liveRoomId == 'match'
             ? 'Matched with ${session.level ?? 'your'} level speakers'
             : 'Joining ${widget.topic}...';
@@ -207,7 +213,7 @@ class _CallScreenState extends State<CallScreen> {
       }
       await room.setSpeakerOn(_speakerOn);
       _refreshParticipants();
-      _startTimer();
+      if (!_isPrivateMatch) _startTimer();
 
       if (mounted) {
         setState(() => _isConnecting = false);
@@ -222,6 +228,33 @@ class _CallScreenState extends State<CallScreen> {
     }
   }
 
+  Future<SpeakingCallSession> _waitForMatch() async {
+    final callKind = widget.isVideo ? 'video' : 'audio';
+    var result = await _socialApi.enterMatchQueue(callKind: callKind);
+    _matchTicketId = result.ticketId;
+    if (mounted) setState(() => _status = result.matchReason);
+
+    final deadline = DateTime.now().add(const Duration(minutes: 2));
+    while (!result.isMatched) {
+      if (!mounted) throw Exception('Match cancelled.');
+      if (DateTime.now().isAfter(deadline)) {
+        final ticketId = _matchTicketId;
+        _matchTicketId = null;
+        if (ticketId != null) {
+          await _socialApi.cancelMatchQueue(ticketId);
+        }
+        throw Exception('No partner joined yet. Please try again in a moment.');
+      }
+      await Future<void>.delayed(const Duration(seconds: 2));
+      if (!mounted) throw Exception('Match cancelled.');
+      result = await _socialApi.pollMatchQueue(result.ticketId);
+      if (mounted) setState(() => _status = result.matchReason);
+    }
+
+    _matchTicketId = null;
+    return result.session!;
+  }
+
   String _formatCallError(Object error) {
     if (error is ApiException) {
       if (error.statusCode == 422 &&
@@ -234,9 +267,11 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   void _startTimer() {
+    if (_timerStarted) return;
     _timer?.cancel();
-    // A zero duration from always-open rooms means unlimited, not expired.
+    // A zero duration from open community rooms means unlimited, not expired.
     if (_remainingSeconds <= 0) return;
+    _timerStarted = true;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       if (_remainingSeconds <= 0) {
@@ -254,7 +289,14 @@ class _CallScreenState extends State<CallScreen> {
   void _refreshParticipants() {
     final room = _room;
     if (room == null || !mounted) return;
-    setState(() => _participantCount = room.remoteParticipants.length + 1);
+    final count = room.remoteParticipants.length + 1;
+    setState(() {
+      _participantCount = count;
+      if (_isPrivateMatch && count >= 2) {
+        _status = 'Both learners are here. Your practice timer has started!';
+      }
+    });
+    if (_isPrivateMatch && count >= 2) _startTimer();
   }
 
   void _setLocalVideo(LocalVideoTrack? track) {
@@ -308,6 +350,11 @@ class _CallScreenState extends State<CallScreen> {
 
   Future<void> _leave() async {
     _timer?.cancel();
+    final ticketId = _matchTicketId;
+    _matchTicketId = null;
+    if (ticketId != null) {
+      await _socialApi.cancelMatchQueue(ticketId);
+    }
     await _listener?.dispose();
     await _room?.disconnect();
     await _room?.dispose();
@@ -317,6 +364,11 @@ class _CallScreenState extends State<CallScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    final ticketId = _matchTicketId;
+    _matchTicketId = null;
+    if (ticketId != null) {
+      unawaited(_socialApi.cancelMatchQueue(ticketId));
+    }
     _listener?.dispose();
     _room?.disconnect();
     _room?.dispose();

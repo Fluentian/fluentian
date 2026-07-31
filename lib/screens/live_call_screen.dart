@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -16,19 +18,42 @@ class LiveCallScreen extends StatefulWidget {
 
 class _LiveCallScreenState extends State<LiveCallScreen> {
   late Future<List<LiveRoomModel>> _rooms;
+  Timer? _presenceTimer;
 
   @override
   void initState() {
     super.initState();
     _rooms = SocialApi.instance.getLiveRooms();
+    _presenceTimer = Timer.periodic(
+      const Duration(seconds: 25),
+      (_) => _refresh(silent: true),
+    );
   }
 
-  Future<void> _refresh() async {
+  @override
+  void dispose() {
+    _presenceTimer?.cancel();
+    unawaited(SocialApi.instance.leaveLiveRooms());
+    super.dispose();
+  }
+
+  Future<void> _refresh({bool silent = false}) async {
     final request = SocialApi.instance.getLiveRooms();
-    setState(() {
-      _rooms = request;
-    });
-    await request;
+    if (!silent && mounted) {
+      setState(() {
+        _rooms = request;
+      });
+    }
+    try {
+      final rooms = await request;
+      if (silent && mounted) {
+        setState(() {
+          _rooms = Future.value(rooms);
+        });
+      }
+    } catch (_) {
+      if (!silent) rethrow;
+    }
   }
 
   void _join(LiveRoomModel room, {bool video = false}) {
@@ -69,7 +94,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Open rooms for your level and learning streak',
+                        'Rooms open when another learner is online',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -139,7 +164,9 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                     if (matches.isNotEmpty)
                       _MatchCard(
                         room: matches.first,
-                        onJoin: () => _join(matches.first),
+                        onJoin: matches.first.isOpen
+                            ? () => _join(matches.first)
+                            : null,
                       ),
                     if (special.isNotEmpty) ...[
                       const SizedBox(height: 18),
@@ -149,7 +176,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                         onVideo: () => _join(special.first, video: true),
                       ),
                     ],
-                    const _Heading('Your always-open rooms'),
+                    const _Heading('Available for you now'),
                     ...eligible.map(
                       (r) => _RoomCard(
                         room: r,
@@ -191,7 +218,7 @@ class _Heading extends StatelessWidget {
 
 class _MatchCard extends StatelessWidget {
   final LiveRoomModel room;
-  final VoidCallback onJoin;
+  final VoidCallback? onJoin;
   const _MatchCard({required this.room, required this.onJoin});
   @override
   Widget build(BuildContext context) => Container(
@@ -242,8 +269,10 @@ class _MatchCard extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: onJoin,
-            icon: const Icon(Iconsax.call),
-            label: const Text('Find my partner'),
+            icon: Icon(room.isOpen ? Iconsax.call : Iconsax.clock),
+            label: Text(
+              room.isOpen ? 'Find my partner' : 'Waiting for learners',
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: FluentianColors.primary,
@@ -313,6 +342,8 @@ class _RoomCard extends StatelessWidget {
                       ? '${room.eligibilityLabel} · Open now'
                       : room.isOpen
                       ? 'Locked · ${room.eligibilityLabel}'
+                      : room.roomType != 'special'
+                      ? 'Waiting for an eligible learner'
                       : room.scheduledAt == null
                       ? 'Closed by admin'
                       : 'Scheduled ${room.scheduledAt!.toLocal()}',
