@@ -267,16 +267,20 @@ class QuestionModel {
 
   /// For MCQ questions — options from canonical or legacy keys.
   List<String> get mcqOptions {
-    final opts =
-        promptPayload['options'] ??
-        promptPayload['mcqOptions'] ??
-        promptPayload['chips'] ??
-        promptPayload['word_bank'];
-    if (opts is List) {
-      return opts
-          .map((e) => e.toString().trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
+    for (final opts in [
+      promptPayload['options'],
+      promptPayload['mcqOptions'],
+      promptPayload['chips'],
+      promptPayload['word_bank'],
+      promptPayload['words'],
+    ]) {
+      if (opts is List) {
+        final cleaned = opts
+            .map((e) => e.toString().trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+        if (cleaned.isNotEmpty) return cleaned;
+      }
     }
     if (questionKind == 'translation' || questionKind == 'reorder') {
       return _wordsFromAnswer(mcqCorrectAnswer);
@@ -299,6 +303,15 @@ class QuestionModel {
         gradingPayload['correct_answer'] ?? promptPayload['mcqCorrectAnswer'];
     if (fromGrading != null && fromGrading.toString().isNotEmpty) {
       return fromGrading.toString();
+    }
+    final accepted = gradingPayload['accepted_answers'];
+    if (accepted is List && accepted.isNotEmpty) {
+      final first = accepted.first.toString().trim();
+      if (first.isNotEmpty) return first;
+    }
+    final correctOrder = gradingPayload['correct_order'];
+    if (correctOrder is List && correctOrder.isNotEmpty) {
+      return correctOrder.map((part) => part.toString().trim()).join(' ');
     }
     final idx = gradingPayload['correct_index'];
     final opts = mcqOptions;
