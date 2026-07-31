@@ -274,7 +274,7 @@ class ProfileScreen extends StatelessWidget {
                 icon: Iconsax.flash_15,
                 label: 'Streak',
                 value: '$streak days',
-                color: const Color(0xFFF97316),
+                color: FluentianColors.warning,
               ),
               _MetricCard(
                 icon: Iconsax.tick_circle,

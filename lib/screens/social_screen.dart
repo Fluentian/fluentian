@@ -1108,7 +1108,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     const SizedBox(height: 22),
                     Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF7F5FC),
+                        color: FluentianColors.pageBg,
                         borderRadius: BorderRadius.circular(17),
                         border: Border.all(
                           color: FluentianColors.primary.withValues(
@@ -1456,7 +1456,7 @@ class _FriendSearchResult extends StatelessWidget {
             height: 48,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [FluentianColors.primary, Color(0xFF8A5CFF)],
+                colors: [FluentianColors.primary, FluentianColors.secondary],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

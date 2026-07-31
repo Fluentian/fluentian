@@ -164,7 +164,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                               icon,
                               size: 16,
                               color: isSelected
-                                  ? Colors.white
+                                  ? FluentianColors.primaryDark
                                   : FluentianColors.textSecondary,
                             ),
                             const SizedBox(width: 6),
@@ -177,7 +177,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                                   ? FontWeight.w700
                                   : FontWeight.w500,
                               color: isSelected
-                                  ? Colors.white
+                                  ? FluentianColors.primaryDark
                                   : FluentianColors.textSecondary,
                             ),
                           ),
@@ -233,7 +233,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                               label: const Text('Try Again'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: FluentianColors.accent,
-                                foregroundColor: Colors.white,
+                                foregroundColor: FluentianColors.primaryDark,
                               ),
                             ),
                           ],

@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AuthColors {
-  static const primary = Color(0xFF6C3BF5);
-  static const pageBg = Color(0xFFF8F7FC);
+  static const primary = Color(0xFF0A3B6A);
+  static const pageBg = Color(0xFFF5F8FA);
   static const cardBg = Color(0xFFFFFFFF);
-  static const heading = Color(0xFF1A0A2E);
+  static const heading = Color(0xFF072D52);
   static const body = Color(0xFF374151);
   static const placeholder = Color(0xFF9CA3AF);
   static const border = Color(0xFFE5E7EB);
-  static const errorText = Color(0xFFEF4444);
+  static const errorText = Color(0xFFDC2626);
   static const errorBg = Color(0xFFFEE2E2);
   static const success = Color(0xFF22C55E);
-  static const disabledBtn = Color(0xFFD1C4F9);
+  static const disabledBtn = Color(0xFFB8CDE0);
 }
 
 class AuthLogo extends StatelessWidget {

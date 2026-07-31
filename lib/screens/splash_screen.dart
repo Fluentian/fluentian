@@ -50,8 +50,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _logoController.forward();
-
-
   }
 
   @override
@@ -172,7 +170,7 @@ class _FLogoPainter extends CustomPainter {
         style: GoogleFonts.inter(
           fontSize: 36,
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF6C3BF5),
+          color: const Color(0xFF0A3B6A),
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -188,7 +186,7 @@ class _FLogoPainter extends CustomPainter {
 
     // Draw wave/arc across the middle
     final wavePaint = Paint()
-      ..color = const Color(0xFF6C3BF5).withValues(alpha: 0.15)
+      ..color = const Color(0xFF0A3B6A).withValues(alpha: 0.15)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 

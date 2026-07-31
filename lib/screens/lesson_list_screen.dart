@@ -285,7 +285,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [FluentianColors.primary, Color(0xFF4E22D4)],
+            colors: [FluentianColors.primary, FluentianColors.primaryDark],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [

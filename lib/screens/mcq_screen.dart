@@ -298,9 +298,9 @@ class _McqScreenState extends State<McqScreen>
 
   static final List<_PairColorStyle> _pairColors = [
     const _PairColorStyle(
-      bg: Color(0xFFF0E5FF),
-      border: Color(0xFF9F7AEA),
-      text: Color(0xFF553C9A),
+      bg: Color(0xFFEAF2F8),
+      border: Color(0xFF2C5E90),
+      text: Color(0xFF072D52),
       badge: '①',
     ),
     const _PairColorStyle(

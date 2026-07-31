@@ -402,7 +402,7 @@ class _HomeContentState extends State<_HomeContent> {
                           ),
                           child: const Icon(
                             Iconsax.cup5,
-                            color: Color(0xFFF97316),
+                            color: FluentianColors.warning,
                             size: 25,
                           ),
                         ),
@@ -417,7 +417,7 @@ class _HomeContentState extends State<_HomeContent> {
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w900,
-                                  color: const Color(0xFFF97316),
+                                  color: FluentianColors.warning,
                                   letterSpacing: 0,
                                 ),
                               ),
@@ -444,12 +444,12 @@ class _HomeContentState extends State<_HomeContent> {
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w900,
-                              color: const Color(0xFFF97316),
+                              color: FluentianColors.warning,
                             ),
                           ),
-                          progressColor: const Color(0xFFF97316),
+                          progressColor: FluentianColors.warning,
                           backgroundColor: const Color(
-                            0xFFF97316,
+                            0xFFF59E0B,
                           ).withValues(alpha: 0.15),
                         ),
                       ],
@@ -822,7 +822,7 @@ class _HomeHero extends StatelessWidget {
                     label: 'Streak',
                     value: '${streak}d',
                     tint: const Color(0xFFFFF7ED),
-                    color: const Color(0xFFF97316),
+                    color: FluentianColors.warning,
                   ),
                 ),
                 const SizedBox(width: 8),
