@@ -463,7 +463,7 @@ class _MapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
-      ..color = const Color(0xFF6C3BF5).withValues(alpha: 0.3)
+      ..color = const Color(0xFF0A3B6A).withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
@@ -485,7 +485,7 @@ class _MapPainter extends CustomPainter {
         d += 14;
       }
     }
-    final dot = Paint()..color = const Color(0xFFF97316);
+    final dot = Paint()..color = FluentianColors.warning;
     canvas.drawCircle(Offset(size.width * 0.68, size.height * 0.27), 3, dot);
     canvas.drawCircle(Offset(size.width * 0.73, size.height * 0.32), 3, dot);
     canvas.drawCircle(Offset(size.width * 0.65, size.height * 0.35), 3, dot);

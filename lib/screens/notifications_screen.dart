@@ -135,7 +135,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
           final data = snapshot.data ?? const _InboxData(items: []);
           if (data.items.isEmpty) {
-            final message = data.backendErrorMessage ??
+            final message =
+                data.backendErrorMessage ??
                 'Learning reminders, streak nudges, and Fluentian updates will appear here.';
             return _MessageState(
               icon: Iconsax.notification,
@@ -198,10 +199,7 @@ class _InboxNotification {
   final NotificationModel notification;
   final _NotificationSource source;
 
-  const _InboxNotification({
-    required this.notification,
-    required this.source,
-  });
+  const _InboxNotification({required this.notification, required this.source});
 
   String get id => notification.id;
   String get title => notification.title;
@@ -289,11 +287,17 @@ class _SyncWarning extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7ED),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.2)),
+        border: Border.all(
+          color: FluentianColors.warning.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         children: [
-          const Icon(Iconsax.info_circle, color: Color(0xFFF97316), size: 18),
+          const Icon(
+            Iconsax.info_circle,
+            color: FluentianColors.warning,
+            size: 18,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -316,16 +320,13 @@ class _NotificationTile extends StatelessWidget {
   final _InboxNotification item;
   final VoidCallback onTap;
 
-  const _NotificationTile({
-    required this.item,
-    required this.onTap,
-  });
+  const _NotificationTile({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isUnread = !item.isRead;
     final accent = item.isLocal
-        ? const Color(0xFFF97316)
+        ? FluentianColors.warning
         : FluentianColors.primary;
     final tint = item.isLocal
         ? const Color(0xFFFFF7ED)
@@ -379,8 +380,9 @@ class _NotificationTile extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
                               fontSize: 15,
-                              fontWeight:
-                                  isUnread ? FontWeight.w900 : FontWeight.w700,
+                              fontWeight: isUnread
+                                  ? FontWeight.w900
+                                  : FontWeight.w700,
                               color: FluentianColors.textPrimary,
                               height: 1.25,
                             ),
@@ -425,8 +427,9 @@ class _NotificationTile extends StatelessWidget {
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: FluentianColors.textSecondary
-                                  .withValues(alpha: 0.78),
+                              color: FluentianColors.textSecondary.withValues(
+                                alpha: 0.78,
+                              ),
                             ),
                           ),
                         ),
@@ -446,9 +449,12 @@ class _NotificationTile extends StatelessWidget {
     final local = date.toLocal();
     final now = DateTime.now();
     final sameDay =
-        local.year == now.year && local.month == now.month && local.day == now.day;
+        local.year == now.year &&
+        local.month == now.month &&
+        local.day == now.day;
     final yesterday = now.subtract(const Duration(days: 1));
-    final wasYesterday = local.year == yesterday.year &&
+    final wasYesterday =
+        local.year == yesterday.year &&
         local.month == yesterday.month &&
         local.day == yesterday.day;
     final hour = local.hour.toString().padLeft(2, '0');
@@ -557,10 +563,7 @@ class _MessageState extends StatelessWidget {
                 ),
                 if (actionLabel != null && onAction != null) ...[
                   const SizedBox(height: 18),
-                  FilledButton(
-                    onPressed: onAction,
-                    child: Text(actionLabel!),
-                  ),
+                  FilledButton(onPressed: onAction, child: Text(actionLabel!)),
                 ],
               ],
             ),

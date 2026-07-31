@@ -15,7 +15,7 @@ enum CEFRLevel {
   a1('A1', 'Absolute Beginner', 'I know a few words', 0xFF22C55E),
   a2('A2', 'Elementary', 'I can handle simple conversations', 0xFF14B8A6),
   b1('B1', 'Intermediate', 'I can talk about familiar topics', 0xFF3B82F6),
-  b2('B2', 'Upper Intermediate', 'I can discuss complex topics', 0xFF6C3BF5),
+  b2('B2', 'Upper Intermediate', 'I can discuss complex topics', 0xFF0A3B6A),
   c1c2('C1/C2', 'Advanced', "I'm nearly fluent", 0xFFF59E0B);
 
   final String code;

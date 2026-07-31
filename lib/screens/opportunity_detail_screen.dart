@@ -217,7 +217,7 @@ class OpportunityDetailScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: FluentianColors.accent,
-              foregroundColor: Colors.white,
+              foregroundColor: FluentianColors.primaryDark,
               minimumSize: const Size(double.infinity, 56),
               elevation: 4,
               shadowColor: FluentianColors.accent.withValues(alpha: 0.4),

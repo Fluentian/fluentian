@@ -316,7 +316,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                 top: 8,
                 bottom: 8 + MediaQuery.of(context).padding.bottom,
               ),
-              color: const Color(0xFF120828),
+              color: FluentianColors.darkPageBg,
               child: Row(
                 children: [
                   IconButton(

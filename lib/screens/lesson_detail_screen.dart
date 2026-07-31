@@ -218,7 +218,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1A0A2E), Color(0xFF4E22D4)],
+          colors: [Color(0xFF072D52), Color(0xFF0A3B6A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -852,7 +852,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Colors.white, Color(0xFFFAF9FF)],
+              colors: [Colors.white, Color(0xFFF5F8FA)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -927,7 +927,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           margin: const EdgeInsets.only(bottom: 20),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFFF6F3FF),
+            color: FluentianColors.primaryTint,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: FluentianColors.primary.withValues(alpha: 0.15),

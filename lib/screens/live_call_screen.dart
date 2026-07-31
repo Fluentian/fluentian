@@ -299,7 +299,7 @@ class _RoomCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: enabled ? Colors.white : const Color(0xFFF5F3F8),
+        color: enabled ? Colors.white : FluentianColors.pageBg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: FluentianColors.border),
       ),

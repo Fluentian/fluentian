@@ -4,72 +4,77 @@ import 'package:google_fonts/google_fonts.dart';
 /// Fluentian Design System
 class FluentianColors {
   // Primary
-  static const Color primary = Color(0xFF6C3BF5);
-  static const Color primaryLight = Color(0xFFA97EF9);
-  static const Color primaryTint = Color(0xFFF3EEFF);
-  static const Color primaryDark = Color(0xFF4E22D4);
+  static const Color primary = Color(0xFF0A3B6A);
+  static const Color primaryDark = Color(0xFF072D52);
+  static const Color primaryLight = Color(0xFF2C5E90);
+  static const Color primaryTint = Color(0xFFEAF2F8);
 
-  // Accent / XP (Formerly Orange, now Violet per strict guidelines)
-  static const Color accent = Color(0xFF6C3BF5);
-  static const Color accentTint = Color(0xFFF3EEFF);
+  // Secondary / accent
+  static const Color secondary = Color(0xFF259291);
+  static const Color secondaryLight = Color(0xFF4CB8B3);
+  static const Color secondaryTint = Color(0xFFE8F7F6);
+  static const Color accent = Color(0xFF33C8C0);
+  static const Color accentTint = Color(0xFFE7F9F8);
 
   // Semantic
   static const Color success = Color(0xFF22C55E);
   static const Color successTint = Color(0xFFE8F9F0);
-  static const Color error = Color(0xFFEF4444);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color warningTint = Color(0xFFFFF7E6);
+  static const Color error = Color(0xFFDC2626);
   static const Color errorTint = Color(0xFFFFF0F0);
-  static const Color info = Color(0xFF6B7280);
-  static const Color infoTint = Color(0xFFF3F4F6);
+  static const Color info = Color(0xFF0EA5E9);
+  static const Color infoTint = Color(0xFFE8F7FD);
 
   // Dark nav
-  static const Color darkNav = Color(0xFF1A0A2E);
-  static const Color darkCard = Color(0xFF1E1040);
-  static const Color darkBorder = Color(0xFF3D2A7A);
+  static const Color darkNav = Color(0xFF072D52);
+  static const Color darkCard = Color(0xFF0A3B6A);
+  static const Color darkBorder = Color(0xFF2C5E90);
 
   // Neutrals
-  static const Color textPrimary = Color(0xFF1A0A2E);
+  static const Color textPrimary = Color(0xFF072D52);
   static const Color textSecondary = Color(0xFF6B7280);
   static const Color border = Color(0xFFE5E7EB);
   static const Color divider = Color(0xFFF3F4F6);
 
   // Backgrounds
-  static const Color pageBg = Color(0xFFF8F7FC);
+  static const Color pageBg = Color(0xFFF5F8FA);
   static const Color cardBg = Color(0xFFFFFFFF);
   static const Color white = Color(0xFFFFFFFF);
 
   // Dark mode
-  static const Color darkPageBg = Color(0xFF0E0B1A);
-  static const Color darkCardBg = Color(0xFF1A1528);
+  static const Color darkPageBg = Color(0xFF041E36);
+  static const Color darkCardBg = Color(0xFF072D52);
 
   // Gradients
   static const LinearGradient splashGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFF1A0A2E), Color(0xFF3516A8)],
+    colors: [Color(0xFF072D52), Color(0xFF0A3B6A)],
   );
 
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [Color(0xFF6C3BF5), Color(0xFFA97EF9)],
+    colors: [Color(0xFF0A3B6A), Color(0xFF2C5E90)],
   );
 
   static const LinearGradient headerGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [Color(0xFF6C3BF5), Color(0xFF4E22D4)],
+    colors: [Color(0xFF0A3B6A), Color(0xFF072D52)],
   );
 
   static const LinearGradient goldenGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [Color(0xFF6C3BF5), Color(0xFFA97EF9)],
+    colors: [Color(0xFF259291), Color(0xFF33C8C0)],
   );
 
   static const LinearGradient proGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFF3EEFF), Color(0xFFE8D9FD)],
+    colors: [Color(0xFFE8F7F6), Color(0xFFE7F9F8)],
   );
 }
 
@@ -94,7 +99,7 @@ class FluentianRadius {
 
 class FluentianShadows {
   static BoxShadow subtle = BoxShadow(
-    color: const Color(0xFF6C3BF5).withValues(alpha: 0.08),
+    color: const Color(0xFF0A3B6A).withValues(alpha: 0.08),
     blurRadius: 8,
     offset: const Offset(0, 2),
   );
@@ -114,9 +119,12 @@ class FluentianTheme {
       scaffoldBackgroundColor: FluentianColors.pageBg,
       colorScheme: const ColorScheme.light(
         primary: FluentianColors.primary,
-        secondary: FluentianColors.accent,
+        onPrimary: Colors.white,
+        secondary: FluentianColors.secondary,
+        onSecondary: FluentianColors.darkPageBg,
         surface: FluentianColors.cardBg,
         error: FluentianColors.error,
+        onError: Colors.white,
       ),
       textTheme: GoogleFonts.interTextTheme().copyWith(
         displayLarge: GoogleFonts.inter(

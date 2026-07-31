@@ -606,7 +606,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                   isPoll ? Iconsax.chart_2 : Iconsax.task_square,
                   size: 17,
                   color: isPoll
-                      ? const Color(0xFFF97316)
+                      ? FluentianColors.warning
                       : FluentianColors.primary,
                 ),
               ),
