@@ -30,6 +30,7 @@ dependencies:
   just_audio: ^0.9.36
   flutter_tts: ^4.2.3
   video_player: ^2.8.6
+  url_launcher: ^6.3.2
   flutter_local_notifications: ^17.1.2
   timezone: ^0.9.4
   flutter_timezone: ^4.1.1

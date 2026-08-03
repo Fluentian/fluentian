@@ -6,6 +6,8 @@ class Opportunity {
   final String description;
   final String type;
   final DateTime? deadline;
+  final String? ctaUrl;
+  final String? ctaLabel;
   final bool isActive;
 
   Opportunity({
@@ -14,6 +16,8 @@ class Opportunity {
     required this.description,
     required this.type,
     this.deadline,
+    this.ctaUrl,
+    this.ctaLabel,
     required this.isActive,
   });
 
@@ -26,6 +30,8 @@ class Opportunity {
       deadline: json['deadline'] != null
           ? DateTime.parse(json['deadline'])
           : null,
+      ctaUrl: json['cta_url'] as String?,
+      ctaLabel: json['cta_label'] as String?,
       isActive: json['is_active'],
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
 import '../services/opportunities_api.dart';
 import 'professional_application_screen.dart';
@@ -9,6 +10,18 @@ class OpportunityDetailScreen extends StatelessWidget {
   final Opportunity opportunity;
 
   const OpportunityDetailScreen({super.key, required this.opportunity});
+
+  Future<void> _openExternalCta(BuildContext context) async {
+    final uri = Uri.tryParse(opportunity.ctaUrl ?? '');
+    if (uri != null &&
+        await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      return;
+    }
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Could not open this opportunity link.')),
+    );
+  }
 
   IconData _getIconForType(String type) {
     switch (type.toLowerCase()) {
@@ -206,15 +219,18 @@ class OpportunityDetailScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      ProfessionalApplicationScreen(opportunity: opportunity),
-                ),
-              );
-            },
+            onPressed: opportunity.ctaUrl != null
+                ? () => _openExternalCta(context)
+                : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProfessionalApplicationScreen(
+                          opportunity: opportunity,
+                        ),
+                      ),
+                    );
+                  },
             style: ElevatedButton.styleFrom(
               backgroundColor: FluentianColors.accent,
               foregroundColor: FluentianColors.primaryDark,
@@ -228,10 +244,19 @@ class OpportunityDetailScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Iconsax.send_1, size: 20),
+                Icon(
+                  opportunity.ctaUrl != null
+                      ? Iconsax.export_1
+                      : Iconsax.send_1,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
-                  'Apply Now',
+                  opportunity.ctaUrl != null
+                      ? (opportunity.ctaLabel?.trim().isNotEmpty == true
+                            ? opportunity.ctaLabel!
+                            : 'Open Opportunity')
+                      : 'Apply Now',
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,

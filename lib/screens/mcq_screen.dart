@@ -511,6 +511,7 @@ class _McqScreenState extends State<McqScreen>
     bool isCorrect = false;
     String correctAnswerText = '';
     String userAnswerText = '';
+    dynamic submittedAnswer;
 
     if (q.questionKind == 'mcq_single' ||
         q.questionKind == 'fill_blank' && q.mcqOptions.isNotEmpty ||
@@ -524,6 +525,7 @@ class _McqScreenState extends State<McqScreen>
       isCorrect = selectedAnswer == q.mcqCorrectAnswer;
       correctAnswerText = q.mcqCorrectAnswer;
       userAnswerText = selectedAnswer;
+      submittedAnswer = selectedAnswer;
     } else if (q.questionKind == 'mcq_multi') {
       final selectedAnswers = _selectedMulti
           .map((idx) => q.mcqOptions[idx])
@@ -534,6 +536,7 @@ class _McqScreenState extends State<McqScreen>
           selectedAnswers.every((e) => correctAnswers.contains(e));
       correctAnswerText = q.mcqMultiCorrectAnswers.join(', ');
       userAnswerText = selectedAnswers.join(', ');
+      submittedAnswer = selectedAnswers.toList();
     } else if (q.questionKind == 'fill_blank' && q.mcqOptions.isEmpty ||
         q.questionKind == 'short_text' ||
         q.questionKind == 'dictation') {
@@ -545,6 +548,7 @@ class _McqScreenState extends State<McqScreen>
       isCorrect = clean(typed) == clean(correct);
       correctAnswerText = correct;
       userAnswerText = typed;
+      submittedAnswer = typed;
     } else if (q.questionKind == 'reorder' ||
         q.questionKind == 'translation' && _assembledWords.isNotEmpty) {
       final assembled = _assembledWords.join(' ').trim();
@@ -555,6 +559,7 @@ class _McqScreenState extends State<McqScreen>
       isCorrect = clean(assembled) == clean(correct);
       correctAnswerText = correct;
       userAnswerText = assembled;
+      submittedAnswer = assembled;
     } else if (q.questionKind == 'match_pairs') {
       final pairs = q.matchPairs;
       isCorrect = true;
@@ -570,16 +575,18 @@ class _McqScreenState extends State<McqScreen>
       userAnswerText = _matches.entries
           .map((e) => "${e.key} -> ${e.value}")
           .join('\n');
+      submittedAnswer = Map<String, String>.from(_matches);
     } else if (q.questionKind == 'speech_record') {
       isCorrect = _pronunciationScore >= 80.0;
       correctAnswerText = q.mcqCorrectAnswer;
       userAnswerText = 'Pronunciation Score: ${_pronunciationScore.toInt()}%';
+      submittedAnswer = _pronunciationScore;
     }
 
     _answers.add(
       AnswerPayload(
         questionId: q.id,
-        answer: userAnswerText,
+        answer: submittedAnswer ?? userAnswerText,
         isCorrect: isCorrect,
       ),
     );
