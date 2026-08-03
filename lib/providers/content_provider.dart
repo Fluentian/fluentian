@@ -110,6 +110,11 @@ class ContentProvider extends ChangeNotifier {
   bool isLessonCompleted(String lessonId) =>
       _progressByLesson[lessonId]?.completed ?? false;
 
+  /// Unique lessons first completed on the learner's current local calendar day.
+  int get lessonsCompletedToday {
+    return countCompletedLessonsOnDay(_progressByLesson.values, DateTime.now());
+  }
+
   bool isCourseEnrolled(String courseId) =>
       _enrolledCourseIds.contains(courseId);
 
@@ -188,6 +193,7 @@ class ContentProvider extends ChangeNotifier {
     int heartsSpent = 0,
   }) async {
     try {
+      final existingProgress = _progressByLesson[lessonId];
       final result = await _progressApi.completeLesson(
         lessonId: lessonId,
         score: score,
@@ -202,7 +208,7 @@ class ContentProvider extends ChangeNotifier {
         lessonId: lessonId,
         masteryScore: score,
         completed: true,
-        completedAt: DateTime.now(),
+        completedAt: existingProgress?.completedAt ?? DateTime.now(),
         createdAt: DateTime.now(),
       );
       _lessonCache.remove(lessonId);

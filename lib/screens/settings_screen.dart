@@ -250,91 +250,185 @@ class SettingsScreen extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) {
         bool isSaving = false;
         return StatefulBuilder(
           builder: (context, setState) {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                20,
-                20,
-                MediaQuery.of(context).viewInsets.bottom + 20,
+            final keyboard = MediaQuery.of(context).viewInsets.bottom;
+            final initial = nameController.text.trim().isEmpty
+                ? 'U'
+                : nameController.text.trim()[0].toUpperCase();
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * .9,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Edit profile',
-                    style: GoogleFonts.inter(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: FluentianColors.textPrimary,
+              decoration: const BoxDecoration(
+                color: FluentianColors.pageBg,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20, 10, 20, keyboard + 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: FluentianColors.border,
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Display name',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: goalController,
-                    decoration: const InputDecoration(
-                      labelText: 'Learning goal',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: bioController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Bio',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isSaving
-                          ? null
-                          : () async {
-                              setState(() => isSaving = true);
-                              final ok = await auth.updateProfile({
-                                'display_name': nameController.text.trim(),
-                                'learning_goal': goalController.text.trim(),
-                                'bio': bioController.text.trim(),
-                              });
-                              if (!context.mounted) return;
-                              Navigator.pop(context);
-                              if (!ok) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Could not save profile.'),
+                    const SizedBox(height: 18),
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        gradient: FluentianColors.headerGradient,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: FluentianColors.primary.withValues(
+                              alpha: .22,
+                            ),
+                            blurRadius: 22,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: .16),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: .35),
+                                width: 2,
+                              ),
+                            ),
+                            child: Text(
+                              initial,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Make your profile yours',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w900,
                                   ),
-                                );
-                              }
-                            },
-                      child: isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Save profile'),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Help your learning circle know who you are and what you are aiming for.',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white.withValues(alpha: .78),
+                                    fontSize: 12,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 22),
+                    _ProfileEditField(
+                      controller: nameController,
+                      icon: Icons.badge_outlined,
+                      label: 'Display name',
+                      hint: 'How should other learners greet you?',
+                      maxLength: 100,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                    const SizedBox(height: 14),
+                    _ProfileEditField(
+                      controller: goalController,
+                      icon: Icons.flag_outlined,
+                      label: 'My French mission',
+                      hint: 'Speak confidently on my next adventure',
+                      maxLength: 255,
+                    ),
+                    const SizedBox(height: 14),
+                    _ProfileEditField(
+                      controller: bioController,
+                      icon: Icons.auto_awesome_outlined,
+                      label: 'My story',
+                      hint: 'What brought you to French? Share a little spark.',
+                      maxLines: 4,
+                      maxLength: 500,
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton.icon(
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                setState(() => isSaving = true);
+                                final ok = await auth.updateProfile({
+                                  'display_name': nameController.text.trim(),
+                                  'learning_goal': goalController.text.trim(),
+                                  'bio': bioController.text.trim(),
+                                });
+                                if (!context.mounted) return;
+                                if (ok) {
+                                  Navigator.pop(context);
+                                } else {
+                                  setState(() => isSaving = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Could not save profile.'),
+                                    ),
+                                  );
+                                }
+                              },
+                        icon: isSaving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.check_circle_outline_rounded),
+                        label: Text(
+                          isSaving ? 'Saving your profile…' : 'Save my profile',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: FluentianColors.textPrimary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(17),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -344,6 +438,65 @@ class SettingsScreen extends StatelessWidget {
     nameController.dispose();
     goalController.dispose();
     bioController.dispose();
+  }
+}
+
+class _ProfileEditField extends StatelessWidget {
+  final TextEditingController controller;
+  final IconData icon;
+  final String label;
+  final String hint;
+  final int maxLines;
+  final int maxLength;
+  final ValueChanged<String>? onChanged;
+
+  const _ProfileEditField({
+    required this.controller,
+    required this.icon,
+    required this.label,
+    required this.hint,
+    this.maxLines = 1,
+    required this.maxLength,
+    this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: FluentianColors.border),
+        boxShadow: [FluentianShadows.subtle],
+      ),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        maxLength: maxLength,
+        onChanged: onChanged,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: InputDecoration(
+          icon: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: FluentianColors.primaryTint,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: FluentianColors.primary, size: 20),
+          ),
+          labelText: label,
+          hintText: hint,
+          border: InputBorder.none,
+          alignLabelWithHint: true,
+          counterStyle: GoogleFonts.inter(
+            fontSize: 10,
+            color: FluentianColors.textSecondary,
+          ),
+        ),
+      ),
+    );
   }
 }
 

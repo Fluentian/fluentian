@@ -344,7 +344,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                         ),
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Type in French...',
+                          hintText: 'Write a sentence in French',
                           hintStyle: GoogleFonts.inter(
                             fontSize: 15,
                             color: Colors.grey.shade600,

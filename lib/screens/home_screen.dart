@@ -118,6 +118,12 @@ class _HomeContentState extends State<_HomeContent> {
           final xpForNextLevel = 500; // Simplified for MVP
           final xpProgress = xp % xpForNextLevel;
           final nextLessons = content.getIncompleteLessons(3);
+          const dailyLessonGoal = 3;
+          final lessonsToday = content.lessonsCompletedToday.clamp(
+            0,
+            dailyLessonGoal,
+          );
+          final dailyChallengeComplete = lessonsToday >= dailyLessonGoal;
 
           return SingleChildScrollView(
             child: Column(
@@ -383,76 +389,105 @@ class _HomeContentState extends State<_HomeContent> {
                 // Daily challenge
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
+                  child: Material(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    child: InkWell(
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: FluentianColors.border),
-                      boxShadow: [FluentianShadows.subtle],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF7ED),
-                            borderRadius: BorderRadius.circular(14),
+                      onTap: dailyChallengeComplete
+                          ? null
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const LessonListScreen(),
+                              ),
+                            ),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: dailyChallengeComplete
+                                ? FluentianColors.success.withValues(alpha: .35)
+                                : FluentianColors.border,
                           ),
-                          child: const Icon(
-                            Iconsax.cup5,
-                            color: FluentianColors.warning,
-                            size: 25,
-                          ),
+                          boxShadow: [FluentianShadows.subtle],
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'DAILY CHALLENGE',
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: dailyChallengeComplete
+                                    ? FluentianColors.success.withValues(
+                                        alpha: .12,
+                                      )
+                                    : const Color(0xFFFFF7ED),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(
+                                dailyChallengeComplete
+                                    ? Iconsax.tick_circle5
+                                    : Iconsax.cup5,
+                                color: dailyChallengeComplete
+                                    ? FluentianColors.success
+                                    : FluentianColors.warning,
+                                size: 25,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'DAILY CHALLENGE',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      color: FluentianColors.warning,
+                                      letterSpacing: 0,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    dailyChallengeComplete
+                                        ? 'Daily challenge complete!'
+                                        : 'Complete $dailyLessonGoal lessons today',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      color: FluentianColors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            CircularPercentIndicator(
+                              radius: 24,
+                              lineWidth: 5,
+                              percent: lessonsToday / dailyLessonGoal,
+                              center: Text(
+                                '$lessonsToday/$dailyLessonGoal',
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w900,
                                   color: FluentianColors.warning,
-                                  letterSpacing: 0,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Complete 3 lessons today',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: FluentianColors.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        CircularPercentIndicator(
-                          radius: 24,
-                          lineWidth: 5,
-                          percent: 2 / 3,
-                          center: Text(
-                            '2/3',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              color: FluentianColors.warning,
+                              progressColor: dailyChallengeComplete
+                                  ? FluentianColors.success
+                                  : FluentianColors.warning,
+                              backgroundColor: const Color(
+                                0xFFF59E0B,
+                              ).withValues(alpha: 0.15),
                             ),
-                          ),
-                          progressColor: FluentianColors.warning,
-                          backgroundColor: const Color(
-                            0xFFF59E0B,
-                          ).withValues(alpha: 0.15),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

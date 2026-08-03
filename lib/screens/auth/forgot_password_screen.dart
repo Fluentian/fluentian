@@ -144,6 +144,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           label: 'Email address',
                           leftIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
+                          hint: 'Enter the email linked to your account',
                           onChanged: (val) {
                             _email = val;
                             _dismissMessages();

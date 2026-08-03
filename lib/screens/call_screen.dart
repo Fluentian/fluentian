@@ -125,6 +125,7 @@ class _CallScreenState extends State<CallScreen> {
   String? _matchedLevel;
   String? _matchReason;
   int _remainingSeconds = 240;
+  DateTime? _timerEndsAt;
   int _participantCount = 1;
   List<String> _prompts = const [];
   LocalVideoTrack? _localVideoTrack;
@@ -199,6 +200,7 @@ class _CallScreenState extends State<CallScreen> {
         _matchReason = session.matchReason;
         _prompts = session.prompts;
         _remainingSeconds = session.durationSeconds;
+        _timerEndsAt = session.timerEndsAt;
         _isPrivateMatch = widget.liveRoomId == 'match';
         _status = widget.smartMatch || widget.liveRoomId == 'match'
             ? 'Matched with ${session.level ?? 'your'} level speakers'
@@ -271,16 +273,29 @@ class _CallScreenState extends State<CallScreen> {
     _timer?.cancel();
     // A zero duration from open community rooms means unlimited, not expired.
     if (_remainingSeconds <= 0) return;
-    _timerStarted = true;
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
+    if (_timerEndsAt != null) {
+      _remainingSeconds = _secondsUntilDeadline();
       if (_remainingSeconds <= 0) {
         _leave();
         return;
       }
-      setState(() => _remainingSeconds--);
+    }
+    _timerStarted = true;
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      final next = _timerEndsAt == null
+          ? _remainingSeconds - 1
+          : _secondsUntilDeadline();
+      if (next <= 0) {
+        _leave();
+        return;
+      }
+      setState(() => _remainingSeconds = next);
     });
   }
+
+  int _secondsUntilDeadline() =>
+      _timerEndsAt!.toUtc().difference(DateTime.now().toUtc()).inSeconds;
 
   void _setStatus(String status) {
     if (mounted) setState(() => _status = status);
@@ -697,6 +712,8 @@ class _CallScreenState extends State<CallScreen> {
                   maxLength: 2000,
                   decoration: const InputDecoration(
                     labelText: 'What happened? (optional)',
+                    hintText:
+                        'Share the key details that will help us review this report',
                     alignLabelWithHint: true,
                     border: OutlineInputBorder(),
                   ),

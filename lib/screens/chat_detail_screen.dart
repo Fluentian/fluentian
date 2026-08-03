@@ -215,7 +215,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               maxLines: 4,
               onSubmitted: (_) => _sendMessage(),
               decoration: InputDecoration(
-                hintText: 'Type a message...',
+                hintText: 'Write a friendly message',
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(

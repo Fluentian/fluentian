@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../core/theme.dart';
 import '../models/course_model.dart';
 import '../providers/content_provider.dart';
+import '../providers/auth_provider.dart';
 import 'lesson_detail_screen.dart';
 
 class LessonListScreen extends StatefulWidget {
@@ -118,7 +119,13 @@ class _LessonListScreenState extends State<LessonListScreen> {
           final progressPercent = totalLessons > 0
               ? (completedLessons / totalLessons)
               : 0.0;
-          final items = _buildPathItems(content.courses, content);
+          final startingUnitNo =
+              context.watch<AuthProvider>().user?.startingUnitNo ?? 1;
+          final items = _buildPathItems(
+            content.courses,
+            content,
+            startingUnitNo,
+          );
 
           return Column(
             children: [
@@ -215,11 +222,14 @@ class _LessonListScreenState extends State<LessonListScreen> {
                             child: _buildUnitHeader(
                               context,
                               item.unit,
+                              content,
                               isExpanded: _isUnitExpanded(item.unit.id),
                             ),
                           );
                         } else if (item is _LessonNodeItem) {
-                          return _buildLessonNode(context, item, constraints);
+                          return constraints.maxWidth < 330
+                              ? _buildLessonNode(context, item, constraints)
+                              : _buildJourneyNode(context, item, constraints);
                         }
                         return const SizedBox.shrink();
                       },
@@ -237,13 +247,15 @@ class _LessonListScreenState extends State<LessonListScreen> {
   List<_PathItem> _buildPathItems(
     List<CourseModel> courses,
     ContentProvider content,
+    int startingUnitNo,
   ) {
     final List<_PathItem> items = [];
     if (courses.isEmpty) return items;
 
     final course = courses.first;
 
-    for (final unit in course.units) {
+    for (int unitIndex = 0; unitIndex < course.units.length; unitIndex++) {
+      final unit = course.units[unitIndex];
       items.add(_UnitHeaderItem(unit));
 
       if (!_isUnitExpanded(unit.id)) continue;
@@ -252,8 +264,19 @@ class _LessonListScreenState extends State<LessonListScreen> {
       for (int i = 0; i < lessons.length; i++) {
         final lesson = lessons[i];
         final isCompleted = content.isLessonCompleted(lesson.id);
-        final isUnlocked = content.isLessonUnlocked(lessons, i);
-        final isActive = !isCompleted && isUnlocked;
+        final placedOut = unit.unitNo < startingUnitNo;
+        final previousUnitCompleted =
+            unitIndex > 0 &&
+            course.units[unitIndex - 1].lessons.every(
+              (item) => content.isLessonCompleted(item.id),
+            );
+        final chapterUnlocked =
+            unit.unitNo <= startingUnitNo || previousUnitCompleted;
+        final previousLessonCompleted =
+            i == 0 || content.isLessonCompleted(lessons[i - 1].id);
+        final isUnlocked =
+            placedOut || (chapterUnlocked && previousLessonCompleted);
+        final isActive = !placedOut && !isCompleted && isUnlocked;
 
         items.add(
           _LessonNodeItem(
@@ -262,6 +285,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
             isCompleted: isCompleted,
             isUnlocked: isUnlocked,
             isActive: isActive,
+            isLastInUnit: i == lessons.length - 1,
             unitNo: unit.unitNo,
           ),
         );
@@ -273,13 +297,20 @@ class _LessonListScreenState extends State<LessonListScreen> {
 
   Widget _buildUnitHeader(
     BuildContext context,
-    UnitModel unit, {
+    UnitModel unit,
+    ContentProvider content, {
     required bool isExpanded,
   }) {
+    final completed = unit.lessons
+        .where((lesson) => content.isLessonCompleted(lesson.id))
+        .length;
+    final progress = unit.lessons.isEmpty
+        ? 0.0
+        : completed / unit.lessons.length;
     return GestureDetector(
       onTap: () => _toggleUnit(unit.id),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        margin: const EdgeInsets.fromLTRB(16, 20, 16, 8),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
@@ -287,7 +318,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
             end: Alignment.bottomRight,
             colors: [FluentianColors.primary, FluentianColors.primaryDark],
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
               color: FluentianColors.primary.withValues(alpha: 0.15),
@@ -298,23 +329,31 @@ class _LessonListScreenState extends State<LessonListScreen> {
         ),
         child: Row(
           children: [
-            AnimatedRotation(
-              turns: isExpanded ? 0.0 : -0.25,
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              child: Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: Colors.white.withValues(alpha: 0.9),
-                size: 28,
+            Container(
+              width: 52,
+              height: 52,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+              ),
+              child: Text(
+                '${unit.unitNo}',
+                style: GoogleFonts.inter(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                ),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'UNIT ${unit.unitNo}',
+                    'CHAPTER ${unit.unitNo} · ${unit.unitKind.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -331,51 +370,69 @@ class _LessonListScreenState extends State<LessonListScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 6,
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.16,
+                            ),
+                            valueColor: const AlwaysStoppedAnimation(
+                              FluentianColors.accent,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        '$completed/${unit.lessons.length}',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 7),
                   Text(
-                    isExpanded
-                        ? 'Master ${unit.lessons.length} steps to unlock the next unit'
-                        : '${unit.lessons.length} lessons hidden',
+                    progress == 1
+                        ? 'Chapter mastered · replay any mission'
+                        : 'Follow the route to reach the chapter summit',
                     style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: 0.72),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 12),
-            ElevatedButton.icon(
-              onPressed: () {
-                _showGuidebookDialog(context, unit);
-              },
-              icon: const Icon(
-                Iconsax.book_1,
-                size: 16,
-                color: FluentianColors.primary,
-              ),
-              label: Text(
-                'GUIDE',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: FluentianColors.primary,
+            Column(
+              children: [
+                IconButton(
+                  onPressed: () => _showGuidebookDialog(context, unit),
+                  tooltip: 'Open guidebook',
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: FluentianColors.primary,
+                  ),
+                  icon: const Icon(Iconsax.book_1, size: 18),
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: FluentianColors.primary,
-                elevation: 0,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
+                AnimatedRotation(
+                  turns: isExpanded ? 0 : -0.25,
+                  duration: const Duration(milliseconds: 180),
+                  child: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+              ],
             ),
           ],
         ),
@@ -383,6 +440,292 @@ class _LessonListScreenState extends State<LessonListScreen> {
     );
   }
 
+  Widget _buildJourneyNode(
+    BuildContext context,
+    _LessonNodeItem item,
+    BoxConstraints constraints,
+  ) {
+    final visuals = _lessonVisuals(item.lesson.lessonKind);
+    final width = constraints.maxWidth;
+    final stops = <double>[0.24, 0.5, 0.76, 0.5];
+    final stopIndex = item.lessonIndex % stops.length;
+    final nextStopIndex = (item.lessonIndex + 1) % stops.length;
+    final centerX = width * stops[stopIndex];
+    final nextCenterX = width * stops[nextStopIndex];
+    final placeCalloutRight = centerX <= width * 0.52;
+    final calloutWidth = (width * 0.39).clamp(126.0, 162.0);
+    final calloutLeft = placeCalloutRight
+        ? (centerX + 44).clamp(12.0, width - calloutWidth - 12)
+        : (centerX - calloutWidth - 44).clamp(12.0, width - calloutWidth - 12);
+    final nodeColor = item.isCompleted
+        ? FluentianColors.secondary
+        : item.isActive
+        ? FluentianColors.primary
+        : Colors.grey.shade300;
+
+    return SizedBox(
+      height: 142,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          if (!item.isLastInUnit)
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _JourneyRoutePainter(
+                  start: Offset(centerX, 72),
+                  end: Offset(nextCenterX, 142),
+                  reached: item.isCompleted,
+                ),
+              ),
+            ),
+          if (item.isActive)
+            Positioned(
+              left: centerX - 42,
+              top: 29,
+              child: Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: FluentianColors.primary.withValues(alpha: 0.08),
+                  border: Border.all(
+                    color: FluentianColors.primary.withValues(alpha: 0.13),
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+          Positioned(
+            left: centerX - 34,
+            top: 37,
+            child: Semantics(
+              button: item.isUnlocked,
+              label:
+                  '${item.lesson.title}, ${item.isCompleted
+                      ? 'completed'
+                      : item.isActive
+                      ? 'current mission'
+                      : 'locked'}',
+              child: GestureDetector(
+                onTap: item.isUnlocked
+                    ? () => _showLessonStartSheet(
+                        context,
+                        item.lesson,
+                        item.isCompleted,
+                      )
+                    : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  width: 68,
+                  height: 68,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: nodeColor,
+                    border: Border.all(
+                      color: item.isUnlocked
+                          ? Colors.white
+                          : Colors.grey.shade100,
+                      width: 5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: nodeColor.withValues(
+                          alpha: item.isActive ? 0.38 : 0.18,
+                        ),
+                        blurRadius: item.isActive ? 18 : 8,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    item.isCompleted
+                        ? Icons.check_rounded
+                        : item.isUnlocked
+                        ? visuals.icon
+                        : Icons.lock_rounded,
+                    color: item.isUnlocked
+                        ? Colors.white
+                        : Colors.grey.shade500,
+                    size: item.isCompleted ? 30 : 27,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: calloutLeft,
+            top: 28,
+            width: calloutWidth,
+            child: GestureDetector(
+              onTap: item.isUnlocked
+                  ? () => _showLessonStartSheet(
+                      context,
+                      item.lesson,
+                      item.isCompleted,
+                    )
+                  : null,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(12, 11, 12, 10),
+                decoration: BoxDecoration(
+                  color: item.isUnlocked
+                      ? Colors.white
+                      : const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: item.isActive
+                        ? FluentianColors.primary.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
+                  boxShadow: item.isUnlocked ? [FluentianShadows.subtle] : null,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: item.isUnlocked
+                                ? visuals.color
+                                : Colors.grey,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            item.isActive
+                                ? 'CURRENT MISSION'
+                                : visuals.label.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.55,
+                              color: item.isUnlocked
+                                  ? visuals.color
+                                  : Colors.grey.shade500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      item.lesson.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        height: 1.18,
+                        fontWeight: FontWeight.w700,
+                        color: item.isUnlocked
+                            ? FluentianColors.textPrimary
+                            : Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.bolt_rounded,
+                          size: 13,
+                          color: item.isUnlocked
+                              ? FluentianColors.warning
+                              : Colors.grey.shade400,
+                        ),
+                        Text(
+                          '${item.lesson.xpReward} XP',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: FluentianColors.textSecondary,
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          Icons.schedule_rounded,
+                          size: 12,
+                          color: Colors.grey.shade500,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${item.lesson.estimatedMinutes}m',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: FluentianColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _LessonVisuals _lessonVisuals(String kind) {
+    switch (kind) {
+      case 'dialogue':
+        return const _LessonVisuals(
+          Iconsax.message5,
+          Color(0xFF06B6D4),
+          'Dialogue',
+        );
+      case 'grammar':
+      case 'grammar_explainer':
+        return const _LessonVisuals(
+          Iconsax.book_14,
+          FluentianColors.primary,
+          'Grammar',
+        );
+      case 'speaking':
+      case 'pronunciation':
+      case 'roleplay_simulation':
+        return const _LessonVisuals(
+          Iconsax.microphone_24,
+          Color(0xFFEC4899),
+          'Speaking',
+        );
+      case 'quiz':
+      case 'review':
+      case 'exam_drill':
+        return const _LessonVisuals(
+          Iconsax.cup,
+          FluentianColors.warning,
+          'Challenge',
+        );
+      case 'listening':
+        return const _LessonVisuals(
+          Iconsax.headphone,
+          Color(0xFF8B5CF6),
+          'Listening',
+        );
+      case 'reading':
+      case 'writing':
+        return const _LessonVisuals(
+          Iconsax.document_text_14,
+          Color(0xFF3B82F6),
+          'Story',
+        );
+      default:
+        return const _LessonVisuals(
+          Iconsax.category_24,
+          FluentianColors.success,
+          'Vocabulary',
+        );
+    }
+  }
+
+  // Compact fallback keeps metadata readable on very narrow devices.
   Widget _buildLessonNode(
     BuildContext context,
     _LessonNodeItem item,
@@ -1037,6 +1380,7 @@ class _LessonNodeItem extends _PathItem {
   final bool isCompleted;
   final bool isUnlocked;
   final bool isActive;
+  final bool isLastInUnit;
   final int unitNo;
 
   _LessonNodeItem({
@@ -1045,6 +1389,58 @@ class _LessonNodeItem extends _PathItem {
     required this.isCompleted,
     required this.isUnlocked,
     required this.isActive,
+    required this.isLastInUnit,
     required this.unitNo,
   });
+}
+
+class _LessonVisuals {
+  final IconData icon;
+  final Color color;
+  final String label;
+
+  const _LessonVisuals(this.icon, this.color, this.label);
+}
+
+class _JourneyRoutePainter extends CustomPainter {
+  final Offset start;
+  final Offset end;
+  final bool reached;
+
+  const _JourneyRoutePainter({
+    required this.start,
+    required this.end,
+    required this.reached,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final route = Path()
+      ..moveTo(start.dx, start.dy)
+      ..cubicTo(start.dx, start.dy + 34, end.dx, end.dy - 34, end.dx, end.dy);
+    final paint = Paint()
+      ..color = reached
+          ? FluentianColors.secondary.withValues(alpha: 0.7)
+          : const Color(0xFFD7DEE5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+
+    final metrics = route.computeMetrics();
+    for (final metric in metrics) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final segmentEnd = (distance + 8).clamp(0.0, metric.length);
+        canvas.drawPath(metric.extractPath(distance, segmentEnd), paint);
+        distance += 15;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _JourneyRoutePainter oldDelegate) {
+    return start != oldDelegate.start ||
+        end != oldDelegate.end ||
+        reached != oldDelegate.reached;
+  }
 }

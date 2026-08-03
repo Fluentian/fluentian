@@ -1,6 +1,21 @@
 /// Progress models — mirrors backend progress schemas.
 library;
 
+int countCompletedLessonsOnDay(
+  Iterable<LessonProgressModel> progress,
+  DateTime day,
+) {
+  final localDay = day.toLocal();
+  return progress.where((item) {
+    final completedAt = item.completedAt?.toLocal();
+    return item.completed &&
+        completedAt != null &&
+        completedAt.year == localDay.year &&
+        completedAt.month == localDay.month &&
+        completedAt.day == localDay.day;
+  }).length;
+}
+
 class LessonProgressModel {
   final String id;
   final String userId;

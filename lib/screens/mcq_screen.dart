@@ -613,10 +613,14 @@ class _McqScreenState extends State<McqScreen>
         isCorrect ? SoundEffect.correct : SoundEffect.wrong,
       );
     }
-    _showResultSheet(isCorrect, correctAnswerText);
+    _showResultSheet(isCorrect, correctAnswerText, userAnswerText);
   }
 
-  void _showResultSheet(bool correct, String correctAnswer) {
+  void _showResultSheet(
+    bool correct,
+    String correctAnswer,
+    String userAnswerText,
+  ) {
     showModalBottomSheet(
       context: context,
       isDismissible: false,
@@ -706,9 +710,9 @@ class _McqScreenState extends State<McqScreen>
                     AiTutorSheet.show(
                       context,
                       systemContext:
-                          'Target language: French. You are a helpful French tutor. The user answered a French lesson question incorrectly. Question: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Explain the French grammar, vocabulary, or translation point simply in English, using French examples when useful.',
+                          'Target language: French. You are a helpful French tutor. The user answered a French lesson question incorrectly. Question: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Learner answer: "$userAnswerText". Correct answer: "$correctAnswer". Explain the specific difference simply in English, using French examples when useful.',
                       initialPrompt:
-                          'Why was my answer wrong in this French question? The correct answer is "$correctAnswer". Please explain.',
+                          'Why was my answer "$userAnswerText" incorrect? Please explain how it differs from "$correctAnswer".',
                     );
                   },
                   icon: const Icon(
@@ -1457,7 +1461,7 @@ class _McqScreenState extends State<McqScreen>
             fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
-            hintText: 'Type translation here...',
+            hintText: 'Write your answer in French',
             hintStyle: GoogleFonts.inter(
               color: Colors.grey.shade400,
               fontWeight: FontWeight.normal,

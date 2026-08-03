@@ -114,17 +114,21 @@ class _ProfessionalApplicationScreenState
                 'Full Name',
                 _nameController,
                 icon: Icons.person_outline,
+                placeholder:
+                    'Enter your name as it appears on official documents',
               ),
               _buildField(
                 'Email Address',
                 _emailController,
                 icon: Icons.email_outlined,
                 isEmail: true,
+                placeholder: 'name@example.com',
               ),
               _buildField(
                 'Phone Number',
                 _phoneController,
                 icon: Icons.phone_outlined,
+                placeholder: 'Include your country code, for example +251…',
               ),
 
               const SizedBox(height: 24),
@@ -134,18 +138,23 @@ class _ProfessionalApplicationScreenState
                 _educationController,
                 maxLines: 2,
                 icon: Icons.school_outlined,
+                placeholder:
+                    'Your degree, school, field of study, or current level',
               ),
               _buildField(
                 'Relevant Experience',
                 _experienceController,
                 maxLines: 3,
                 icon: Icons.work_outline,
+                placeholder:
+                    'Describe experience that is relevant to this opportunity',
               ),
               _buildField(
                 'Key Skills',
                 _skillsController,
                 icon: Icons.psychology_outlined,
-                placeholder: 'e.g. French B2, Public Speaking',
+                placeholder:
+                    'Example: French B2, public speaking, community leadership',
               ),
 
               const SizedBox(height: 24),
@@ -155,12 +164,16 @@ class _ProfessionalApplicationScreenState
                 _motivationController,
                 maxLines: 5,
                 icon: Icons.description_outlined,
+                placeholder:
+                    'Explain why this opportunity matters to you and what you bring',
               ),
               _buildField(
                 'Resume Link (LinkedIn/Drive)',
                 _resumeController,
                 icon: Icons.link_rounded,
                 isRequired: false,
+                placeholder:
+                    'Paste a public LinkedIn, Google Drive, or portfolio link',
               ),
 
               const SizedBox(height: 40),

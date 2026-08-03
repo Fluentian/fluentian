@@ -173,8 +173,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                     FluentianButton(
                       text: 'Continue',
                       icon: Iconsax.arrow_right_3,
-                      onPressed: () =>
-                          Navigator.of(context).popUntil((r) => r.isFirst),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -235,7 +234,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                     controller: controller,
                     maxLines: 3,
                     decoration: const InputDecoration(
-                      hintText: 'What should we improve?',
+                      hintText: 'Tell us what felt unclear or difficult',
                       border: OutlineInputBorder(),
                     ),
                   ),

@@ -277,7 +277,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                         size: 20,
                         color: FluentianColors.textSecondary,
                       ),
-                      hintText: 'Ask for a hint or explanation...',
+                      hintText: 'Ask why, request an example, or get a hint',
                       hintStyle: GoogleFonts.inter(
                         color: FluentianColors.textSecondary,
                         fontSize: 14,

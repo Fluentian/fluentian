@@ -40,7 +40,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     }
 
     setState(() => _isLoading = true);
-    final success = await context.read<AuthProvider>().resetPasswordWithOtp(code, pwd);
+    final success = await context.read<AuthProvider>().resetPasswordWithOtp(
+      code,
+      pwd,
+    );
     setState(() => _isLoading = false);
 
     if (!mounted) return;
@@ -116,7 +119,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     color: AuthColors.heading,
                   ),
                 ),
-                const TextSpan(text: '. Enter it below along with your new password.'),
+                const TextSpan(
+                  text: '. Enter it below along with your new password.',
+                ),
               ],
             ),
           ),
@@ -126,6 +131,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             label: 'Verification code',
             leftIcon: Icons.vpn_key_outlined,
             keyboardType: TextInputType.number,
+            hint: 'Enter the 6-digit code from your email',
             onChanged: (val) => setState(() => _code = val),
             enabled: !_isLoading,
           ),
@@ -135,6 +141,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             label: 'New password',
             leftIcon: Icons.lock_outline,
             isPassword: true,
+            hint: 'Use 8 or more characters',
             onChanged: (val) => setState(() => _pwd1 = val),
             enabled: !_isLoading,
           ),
@@ -148,6 +155,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             label: 'Confirm password',
             leftIcon: Icons.lock_outline,
             isPassword: !pwdMatch,
+            hint: 'Re-enter your new password',
             errorText: showMismatchError ? 'Passwords do not match' : null,
             onChanged: (val) => setState(() => _pwd2 = val),
             enabled: !_isLoading,
@@ -299,7 +307,11 @@ class _ErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AuthColors.errorText, size: 18),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: AuthColors.errorText,
+            size: 18,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

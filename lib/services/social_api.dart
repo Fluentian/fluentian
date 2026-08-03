@@ -11,6 +11,7 @@ class SpeakingCallSession {
   final String? level;
   final String? matchStrategy;
   final String? matchReason;
+  final DateTime? timerEndsAt;
 
   const SpeakingCallSession({
     required this.roomToken,
@@ -22,6 +23,7 @@ class SpeakingCallSession {
     this.level,
     this.matchStrategy,
     this.matchReason,
+    this.timerEndsAt,
   });
 
   factory SpeakingCallSession.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,9 @@ class SpeakingCallSession {
       level: json['level']?.toString(),
       matchStrategy: json['match_strategy']?.toString(),
       matchReason: json['match_reason']?.toString(),
+      timerEndsAt: json['timer_ends_at'] == null
+          ? null
+          : DateTime.tryParse(json['timer_ends_at'].toString()),
     );
   }
 }

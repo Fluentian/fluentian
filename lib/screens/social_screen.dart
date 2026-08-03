@@ -844,7 +844,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   maxLines: 2,
                   decoration: const InputDecoration(
                     labelText: 'Encouragement (optional)',
-                    hintText: 'Let’s stay consistent this week!',
+                    hintText: 'Add a note to motivate your partner',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -1127,7 +1127,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           }
                         },
                         decoration: InputDecoration(
-                          hintText: 'Username or email',
+                          hintText: 'Search by username or email address',
                           hintStyle: GoogleFonts.inter(
                             color: FluentianColors.textSecondary,
                             fontWeight: FontWeight.w500,

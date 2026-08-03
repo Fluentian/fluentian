@@ -17,6 +17,7 @@ class UserModel {
   final String? bio;
   final String? learningGoal;
   final int dailyGoalMinutes;
+  final int startingUnitNo;
   final bool notificationsEnabled;
   final bool autoplayAudio;
   final bool soundEnabled;
@@ -47,6 +48,7 @@ class UserModel {
     this.bio,
     this.learningGoal,
     this.dailyGoalMinutes = 15,
+    this.startingUnitNo = 1,
     this.notificationsEnabled = true,
     this.autoplayAudio = true,
     this.soundEnabled = true,
@@ -88,6 +90,7 @@ class UserModel {
           profile?['learning_goal']?.toString() ??
           json['learning_goal']?.toString(),
       dailyGoalMinutes: json['daily_goal_minutes'] as int? ?? 15,
+      startingUnitNo: json['starting_unit_no'] as int? ?? 1,
       notificationsEnabled: settings?['notifications_enabled'] as bool? ?? true,
       autoplayAudio: settings?['autoplay_audio'] as bool? ?? true,
       soundEnabled: settings?['sound_enabled'] as bool? ?? true,
@@ -126,6 +129,7 @@ class UserModel {
     'bio': bio,
     'learning_goal': learningGoal,
     'daily_goal_minutes': dailyGoalMinutes,
+    'starting_unit_no': startingUnitNo,
     'settings': {
       'notifications_enabled': notificationsEnabled,
       'autoplay_audio': autoplayAudio,
@@ -160,6 +164,7 @@ class UserModel {
     String? bio,
     String? learningGoal,
     int? dailyGoalMinutes,
+    int? startingUnitNo,
     bool? notificationsEnabled,
     bool? autoplayAudio,
     bool? soundEnabled,
@@ -191,6 +196,7 @@ class UserModel {
     bio: bio ?? this.bio,
     learningGoal: learningGoal ?? this.learningGoal,
     dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
+    startingUnitNo: startingUnitNo ?? this.startingUnitNo,
     notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     autoplayAudio: autoplayAudio ?? this.autoplayAudio,
     soundEnabled: soundEnabled ?? this.soundEnabled,
