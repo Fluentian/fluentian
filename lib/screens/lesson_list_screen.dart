@@ -20,16 +20,26 @@ class _LessonListScreenState extends State<LessonListScreen> {
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _unitKeys = {};
   final Set<String> _collapsedUnitIds = {};
+  String? _pendingInitialUnitId;
+  String? _focusedUnitId;
+  bool _initialFocusQueued = false;
 
   @override
   void initState() {
     super.initState();
-    // After build, if we have an initial unit, scroll to it
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    _pendingInitialUnitId = widget.initialUnitId;
+  }
+
+  @override
+  void didUpdateWidget(covariant LessonListScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialUnitId != widget.initialUnitId) {
+      _pendingInitialUnitId = widget.initialUnitId;
+      _focusedUnitId = null;
       if (widget.initialUnitId != null) {
-        _scrollToUnit(widget.initialUnitId!);
+        _collapsedUnitIds.remove(widget.initialUnitId);
       }
-    });
+    }
   }
 
   @override
@@ -38,17 +48,39 @@ class _LessonListScreenState extends State<LessonListScreen> {
     super.dispose();
   }
 
-  void _scrollToUnit(String unitId) {
-    _collapsedUnitIds.remove(unitId);
-    final key = _unitKeys[unitId];
-    if (key == null) return;
-    final context = key.currentContext;
-    if (context == null) return;
-    Scrollable.ensureVisible(
-      context,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOutCubic,
-    );
+  void _scheduleInitialUnitFocus() {
+    final unitId = _pendingInitialUnitId;
+    if (unitId == null || _initialFocusQueued) return;
+
+    _initialFocusQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initialFocusQueued = false;
+      if (!mounted || _pendingInitialUnitId != unitId) return;
+
+      final unitContext = _unitKeys[unitId]?.currentContext;
+      if (unitContext == null) return;
+
+      setState(() {
+        _collapsedUnitIds.remove(unitId);
+        _focusedUnitId = unitId;
+        _pendingInitialUnitId = null;
+      });
+
+      // The full route is deliberately built before this is called, so this
+      // key is available even when the active chapter is deep in another
+      // course. Waiting one more frame also lets an expanded unit lay out.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final targetContext = _unitKeys[unitId]?.currentContext;
+        if (targetContext == null) return;
+        Scrollable.ensureVisible(
+          targetContext,
+          alignment: 0.08,
+          duration: const Duration(milliseconds: 520),
+          curve: Curves.easeInOutCubic,
+        );
+      });
+    });
   }
 
   bool _isUnitExpanded(String unitId) => !_collapsedUnitIds.contains(unitId);
@@ -105,17 +137,16 @@ class _LessonListScreenState extends State<LessonListScreen> {
             );
           }
 
-          final course = content.courses.first;
-          int totalLessons = 0;
-          int completedLessons = 0;
-          for (final unit in course.units) {
-            totalLessons += unit.lessons.length;
-            for (final lesson in unit.lessons) {
-              if (content.isLessonCompleted(lesson.id)) {
-                completedLessons++;
-              }
-            }
-          }
+          final allUnits = content.courses.expand((course) => course.units);
+          final allLessons = allUnits.expand((unit) => unit.lessons).toList();
+          final totalUnits = content.courses.fold<int>(
+            0,
+            (count, course) => count + course.units.length,
+          );
+          final totalLessons = allLessons.length;
+          final completedLessons = allLessons
+              .where((lesson) => content.isLessonCompleted(lesson.id))
+              .length;
           final progressPercent = totalLessons > 0
               ? (completedLessons / totalLessons)
               : 0.0;
@@ -126,10 +157,29 @@ class _LessonListScreenState extends State<LessonListScreen> {
             content,
             startingUnitNo,
           );
+          final requestedUnitId = _pendingInitialUnitId;
+          final requestedUnitExists =
+              requestedUnitId != null &&
+              content.courses.any(
+                (course) =>
+                    course.units.any((unit) => unit.id == requestedUnitId),
+              );
+          if (requestedUnitExists) {
+            // An explicit route should always reveal its destination, even if
+            // this screen instance previously had that chapter collapsed.
+            _collapsedUnitIds.remove(requestedUnitId);
+            _scheduleInitialUnitFocus();
+          } else if (requestedUnitId != null) {
+            // Avoid retrying forever if a stale deep link points to content
+            // that is no longer available to this learner.
+            _pendingInitialUnitId = null;
+          }
 
           return Column(
             children: [
-              // Course Progress Card
+              // Whole-journey progress keeps multiple courses from looking
+              // like unrelated lists while the route below retains a clear
+              // course boundary for each chapter set.
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 padding: const EdgeInsets.all(18),
@@ -166,9 +216,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            course.code == 'FR_A1_BASICS'
-                                ? 'French A1 Basics'
-                                : course.code.replaceAll('_', ' '),
+                            'Your learning journey',
                             style: GoogleFonts.inter(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -190,7 +238,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '$completedLessons of $totalLessons lessons completed (${(progressPercent * 100).toInt()}%)',
+                            '$completedLessons of $totalLessons lessons complete · ${content.courses.length} ${content.courses.length == 1 ? 'course' : 'courses'} · $totalUnits ${totalUnits == 1 ? 'chapter' : 'chapters'}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               color: FluentianColors.textSecondary,
@@ -206,33 +256,49 @@ class _LessonListScreenState extends State<LessonListScreen> {
               Expanded(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    return ListView.builder(
+                    // This intentionally builds the complete path. Apart from
+                    // being a more natural journey view, it guarantees that a
+                    // deep-linked active chapter has a mounted key for
+                    // Scrollable.ensureVisible (a lazy ListView does not).
+                    return SingleChildScrollView(
                       controller: _scrollController,
                       padding: const EdgeInsets.only(bottom: 40),
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        if (item is _UnitHeaderItem) {
-                          final key = _unitKeys.putIfAbsent(
-                            item.unit.id,
-                            () => GlobalKey(),
-                          );
-                          return Container(
-                            key: key,
-                            child: _buildUnitHeader(
-                              context,
-                              item.unit,
-                              content,
-                              isExpanded: _isUnitExpanded(item.unit.id),
-                            ),
-                          );
-                        } else if (item is _LessonNodeItem) {
-                          return constraints.maxWidth < 330
-                              ? _buildLessonNode(context, item, constraints)
-                              : _buildJourneyNode(context, item, constraints);
-                        }
-                        return const SizedBox.shrink();
-                      },
+                      child: SizedBox(
+                        width: constraints.maxWidth,
+                        child: Column(
+                          children: [
+                            for (final item in items)
+                              if (item is _CourseHeaderItem)
+                                _buildCourseHeader(item, content)
+                              else if (item is _UnitHeaderItem)
+                                Container(
+                                  key: _unitKeys.putIfAbsent(
+                                    item.unit.id,
+                                    () => GlobalKey(),
+                                  ),
+                                  child: _buildUnitHeader(
+                                    context,
+                                    item.unit,
+                                    content,
+                                    isExpanded: _isUnitExpanded(item.unit.id),
+                                    isFocused: item.unit.id == _focusedUnitId,
+                                  ),
+                                )
+                              else if (item is _LessonNodeItem)
+                                constraints.maxWidth < 330
+                                    ? _buildLessonNode(
+                                        context,
+                                        item,
+                                        constraints,
+                                      )
+                                    : _buildJourneyNode(
+                                        context,
+                                        item,
+                                        constraints,
+                                      ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -252,47 +318,176 @@ class _LessonListScreenState extends State<LessonListScreen> {
     final List<_PathItem> items = [];
     if (courses.isEmpty) return items;
 
-    final course = courses.first;
+    for (int courseIndex = 0; courseIndex < courses.length; courseIndex++) {
+      final course = courses[courseIndex];
+      final units = List<UnitModel>.of(course.units)
+        ..sort((a, b) => a.unitNo.compareTo(b.unitNo));
+      items.add(
+        _CourseHeaderItem(
+          course: course,
+          courseIndex: courseIndex,
+          courseCount: courses.length,
+        ),
+      );
 
-    for (int unitIndex = 0; unitIndex < course.units.length; unitIndex++) {
-      final unit = course.units[unitIndex];
-      items.add(_UnitHeaderItem(unit));
+      for (int unitIndex = 0; unitIndex < units.length; unitIndex++) {
+        final unit = units[unitIndex];
+        items.add(_UnitHeaderItem(unit));
 
-      if (!_isUnitExpanded(unit.id)) continue;
+        if (!_isUnitExpanded(unit.id)) continue;
 
-      final lessons = unit.lessons;
-      for (int i = 0; i < lessons.length; i++) {
-        final lesson = lessons[i];
-        final isCompleted = content.isLessonCompleted(lesson.id);
-        final placedOut = unit.unitNo < startingUnitNo;
+        final lessons = List<LessonModel>.of(unit.lessons)
+          ..sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
+        final isPlacedBeforeStartingChapter = unit.unitNo < startingUnitNo;
         final previousUnitCompleted =
             unitIndex > 0 &&
-            course.units[unitIndex - 1].lessons.every(
-              (item) => content.isLessonCompleted(item.id),
+            units[unitIndex - 1].lessons.every(
+              (lesson) => content.isLessonCompleted(lesson.id),
             );
+        // These mirror the learner-placement rules used on home: chapters
+        // before the assigned starting point are available for review, while
+        // later chapters wait for their immediate predecessor to be complete.
         final chapterUnlocked =
             unit.unitNo <= startingUnitNo || previousUnitCompleted;
-        final previousLessonCompleted =
-            i == 0 || content.isLessonCompleted(lessons[i - 1].id);
-        final isUnlocked =
-            placedOut || (chapterUnlocked && previousLessonCompleted);
-        final isActive = !placedOut && !isCompleted && isUnlocked;
 
-        items.add(
-          _LessonNodeItem(
-            lesson: lesson,
-            lessonIndex: i,
-            isCompleted: isCompleted,
-            isUnlocked: isUnlocked,
-            isActive: isActive,
-            isLastInUnit: i == lessons.length - 1,
-            unitNo: unit.unitNo,
-          ),
-        );
+        for (int i = 0; i < lessons.length; i++) {
+          final lesson = lessons[i];
+          final isCompleted = content.isLessonCompleted(lesson.id);
+          final previousLessonCompleted =
+              i == 0 || content.isLessonCompleted(lessons[i - 1].id);
+          final isUnlocked =
+              isPlacedBeforeStartingChapter ||
+              (chapterUnlocked && previousLessonCompleted);
+          final isActive =
+              !isPlacedBeforeStartingChapter && !isCompleted && isUnlocked;
+
+          items.add(
+            _LessonNodeItem(
+              lesson: lesson,
+              lessonIndex: i,
+              isCompleted: isCompleted,
+              isUnlocked: isUnlocked,
+              isActive: isActive,
+              isLastInUnit: i == lessons.length - 1,
+              unitNo: unit.unitNo,
+            ),
+          );
+        }
       }
     }
 
     return items;
+  }
+
+  Widget _buildCourseHeader(_CourseHeaderItem item, ContentProvider content) {
+    final lessons = item.course.units
+        .expand((unit) => unit.lessons)
+        .toList(growable: false);
+    final completedLessons = lessons
+        .where((lesson) => content.isLessonCompleted(lesson.id))
+        .length;
+    final isFocusedCourse = item.course.units.any(
+      (unit) => unit.id == _focusedUnitId,
+    );
+    final level = item.course.levelMin == item.course.levelMax
+        ? '${item.course.levelMin} level'
+        : '${item.course.levelMin}–${item.course.levelMax}';
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(16, item.courseIndex == 0 ? 14 : 30, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isFocusedCourse
+                  ? FluentianColors.primary
+                  : FluentianColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              '${item.courseIndex + 1}',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: isFocusedCourse ? Colors.white : FluentianColors.primary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isFocusedCourse
+                      ? 'YOUR ACTIVE COURSE'
+                      : 'COURSE ${item.courseIndex + 1} OF ${item.courseCount}',
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: isFocusedCourse
+                        ? FluentianColors.primary
+                        : FluentianColors.textSecondary,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _courseTitle(item.course),
+                  style: GoogleFonts.inter(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: FluentianColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                level.toUpperCase(),
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: FluentianColors.primary,
+                  letterSpacing: 0.55,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                '$completedLessons/${lessons.length}',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: FluentianColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _courseTitle(CourseModel course) {
+    if (course.code == 'FR_A1_BASICS') return 'French A1 Basics';
+
+    return course.code
+        .split('_')
+        .where((segment) => segment.isNotEmpty)
+        .map(
+          (segment) =>
+              '${segment[0].toUpperCase()}${segment.substring(1).toLowerCase()}',
+        )
+        .join(' ');
   }
 
   Widget _buildUnitHeader(
@@ -300,6 +495,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
     UnitModel unit,
     ContentProvider content, {
     required bool isExpanded,
+    required bool isFocused,
   }) {
     final completed = unit.lessons
         .where((lesson) => content.isLessonCompleted(lesson.id))
@@ -319,10 +515,15 @@ class _LessonListScreenState extends State<LessonListScreen> {
             colors: [FluentianColors.primary, FluentianColors.primaryDark],
           ),
           borderRadius: BorderRadius.circular(24),
+          border: isFocused
+              ? Border.all(color: FluentianColors.accent, width: 2)
+              : null,
           boxShadow: [
             BoxShadow(
-              color: FluentianColors.primary.withValues(alpha: 0.15),
-              blurRadius: 12,
+              color: FluentianColors.primary.withValues(
+                alpha: isFocused ? 0.28 : 0.15,
+              ),
+              blurRadius: isFocused ? 18 : 12,
               offset: const Offset(0, 4),
             ),
           ],
@@ -353,7 +554,9 @@ class _LessonListScreenState extends State<LessonListScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'CHAPTER ${unit.unitNo} · ${unit.unitKind.toUpperCase()}',
+                    isFocused
+                        ? 'CURRENT CHAPTER · ${unit.unitKind.toUpperCase()}'
+                        : 'CHAPTER ${unit.unitNo} · ${unit.unitKind.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -1368,6 +1571,18 @@ class _LessonListScreenState extends State<LessonListScreen> {
 
 // Data structures for path flat list
 abstract class _PathItem {}
+
+class _CourseHeaderItem extends _PathItem {
+  final CourseModel course;
+  final int courseIndex;
+  final int courseCount;
+
+  _CourseHeaderItem({
+    required this.course,
+    required this.courseIndex,
+    required this.courseCount,
+  });
+}
 
 class _UnitHeaderItem extends _PathItem {
   final UnitModel unit;

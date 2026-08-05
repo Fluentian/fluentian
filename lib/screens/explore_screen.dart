@@ -370,21 +370,33 @@ class _ExploreScreenState extends State<ExploreScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: FluentianColors.headerGradient,
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: FluentianColors.primary.withValues(alpha: .18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 7),
+                  ),
+                ],
+              ),
               child: Row(
                 children: [
                   Container(
-                    width: 42,
-                    height: 42,
+                    width: 46,
+                    height: 46,
                     decoration: BoxDecoration(
-                      color: FluentianColors.primaryTint,
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white.withValues(alpha: .14),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Icon(
                       Iconsax.global,
-                      color: FluentianColors.primary,
-                      size: 22,
+                      color: FluentianColors.accent,
+                      size: 24,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -393,27 +405,34 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Explore',
+                          'Explore France',
                           style: GoogleFonts.inter(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: FluentianColors.textPrimary,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
                           ),
                         ),
+                        const SizedBox(height: 2),
                         Text(
-                          'Culture française',
+                          'Stories, sounds, and everyday culture',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                            fontSize: 13,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: FluentianColors.textSecondary,
+                            color: Colors.white.withValues(alpha: .72),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  IconButton.filledTonal(
+                  IconButton(
                     tooltip: 'My word bank',
                     onPressed: _showWordBank,
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: .14),
+                      foregroundColor: Colors.white,
+                    ),
                     icon: const Icon(Iconsax.book_saved),
                   ),
                 ],

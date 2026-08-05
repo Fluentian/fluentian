@@ -155,15 +155,32 @@ class ContentProvider extends ChangeNotifier {
     return isLessonCompleted(prevLesson.id);
   }
 
-  /// Get up to [count] next incomplete lessons across all courses/units.
-  List<LessonModel> getIncompleteLessons(int count) {
+  /// Get the learner's next actionable lessons on their chapter journey.
+  ///
+  /// This mirrors the roadmap rules: lessons before an admin placement are
+  /// treated as optional review, the assigned chapter opens at lesson one,
+  /// and later chapters wait for the prior chapter to be completed.
+  List<LessonModel> getIncompleteLessons(int count, {int startingUnitNo = 1}) {
     final incomplete = <LessonModel>[];
     for (final course in _courses) {
-      for (final unit in course.units) {
-        for (int i = 0; i < unit.lessons.length; i++) {
-          final lesson = unit.lessons[i];
-          if (!isLessonCompleted(lesson.id) &&
-              isLessonUnlocked(unit.lessons, i)) {
+      final units = List<UnitModel>.of(course.units)
+        ..sort((a, b) => a.unitNo.compareTo(b.unitNo));
+      for (int unitIndex = 0; unitIndex < units.length; unitIndex++) {
+        final unit = units[unitIndex];
+        if (unit.unitNo < startingUnitNo) continue;
+        final previousUnitComplete =
+            unitIndex > 0 &&
+            units[unitIndex - 1].lessons.every(
+              (lesson) => isLessonCompleted(lesson.id),
+            );
+        final chapterUnlocked =
+            unit.unitNo == startingUnitNo || previousUnitComplete;
+        if (!chapterUnlocked) continue;
+        final lessons = List<LessonModel>.of(unit.lessons)
+          ..sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
+        for (int i = 0; i < lessons.length; i++) {
+          final lesson = lessons[i];
+          if (!isLessonCompleted(lesson.id) && isLessonUnlocked(lessons, i)) {
             incomplete.add(lesson);
             if (incomplete.length >= count) return incomplete;
           }

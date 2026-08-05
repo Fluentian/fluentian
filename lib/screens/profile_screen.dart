@@ -55,21 +55,12 @@ class ProfileScreen extends StatelessWidget {
                       width: 76,
                       height: 76,
                       decoration: BoxDecoration(
-                        gradient: FluentianColors.headerGradient,
+                        color: Colors.white.withValues(alpha: .16),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.65),
+                          color: Colors.white.withValues(alpha: .34),
                           width: 2,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: FluentianColors.primary.withValues(
-                              alpha: 0.22,
-                            ),
-                            blurRadius: 16,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
                       ),
                       child: Center(
                         child: Text(
@@ -94,7 +85,7 @@ class ProfileScreen extends StatelessWidget {
                             style: GoogleFonts.inter(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
-                              color: FluentianColors.textPrimary,
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -103,7 +94,7 @@ class ProfileScreen extends StatelessWidget {
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: FluentianColors.textSecondary,
+                              color: Colors.white.withValues(alpha: .72),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -114,7 +105,7 @@ class ProfileScreen extends StatelessWidget {
                               _Pill(
                                 icon: Iconsax.teacher,
                                 text: levelName,
-                                color: FluentianColors.primary,
+                                color: FluentianColors.accent,
                               ),
                             ],
                           ),
@@ -122,7 +113,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     Material(
-                      color: FluentianColors.pageBg,
+                      color: Colors.white.withValues(alpha: .13),
                       borderRadius: BorderRadius.circular(14),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
@@ -136,7 +127,7 @@ class ProfileScreen extends StatelessWidget {
                           height: 44,
                           child: Icon(
                             Iconsax.setting_2,
-                            color: FluentianColors.textPrimary,
+                            color: Colors.white,
                             size: 21,
                           ),
                         ),
@@ -150,16 +141,18 @@ class ProfileScreen extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: FluentianColors.pageBg,
+                      color: Colors.white.withValues(alpha: .12),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: FluentianColors.border),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: .16),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(
                           Iconsax.flag,
-                          color: FluentianColors.primary,
+                          color: FluentianColors.accent,
                           size: 18,
                         ),
                         const SizedBox(width: 8),
@@ -170,7 +163,7 @@ class ProfileScreen extends StatelessWidget {
                               fontSize: 13,
                               height: 1.35,
                               fontWeight: FontWeight.w600,
-                              color: FluentianColors.textPrimary,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -182,6 +175,8 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          _SectionLabel(text: 'MY MOMENTUM'),
+          const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: _panelDecoration(radius: 18),
@@ -250,6 +245,8 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          _SectionLabel(text: 'AT A GLANCE'),
+          const SizedBox(height: 8),
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
@@ -285,6 +282,8 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          _SectionLabel(text: 'LEARNING RHYTHM'),
+          const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: _panelDecoration(radius: 18),
@@ -346,7 +345,7 @@ class ProfileScreen extends StatelessWidget {
                 context,
               ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
               icon: const Icon(Iconsax.user_edit),
-              label: const Text('Edit profile and settings'),
+              label: const Text('Personalize my profile'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: FluentianColors.textPrimary,
                 foregroundColor: Colors.white,
@@ -524,11 +523,36 @@ class _Pill extends StatelessWidget {
 }
 
 BoxDecoration _heroDecoration() => BoxDecoration(
-  color: Colors.white,
+  gradient: FluentianColors.headerGradient,
   borderRadius: BorderRadius.circular(22),
-  border: Border.all(color: FluentianColors.border),
-  boxShadow: [FluentianShadows.card],
+  boxShadow: [
+    BoxShadow(
+      color: FluentianColors.primary.withValues(alpha: .2),
+      blurRadius: 20,
+      offset: const Offset(0, 8),
+    ),
+  ],
 );
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+
+  const _SectionLabel({required this.text});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 4),
+    child: Text(
+      text,
+      style: GoogleFonts.inter(
+        fontSize: 11,
+        letterSpacing: 1.1,
+        fontWeight: FontWeight.w900,
+        color: FluentianColors.textSecondary,
+      ),
+    ),
+  );
+}
 
 BoxDecoration _panelDecoration({double radius = 16}) => BoxDecoration(
   color: Colors.white,

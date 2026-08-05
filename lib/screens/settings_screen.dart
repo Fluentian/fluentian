@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -27,10 +28,11 @@ class SettingsScreen extends StatelessWidget {
       backgroundColor: FluentianColors.pageBg,
       appBar: AppBar(
         title: Text(
-          'Settings',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          'Your settings',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w900),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: FluentianColors.pageBg,
+        elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
       body: ListView(
@@ -199,8 +201,10 @@ class SettingsScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _SettingsGroup(title: 'Debug', children: [_DebugLogsRow()]),
+          if (!kReleaseMode) ...[
+            const SizedBox(height: 16),
+            _SettingsGroup(title: 'Diagnostics', children: [_DebugLogsRow()]),
+          ],
           const SizedBox(height: 16),
           _DangerAction(
             isLoading: auth.isLoading,
@@ -620,15 +624,26 @@ class _AccountHeader extends StatelessWidget {
         : 'U';
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: _panelDecoration(),
+      decoration: BoxDecoration(
+        gradient: FluentianColors.headerGradient,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: FluentianColors.primary.withValues(alpha: .18),
+            blurRadius: 18,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Container(
             width: 56,
             height: 56,
-            decoration: const BoxDecoration(
-              color: FluentianColors.primaryTint,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .15),
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withValues(alpha: .25)),
             ),
             child: Center(
               child: Text(
@@ -636,7 +651,7 @@ class _AccountHeader extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  color: FluentianColors.primary,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -653,7 +668,7 @@ class _AccountHeader extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
-                    color: FluentianColors.textPrimary,
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -663,7 +678,7 @@ class _AccountHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: FluentianColors.textSecondary,
+                    color: Colors.white.withValues(alpha: .72),
                   ),
                 ),
               ],
@@ -672,6 +687,10 @@ class _AccountHeader extends StatelessWidget {
           IconButton(
             tooltip: 'Edit profile',
             onPressed: onEdit,
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.white.withValues(alpha: .14),
+              foregroundColor: Colors.white,
+            ),
             icon: const Icon(Icons.edit_rounded),
           ),
         ],
@@ -696,19 +715,20 @@ class _SettingsGroup extends StatelessWidget {
           child: Text(
             title,
             style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontSize: 11,
+              letterSpacing: 1,
+              fontWeight: FontWeight.w900,
               color: FluentianColors.textSecondary,
             ),
           ),
         ),
         Material(
           color: Colors.white,
-          elevation: 1,
-          shadowColor: FluentianColors.primary.withValues(alpha: 0.08),
+          elevation: 0,
+          shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: FluentianColors.border),
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(
@@ -855,11 +875,12 @@ class _SwitchRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return SwitchListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      secondary: Icon(icon, color: FluentianColors.primary),
+      secondary: _SettingIcon(icon: icon),
       title: Text(
         label,
         style: GoogleFonts.inter(
-          fontSize: 15,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
           color: FluentianColors.textPrimary,
         ),
       ),
@@ -954,12 +975,7 @@ class _RowShell extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: enabled
-                  ? FluentianColors.primary
-                  : FluentianColors.textSecondary,
-            ),
+            _SettingIcon(icon: icon, enabled: enabled),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -1007,7 +1023,7 @@ class _DangerAction extends StatelessWidget {
             Text(
               isLoading ? 'Signing out...' : 'Sign out',
               style: GoogleFonts.inter(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: FluentianColors.error,
               ),
@@ -1019,9 +1035,24 @@ class _DangerAction extends StatelessWidget {
   }
 }
 
-BoxDecoration _panelDecoration() => BoxDecoration(
-  color: Colors.white,
-  borderRadius: BorderRadius.circular(12),
-  border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-  boxShadow: [FluentianShadows.subtle],
-);
+class _SettingIcon extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+
+  const _SettingIcon({required this.icon, this.enabled = true});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 36,
+    height: 36,
+    decoration: BoxDecoration(
+      color: enabled ? FluentianColors.primaryTint : FluentianColors.pageBg,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Icon(
+      icon,
+      size: 18,
+      color: enabled ? FluentianColors.primary : FluentianColors.textSecondary,
+    ),
+  );
+}
