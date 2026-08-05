@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../providers/auth_provider.dart';
 import 'auth_widgets.dart';
 import 'sign_up_screen.dart';
@@ -278,6 +279,17 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  TextButton.icon(
+                    onPressed: () => launchUrl(
+                      Uri.parse(
+                        'https://api.fluentianapp.binovatechnologies.com/privacy',
+                      ),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    icon: const Icon(Icons.privacy_tip_outlined, size: 16),
+                    label: const Text('Privacy policy'),
+                  ),
+                  const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () => _openAuthPage(const SignUpScreen()),
                     child: RichText(

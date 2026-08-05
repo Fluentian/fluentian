@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../services/app_logger.dart';
@@ -173,6 +174,32 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          _SettingsGroup(
+            title: 'Privacy & account',
+            children: [
+              _RowShell(
+                icon: Icons.privacy_tip_outlined,
+                label: 'Privacy policy',
+                onTap: () => _openPrivacyPolicy(context),
+                trailing: const Icon(
+                  Icons.open_in_new_rounded,
+                  color: FluentianColors.textSecondary,
+                  size: 20,
+                ),
+              ),
+              _RowShell(
+                icon: Icons.delete_forever_outlined,
+                label: 'Delete my account',
+                onTap: () => _confirmAccountDeletion(context),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: FluentianColors.error,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           _SettingsGroup(title: 'Debug', children: [_DebugLogsRow()]),
           const SizedBox(height: 16),
           _DangerAction(
@@ -236,6 +263,62 @@ class SettingsScreen extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final policyUrl = Uri.parse(
+      'https://api.fluentianapp.binovatechnologies.com/privacy',
+    );
+    if (await launchUrl(policyUrl, mode: LaunchMode.externalApplication)) {
+      return;
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the privacy policy.')),
+      );
+    }
+  }
+
+  Future<void> _confirmAccountDeletion(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(
+          Icons.warning_amber_rounded,
+          color: FluentianColors.error,
+        ),
+        title: const Text('Delete your account?'),
+        content: const Text(
+          'This permanently removes your profile, learning progress, messages, social data, notifications, and device tokens. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Keep account'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: FluentianColors.error,
+            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Delete permanently'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final auth = context.read<AuthProvider>();
+    final ok = await auth.deleteAccount();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? 'Your account was deleted.'
+              : auth.errorMessage ?? 'Could not delete your account.',
+        ),
+      ),
+    );
   }
 
   Future<void> _showProfileEditor(BuildContext context) async {

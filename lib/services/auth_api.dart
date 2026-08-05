@@ -118,6 +118,11 @@ class AuthApi {
     await _client.patch('/users/me/settings', data);
   }
 
+  /// Permanently remove the signed-in account and Fluentian account data.
+  Future<void> deleteAccount() async {
+    await _client.delete('/users/me', body: {'confirmation': 'DELETE'});
+  }
+
   /// Fetch the persisted heart count for the current user.
   Future<HeartStatus> getHearts() async {
     final json = await _client.get('/users/me/hearts');

@@ -408,6 +408,37 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Permanently delete the account, then clear every local session artifact.
+  Future<bool> deleteAccount() async {
+    _setLoading(true);
+    try {
+      await _authApi.deleteAccount();
+      await _firebaseAuth.signOut();
+      await _googleSignIn.signOut();
+      await _apiClient.clearTokens();
+      await _apiClient.clearUser();
+      await _apiClient.clearSetupComplete();
+      _user = null;
+      _unverifiedEmail = null;
+      _nextHeartRefillAt = null;
+      _hasCompletedSetup = false;
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = null;
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.userMessage;
+      return false;
+    } on NetworkException catch (e) {
+      _errorMessage = e.message;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Could not delete your account. Please try again.';
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   /// Update the in-memory user (e.g. after profile save or XP gain).
   void updateUser(UserModel updated) async {
     _user = updated;
