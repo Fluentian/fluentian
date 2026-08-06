@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -50,7 +51,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 padding: const EdgeInsets.all(16),
                 child: GestureDetector(
                   onTap: _go,
-                  child: Text(
+                  child: LText(
                     'Skip',
                     style: GoogleFonts.inter(
                       fontSize: 15,
@@ -128,7 +129,7 @@ class _Slide extends StatelessWidget {
           const Spacer(),
           SizedBox(height: 260, child: child),
           const SizedBox(height: 40),
-          Text(
+          LText(
             heading,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
@@ -140,7 +141,7 @@ class _Slide extends StatelessWidget {
           const SizedBox(height: 12),
           SizedBox(
             width: 280,
-            child: Text(
+            child: LText(
               sub,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
@@ -207,7 +208,7 @@ class _CafeIllustration extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Center(
-                    child: Text(
+                    child: LText(
                       'F',
                       style: GoogleFonts.inter(
                         fontSize: 12,
@@ -235,7 +236,7 @@ class _CafeIllustration extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [FluentianShadows.subtle],
               ),
-              child: Text(
+              child: LText(
                 'Bonjour!',
                 style: GoogleFonts.inter(
                   fontSize: 14,
@@ -341,7 +342,7 @@ class _AiOrbState extends State<_AiOrbIllustration>
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [FluentianShadows.subtle],
               ),
-              child: Text(
+              child: LText(
                 'Bonjour!',
                 style: GoogleFonts.inter(
                   fontSize: 13,
@@ -360,7 +361,7 @@ class _AiOrbState extends State<_AiOrbIllustration>
                 color: FluentianColors.primaryTint,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(
+              child: LText(
                 'ሰላም!',
                 style: GoogleFonts.inter(
                   fontSize: 13,
@@ -400,10 +401,10 @@ class _MapIllustration extends StatelessWidget {
                       color: const Color(0xFF009639).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text('🇪🇹', style: TextStyle(fontSize: 24)),
+                    child: const LText('🇪🇹', style: TextStyle(fontSize: 24)),
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  LText(
                     'Ethiopia',
                     style: GoogleFonts.inter(
                       fontSize: 11,
@@ -426,10 +427,10 @@ class _MapIllustration extends StatelessWidget {
                       color: const Color(0xFF002395).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text('🇫🇷', style: TextStyle(fontSize: 24)),
+                    child: const LText('🇫🇷', style: TextStyle(fontSize: 24)),
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  LText(
                     'France',
                     style: GoogleFonts.inter(
                       fontSize: 11,
@@ -443,7 +444,7 @@ class _MapIllustration extends StatelessWidget {
             Positioned(
               top: 95,
               right: 30,
-              child: Text(
+              child: LText(
                 'Paris · Lyon · Marseille',
                 style: GoogleFonts.inter(
                   fontSize: 10,

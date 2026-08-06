@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -128,7 +129,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
       appBar: AppBar(
-        title: Text(widget.title, style: GoogleFonts.inter(fontSize: 16)),
+        title: LText(widget.title, style: GoogleFonts.inter(fontSize: 16)),
         scrolledUnderElevation: 0,
         actions: [
           IconButton(
@@ -155,15 +156,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         children: [
           if (_error != null)
             MaterialBanner(
-              content: Text(_error!),
+              content: LText(_error!),
               actions: [
                 TextButton(
                   onPressed: () => _loadMessages(),
-                  child: const Text('Retry'),
+                  child: const LText('Retry'),
                 ),
                 TextButton(
                   onPressed: () => setState(() => _error = null),
-                  child: const Text('Dismiss'),
+                  child: const LText('Dismiss'),
                 ),
               ],
             ),
@@ -215,7 +216,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               maxLines: 4,
               onSubmitted: (_) => _sendMessage(),
               decoration: InputDecoration(
-                hintText: 'Write a friendly message',
+                hintText: context.tr('Write a friendly message'),
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(
@@ -254,12 +255,12 @@ class _EmptyChat extends StatelessWidget {
         children: [
           const Icon(Iconsax.message, size: 42, color: FluentianColors.primary),
           const SizedBox(height: 12),
-          Text(
+          LText(
             'Start the conversation',
             style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
-          Text(
+          LText(
             'Messages sent here are shared with everyone in this room.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(color: FluentianColors.textSecondary),
@@ -298,7 +299,7 @@ class _MessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
+            LText(
               message.body,
               style: GoogleFonts.inter(
                 color: isMe ? Colors.white : FluentianColors.textPrimary,
@@ -307,7 +308,7 @@ class _MessageBubble extends StatelessWidget {
             ),
             if (time.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(
+              LText(
                 time,
                 style: GoogleFonts.inter(
                   fontSize: 10,

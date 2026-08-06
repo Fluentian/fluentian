@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../core/theme.dart';
@@ -104,7 +105,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                 child: Column(
                   children: [
                     const SizedBox(height: 20),
-                    Text(
+                    LText(
                       'SAY THIS IN FRENCH',
                       style: GoogleFonts.inter(
                         fontSize: 12,
@@ -114,7 +115,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text(
+                    LText(
                       "Je voudrais un café,\ns'il vous plaît.",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
@@ -125,7 +126,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    LText(
                       'zhuh voo-DREH uhn ka-FEH, seel voo PLEH',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
@@ -159,7 +160,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Text(
+                          LText(
                             'Listen to native speaker',
                             style: GoogleFonts.inter(
                               fontSize: 14,
@@ -195,7 +196,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                     _buildRecordButton(),
 
                     const SizedBox(height: 16),
-                    Text(
+                    LText(
                       _state == _RecordState.idle
                           ? 'Tap to record'
                           : _state == _RecordState.recording
@@ -237,7 +238,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                           ),
                           minimumSize: const Size(0, 52),
                         ),
-                        child: const Text('Try again'),
+                        child: const LText('Try again'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -251,7 +252,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                           ),
                           minimumSize: const Size(0, 52),
                         ),
-                        child: const Text('Continue'),
+                        child: const LText('Continue'),
                       ),
                     ),
                   ],
@@ -346,7 +347,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
             radius: 44,
             lineWidth: 6,
             percent: 0.82,
-            center: Text(
+            center: LText(
               '82%',
               style: GoogleFonts.inter(
                 fontSize: 20,
@@ -397,7 +398,7 @@ class _MetricRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 100,
-            child: Text(
+            child: LText(
               label,
               style: GoogleFonts.inter(
                 fontSize: 13,
@@ -417,7 +418,7 @@ class _MetricRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
+          LText(
             '${(value * 100).toInt()}%',
             style: GoogleFonts.inter(
               fontSize: 12,
@@ -445,7 +446,7 @@ class _WordChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
-      child: Text(
+      child: LText(
         word,
         style: GoogleFonts.inter(
           fontSize: 14,

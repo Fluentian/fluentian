@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
@@ -47,7 +48,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
     return Scaffold(
       backgroundColor: FluentianColors.white,
       appBar: AppBar(
-        title: const Text('Placement test'),
+        title: const LText('Placement test'),
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
       ),
@@ -68,7 +69,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LText(
                   q.prompt,
                   style: GoogleFonts.inter(
                     fontSize: 15,
@@ -88,7 +89,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
                     children: List.generate(q.options.length, (optionIndex) {
                       return RadioListTile<int>(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(q.options[optionIndex]),
+                        title: LText(q.options[optionIndex]),
                         value: optionIndex,
                         activeColor: FluentianColors.primary,
                       );
@@ -141,7 +142,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not submit placement test.')),
+          const SnackBar(content: LText('Could not submit placement test.')),
         );
       }
     } finally {

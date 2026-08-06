@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -90,7 +91,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text(
+                    LText(
                       'Lesson complete',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
@@ -100,7 +101,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    LText(
                       user == null
                           ? 'Nice work.'
                           : 'Nice work, ${user.displayName}.',
@@ -126,7 +127,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                             size: 28,
                           ),
                           const SizedBox(height: 6),
-                          Text(
+                          LText(
                             '+$xpEarned XP',
                             style: GoogleFonts.inter(
                               fontSize: 44,
@@ -135,7 +136,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text(
+                          LText(
                             '$previousXp -> $newXpTotal total XP',
                             style: GoogleFonts.inter(
                               fontSize: 13,
@@ -159,10 +160,10 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                       TextButton.icon(
                         onPressed: _showFeedbackSheet,
                         icon: const Icon(Iconsax.message_edit),
-                        label: const Text('Leave lesson feedback'),
+                        label: const LText('Leave lesson feedback'),
                       )
                     else
-                      Text(
+                      LText(
                         'Feedback sent. Thank you.',
                         style: GoogleFonts.inter(
                           color: FluentianColors.success,
@@ -209,7 +210,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LText(
                     'How was this lesson?',
                     style: GoogleFonts.inter(
                       fontSize: 18,
@@ -233,8 +234,10 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                   TextField(
                     controller: controller,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                      hintText: 'Tell us what felt unclear or difficult',
+                    decoration: InputDecoration(
+                      hintText: context.tr(
+                        'Tell us what felt unclear or difficult',
+                      ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -255,7 +258,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                         setState(() => _feedbackSent = true);
                         Navigator.pop(context);
                       },
-                      child: const Text('Send feedback'),
+                      child: const LText('Send feedback'),
                     ),
                   ),
                 ],
@@ -285,7 +288,7 @@ class _StatColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
+        LText(
           value,
           style: GoogleFonts.inter(
             fontSize: 22,
@@ -294,7 +297,7 @@ class _StatColumn extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
+        LText(
           label,
           style: GoogleFonts.inter(
             fontSize: 13,

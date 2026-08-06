@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'api_client.dart';
+import '../core/app_localization.dart';
 
 class AiMessage {
   final String role;
@@ -8,10 +9,7 @@ class AiMessage {
 
   AiMessage({required this.role, required this.content, this.activity});
 
-  Map<String, dynamic> toJson() => {
-        'role': role,
-        'content': content,
-      };
+  Map<String, dynamic> toJson() => {'role': role, 'content': content};
 }
 
 class AiTutorActivity {
@@ -35,9 +33,11 @@ class AiTutorActivity {
       question: json['question']?.toString() ?? '',
       options: (json['options'] as List<dynamic>? ?? [])
           .whereType<Map>()
-          .map((option) => AiTutorActivityOption.fromJson(
-                Map<String, dynamic>.from(option),
-              ))
+          .map(
+            (option) => AiTutorActivityOption.fromJson(
+              Map<String, dynamic>.from(option),
+            ),
+          )
           .toList(),
       explanation: json['explanation']?.toString() ?? '',
     );
@@ -86,6 +86,7 @@ class AiService {
       final data = await ApiClient.instance.post('/ai/chat', {
         'messages': messages.map((e) => e.toJson()).toList(),
         if (systemContext != null) 'systemContext': systemContext,
+        'content_language': AppLocaleController.activeLanguageCode,
       });
       final activityJson = data['activity'];
       return AiTutorResponse(

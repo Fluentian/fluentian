@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
@@ -38,7 +39,7 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                     child: const Icon(Icons.arrow_back_rounded),
                   ),
                   const Spacer(),
-                  Text(
+                  LText(
                     'Step 2 of 3',
                     style: GoogleFonts.inter(
                       fontSize: 13,
@@ -57,7 +58,7 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-                    Text(
+                    LText(
                       'Set your daily goal',
                       style: GoogleFonts.inter(
                         fontSize: 28,
@@ -66,7 +67,7 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    LText(
                       'Consistency beats intensity. Pick what fits your life.',
                       style: GoogleFonts.inter(
                         fontSize: 16,
@@ -124,7 +125,7 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                                         color: FluentianColors.primary,
                                       ),
                                       const SizedBox(height: 8),
-                                      Text(
+                                      LText(
                                         '${goal.xp} XP',
                                         style: GoogleFonts.inter(
                                           fontSize: 22,
@@ -133,7 +134,7 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(
+                                      LText(
                                         '${goal.label} · ${goal.duration}',
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
@@ -174,7 +175,7 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: Text(
+                                child: LText(
                                   'Daily reminder',
                                   style: GoogleFonts.inter(
                                     fontSize: 15,
@@ -207,7 +208,7 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                                     ),
                                     child: Row(
                                       children: [
-                                        Text(
+                                        LText(
                                           '8:00 AM',
                                           style: GoogleFonts.inter(
                                             fontSize: 14,
@@ -260,7 +261,7 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Failed to save profile'),
+                                  content: LText('Failed to save profile'),
                                 ),
                               );
                             }

@@ -1,6 +1,7 @@
 import 'package:fluentian/screens/call_screen.dart';
 import 'package:fluentian/screens/chat_detail_screen.dart';
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -107,7 +108,7 @@ class _SocialScreenState extends State<SocialScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              LText(
                 'Social',
                 style: GoogleFonts.inter(
                   fontSize: 24,
@@ -116,7 +117,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 ),
               ),
               const SizedBox(height: 3),
-              Text(
+              LText(
                 'Friends, progress, and friendly challenges',
                 style: GoogleFonts.inter(
                   fontSize: 13,
@@ -129,7 +130,7 @@ class _SocialScreenState extends State<SocialScreen> {
         ),
         _IconButton(
           icon: Iconsax.user_add,
-          tooltip: 'Add friend',
+          tooltip: context.tr('Add friend'),
           onTap: _showAddFriendSheet,
         ),
       ],
@@ -164,7 +165,7 @@ class _SocialScreenState extends State<SocialScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
+                child: LText(
                   'Build your French circle',
                   style: GoogleFonts.inter(
                     color: Colors.white,
@@ -196,7 +197,7 @@ class _SocialScreenState extends State<SocialScreen> {
             child: ElevatedButton.icon(
               onPressed: _showAddFriendSheet,
               icon: const Icon(Iconsax.search_normal_1, size: 18),
-              label: const Text('Find classmates'),
+              label: const LText('Find classmates'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: FluentianColors.primary,
@@ -346,7 +347,7 @@ class _SocialScreenState extends State<SocialScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LText(
                     request.user.displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -356,7 +357,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       color: FluentianColors.textPrimary,
                     ),
                   ),
-                  Text(
+                  LText(
                     request.isIncoming
                         ? 'wants to practice with you'
                         : 'request sent to @${request.user.username}',
@@ -442,7 +443,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  LText(
                     activity.body,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -457,7 +458,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     children: [
                       _LevelBadge(level: activity.actor.currentLevel),
                       const SizedBox(width: 8),
-                      Text(
+                      LText(
                         _relativeTime(activity.createdAt),
                         style: GoogleFonts.inter(
                           fontSize: 11,
@@ -502,7 +503,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      LText(
                         challenge.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -512,7 +513,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           color: FluentianColors.textPrimary,
                         ),
                       ),
-                      Text(
+                      LText(
                         '${challenge.status.toUpperCase()} · ${challenge.durationDays} days',
                         style: GoogleFonts.inter(
                           fontSize: 11,
@@ -539,7 +540,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   ),
                 ],
                 if (pending && !canRespond)
-                  Text(
+                  LText(
                     'Sent',
                     style: GoogleFonts.inter(
                       fontSize: 12,
@@ -603,7 +604,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LText(
                       item.partner.displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -612,7 +613,7 @@ class _SocialScreenState extends State<SocialScreen> {
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    Text(
+                    LText(
                       item.status == 'pending'
                           ? (item.direction == 'incoming'
                                 ? 'Invited you to team up'
@@ -634,7 +635,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       : FluentianColors.primaryTint,
                   borderRadius: BorderRadius.circular(99),
                 ),
-                child: Text(
+                child: LText(
                   item.status.toUpperCase(),
                   style: GoogleFonts.inter(
                     fontSize: 9,
@@ -649,7 +650,7 @@ class _SocialScreenState extends State<SocialScreen> {
           ),
           if (item.message.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(
+            LText(
               '“${item.message}”',
               style: GoogleFonts.inter(
                 fontSize: 12,
@@ -680,7 +681,7 @@ class _SocialScreenState extends State<SocialScreen> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => _updatePartnership(item, 'ended'),
-                child: const Text('End partnership'),
+                child: const LText('End partnership'),
               ),
             ),
           ] else if (item.direction == 'incoming')
@@ -689,20 +690,20 @@ class _SocialScreenState extends State<SocialScreen> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => _updatePartnership(item, 'declined'),
-                    child: const Text('Not now'),
+                    child: const LText('Not now'),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _updatePartnership(item, 'active'),
-                    child: const Text('Team up'),
+                    child: const LText('Team up'),
                   ),
                 ),
               ],
             )
           else
-            Text(
+            LText(
               'Goal: ${item.targetValue} $unit in ${item.durationDays} days',
               style: GoogleFonts.inter(
                 fontSize: 12,
@@ -759,7 +760,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(
+                LText(
                   'Choose your accountability partner',
                   style: GoogleFonts.inter(
                     fontSize: 20,
@@ -767,7 +768,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   ),
                 ),
                 const SizedBox(height: 5),
-                Text(
+                LText(
                   'You both opt in and work toward the same goal.',
                   style: GoogleFonts.inter(
                     fontSize: 12,
@@ -777,8 +778,8 @@ class _SocialScreenState extends State<SocialScreen> {
                 const SizedBox(height: 18),
                 DropdownButtonFormField<FriendSummary>(
                   initialValue: selected,
-                  decoration: const InputDecoration(
-                    labelText: 'Partner',
+                  decoration: InputDecoration(
+                    labelText: context.tr('Partner'),
                     prefixIcon: Icon(Iconsax.people),
                     border: OutlineInputBorder(),
                   ),
@@ -786,7 +787,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       .map(
                         (friend) => DropdownMenuItem(
                           value: friend,
-                          child: Text(friend.displayName),
+                          child: LText(friend.displayName),
                         ),
                       )
                       .toList(),
@@ -842,9 +843,9 @@ class _SocialScreenState extends State<SocialScreen> {
                   controller: messageController,
                   maxLength: 280,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Encouragement (optional)',
-                    hintText: 'Add a note to motivate your partner',
+                  decoration: InputDecoration(
+                    labelText: context.tr('Encouragement (optional)'),
+                    hintText: context.tr('Add a note to motivate your partner'),
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -865,7 +866,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       await _loadSocialGraph();
                     },
                     icon: const Icon(Iconsax.send_1),
-                    label: const Text('Send invitation'),
+                    label: const LText('Send invitation'),
                   ),
                 ),
               ],
@@ -929,7 +930,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LText(
                       room.title,
                       style: GoogleFonts.inter(
                         fontSize: 15,
@@ -937,7 +938,7 @@ class _SocialScreenState extends State<SocialScreen> {
                         color: FluentianColors.textPrimary,
                       ),
                     ),
-                    Text(
+                    LText(
                       room.eligible
                           ? '${room.eligibilityLabel} · Tap to join'
                           : 'Locked · ${room.eligibilityLabel}',
@@ -1078,7 +1079,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              LText(
                                 'Find a learning partner',
                                 style: GoogleFonts.inter(
                                   fontSize: 20,
@@ -1087,7 +1088,7 @@ class _SocialScreenState extends State<SocialScreen> {
                                 ),
                               ),
                               const SizedBox(height: 3),
-                              Text(
+                              LText(
                                 'Search by username or email address',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
@@ -1099,7 +1100,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           ),
                         ),
                         IconButton(
-                          tooltip: 'Close',
+                          tooltip: context.tr('Close'),
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close_rounded),
                         ),
@@ -1127,7 +1128,9 @@ class _SocialScreenState extends State<SocialScreen> {
                           }
                         },
                         decoration: InputDecoration(
-                          hintText: 'Search by username or email address',
+                          hintText: context.tr(
+                            'Search by username or email address',
+                          ),
                           hintStyle: GoogleFonts.inter(
                             color: FluentianColors.textSecondary,
                             fontWeight: FontWeight.w500,
@@ -1139,7 +1142,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           suffixIcon: Padding(
                             padding: const EdgeInsets.all(6),
                             child: IconButton.filled(
-                              tooltip: 'Search',
+                              tooltip: context.tr('Search'),
                               onPressed: searching ? null : search,
                               style: IconButton.styleFrom(
                                 backgroundColor: FluentianColors.primary,
@@ -1177,7 +1180,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           color: FluentianColors.primaryTint,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
+                        child: LText(
                           message!,
                           style: GoogleFonts.inter(
                             fontSize: 12,
@@ -1238,7 +1241,7 @@ class _SocialScreenState extends State<SocialScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              LText(
                 'Challenge ${friend.displayName}',
                 style: GoogleFonts.inter(
                   fontSize: 20,
@@ -1287,7 +1290,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   icon: const Icon(Iconsax.cup),
-                  label: const Text('Send challenge'),
+                  label: const LText('Send challenge'),
                   onPressed: () async {
                     try {
                       await _api.createChallenge(
@@ -1302,7 +1305,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       if (!sheetContext.mounted) return;
                       ScaffoldMessenger.of(sheetContext).showSnackBar(
                         SnackBar(
-                          content: Text(
+                          content: LText(
                             e is ApiException ? e.userMessage : e.toString(),
                           ),
                         ),
@@ -1389,7 +1392,7 @@ class _FriendSearchEmpty extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            Text(
+            LText(
               hasSearched ? 'No learners found' : 'Build your French circle',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
@@ -1399,7 +1402,7 @@ class _FriendSearchEmpty extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 7),
-            Text(
+            LText(
               hasSearched
                   ? 'Check the spelling or try another username or email.'
                   : 'Search for a learner, connect, and motivate each other as you progress.',
@@ -1463,7 +1466,7 @@ class _FriendSearchResult extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Text(
+            child: LText(
               initial,
               style: GoogleFonts.inter(
                 color: Colors.white,
@@ -1477,7 +1480,7 @@ class _FriendSearchResult extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LText(
                   name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1488,7 +1491,7 @@ class _FriendSearchResult extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
+                LText(
                   '@${user.username}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1515,7 +1518,7 @@ class _FriendSearchResult extends StatelessWidget {
             width: 43,
             height: 43,
             child: IconButton.filled(
-              tooltip: 'Add ${user.displayName}',
+              tooltip: context.tr('Add ${user.displayName}'),
               onPressed: sending ? null : onAdd,
               style: IconButton.styleFrom(
                 backgroundColor: FluentianColors.primary,
@@ -1553,7 +1556,7 @@ class _FriendStat extends StatelessWidget {
         color: FluentianColors.primaryTint,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
+      child: LText(
         label,
         style: GoogleFonts.inter(
           fontSize: 9,
@@ -1589,7 +1592,7 @@ class _PartnerProgress extends StatelessWidget {
       Row(
         children: [
           Expanded(
-            child: Text(
+            child: LText(
               name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1599,7 +1602,7 @@ class _PartnerProgress extends StatelessWidget {
               ),
             ),
           ),
-          Text(
+          LText(
             '$value / $target $unit',
             style: GoogleFonts.inter(
               fontSize: 10,
@@ -1648,7 +1651,7 @@ class _FriendCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      LText(
                         friend.displayName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1658,7 +1661,7 @@ class _FriendCard extends StatelessWidget {
                           color: FluentianColors.textPrimary,
                         ),
                       ),
-                      Text(
+                      LText(
                         '@${friend.username}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1700,7 +1703,7 @@ class _FriendCard extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: onChallenge,
                 icon: const Icon(Iconsax.cup, size: 17),
-                label: const Text('Challenge'),
+                label: const LText('Challenge'),
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
                   backgroundColor: FluentianColors.primaryTint,
@@ -1748,7 +1751,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
+        LText(
           title,
           style: GoogleFonts.inter(
             fontSize: 16,
@@ -1758,7 +1761,7 @@ class _SectionTitle extends StatelessWidget {
         ),
         const Spacer(),
         if (action != null)
-          Text(
+          LText(
             action!,
             style: GoogleFonts.inter(
               fontSize: 12,
@@ -1795,7 +1798,7 @@ class _Avatar extends StatelessWidget {
         ],
       ),
       child: Center(
-        child: Text(
+        child: LText(
           initial,
           style: GoogleFonts.inter(
             color: Colors.white,
@@ -1886,7 +1889,7 @@ class _HeroStat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          LText(
             value,
             style: GoogleFonts.inter(
               color: Colors.white,
@@ -1894,7 +1897,7 @@ class _HeroStat extends StatelessWidget {
               fontWeight: FontWeight.w900,
             ),
           ),
-          Text(
+          LText(
             label,
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.72),
@@ -1921,7 +1924,7 @@ class _LevelBadge extends StatelessWidget {
         color: FluentianColors.primaryTint,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
+      child: LText(
         level,
         style: GoogleFonts.inter(
           fontSize: 11,
@@ -1944,7 +1947,7 @@ class _FriendMetric extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        LText(
           value,
           style: GoogleFonts.inter(
             fontSize: 15,
@@ -1952,7 +1955,7 @@ class _FriendMetric extends StatelessWidget {
             color: FluentianColors.textPrimary,
           ),
         ),
-        Text(
+        LText(
           label,
           style: GoogleFonts.inter(
             fontSize: 11,
@@ -1986,7 +1989,7 @@ class _ProgressLine extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
+            LText(
               label,
               style: GoogleFonts.inter(
                 fontSize: 12,
@@ -1995,7 +1998,7 @@ class _ProgressLine extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text(
+            LText(
               '$value / $target',
               style: GoogleFonts.inter(
                 fontSize: 12,
@@ -2042,7 +2045,7 @@ class _EmptyPanel extends StatelessWidget {
         children: [
           Icon(icon, color: FluentianColors.primary, size: 28),
           const SizedBox(height: 10),
-          Text(
+          LText(
             title,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
@@ -2052,7 +2055,7 @@ class _EmptyPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          LText(
             body,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
@@ -2063,7 +2066,7 @@ class _EmptyPanel extends StatelessWidget {
           ),
           if (actionLabel != null && onAction != null) ...[
             const SizedBox(height: 12),
-            TextButton(onPressed: onAction, child: Text(actionLabel!)),
+            TextButton(onPressed: onAction, child: LText(actionLabel!)),
           ],
         ],
       ),
@@ -2137,7 +2140,7 @@ class _ChoiceChip extends StatelessWidget {
               : FluentianColors.primaryTint,
           borderRadius: BorderRadius.circular(999),
         ),
-        child: Text(
+        child: LText(
           label,
           style: GoogleFonts.inter(
             color: selected ? Colors.white : FluentianColors.primary,
@@ -2169,7 +2172,7 @@ class _StepperRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(
+          child: LText(
             label,
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w800,
@@ -2184,7 +2187,7 @@ class _StepperRow extends StatelessWidget {
         SizedBox(
           width: 70,
           child: Center(
-            child: Text(
+            child: LText(
               '$value',
               style: GoogleFonts.inter(
                 fontSize: 18,

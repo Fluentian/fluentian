@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../core/app_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +16,10 @@ class OtpVerificationScreen extends StatefulWidget {
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
-  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   int _secondsRemaining = 60;
   Timer? _timer;
@@ -65,7 +69,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final code = _otp;
     if (code.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter all 6 digits.')),
+        const SnackBar(content: LText('Please enter all 6 digits.')),
       );
       return;
     }
@@ -81,19 +85,23 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   Future<void> _resendOtp() async {
     if (!_canResend) return;
-    
+
     final success = await context.read<AuthProvider>().resendVerificationOtp();
     if (!mounted) return;
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verification code resent successfully.')),
+        const SnackBar(
+          content: LText('Verification code resent successfully.'),
+        ),
       );
       _startTimer();
     } else {
       final error = context.read<AuthProvider>().errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error ?? 'Failed to resend code. Please try again.')),
+        SnackBar(
+          content: LText(error ?? 'Failed to resend code. Please try again.'),
+        ),
       );
     }
   }
@@ -142,7 +150,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   ),
                   const SizedBox(height: 32),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 32,
+                    ),
                     decoration: BoxDecoration(
                       color: AuthColors.cardBg,
                       borderRadius: BorderRadius.circular(24),
@@ -151,7 +162,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LText(
                           'Verify your email',
                           style: GoogleFonts.inter(
                             fontSize: 24,
@@ -168,7 +179,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                               height: 1.5,
                             ),
                             children: [
-                              const TextSpan(text: 'We sent a 6-digit code to '),
+                              TextSpan(
+                                text: context.tr('We sent a 6-digit code to '),
+                              ),
                               TextSpan(
                                 text: widget.email,
                                 style: const TextStyle(
@@ -176,12 +189,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                   color: AuthColors.heading,
                                 ),
                               ),
-                              const TextSpan(text: '. Enter it below to verify your account.'),
+                              TextSpan(
+                                text: context.tr(
+                                  '. Enter it below to verify your account.',
+                                ),
+                              ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 32),
-                        
+
                         // 6-digit OTP fields
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -193,9 +210,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 focusNode: FocusNode(), // Dummy focus node
                                 onKeyEvent: (KeyEvent event) {
                                   // Auto-backspace behavior if empty
-                                  if (event is KeyDownEvent && 
-                                      event.logicalKey == LogicalKeyboardKey.backspace && 
-                                      _controllers[index].text.isEmpty && 
+                                  if (event is KeyDownEvent &&
+                                      event.logicalKey ==
+                                          LogicalKeyboardKey.backspace &&
+                                      _controllers[index].text.isEmpty &&
                                       index > 0) {
                                     _focusNodes[index - 1].requestFocus();
                                   }
@@ -216,39 +234,46 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                     counterText: '',
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: AuthColors.border),
+                                      borderSide: const BorderSide(
+                                        color: AuthColors.border,
+                                      ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: AuthColors.primary, width: 1.5),
+                                      borderSide: const BorderSide(
+                                        color: AuthColors.primary,
+                                        width: 1.5,
+                                      ),
                                     ),
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
                                   ),
                                 ),
                               ),
                             );
                           }),
                         ),
-                        
+
                         // Error message
                         if (auth.errorMessage != null) ...[
                           const SizedBox(height: 20),
                           _ErrorBanner(message: auth.errorMessage!),
                         ],
-                        
+
                         const SizedBox(height: 32),
                         AuthButton(
                           text: auth.isLoading ? 'Verifying…' : 'Verify email',
                           onPressed: auth.isLoading ? null : _verifyOtp,
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Timer / Resend
                         Center(
                           child: _canResend
                               ? GestureDetector(
                                   onTap: auth.isLoading ? null : _resendOtp,
-                                  child: Text(
+                                  child: LText(
                                     'Resend verification code',
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
@@ -258,7 +283,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                     ),
                                   ),
                                 )
-                              : Text(
+                              : LText(
                                   'Resend code in ${_secondsRemaining}s',
                                   style: GoogleFonts.inter(
                                     fontSize: 14,
@@ -294,10 +319,14 @@ class _ErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AuthColors.errorText, size: 18),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: AuthColors.errorText,
+            size: 18,
+          ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
+            child: LText(
               message,
               style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AuthColors {
@@ -38,7 +39,7 @@ class AuthLogo extends StatelessWidget {
             ],
           ),
           child: const Center(
-            child: Text(
+            child: LText(
               'F',
               style: TextStyle(
                 color: Colors.white,
@@ -49,7 +50,7 @@ class AuthLogo extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        Text(
+        LText(
           'fluentian',
           style: GoogleFonts.inter(
             fontSize: 20,
@@ -205,7 +206,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
                   size: 14,
                 ),
                 const SizedBox(width: 4),
-                Text(
+                LText(
                   widget.errorText!,
                   style: GoogleFonts.inter(
                     fontSize: 12,
@@ -241,7 +242,7 @@ class AuthButton extends StatelessWidget {
           ),
           elevation: 0,
         ),
-        child: Text(
+        child: LText(
           text,
           style: GoogleFonts.inter(
             fontSize: 16,
@@ -274,7 +275,7 @@ class AuthSocialButton extends StatelessWidget {
       child: OutlinedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, size: 20, color: AuthColors.body),
-        label: Text(
+        label: LText(
           text,
           style: GoogleFonts.inter(
             fontSize: 14,
@@ -305,7 +306,7 @@ class AuthDivider extends StatelessWidget {
         const Expanded(child: Divider(color: AuthColors.border, thickness: 1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
+          child: LText(
             'or continue with',
             style: GoogleFonts.inter(
               fontSize: 14,

@@ -27,9 +27,14 @@ class ContentProvider extends ChangeNotifier {
   final _contentApi = ContentApi.instance;
   final _progressApi = ProgressApi.instance;
 
+  Future<void> changeContentLanguage() async {
+    _lessonCache.clear();
+    await loadHomeData();
+  }
+
   /// Fetch all courses + user stats in one go. Called on home screen load.
-  Future<void> loadHomeData() async {
-    _status = ContentStatus.loading;
+  Future<void> loadHomeData({bool showLoading = true}) async {
+    if (showLoading) _status = ContentStatus.loading;
     _error = null;
     notifyListeners();
     try {

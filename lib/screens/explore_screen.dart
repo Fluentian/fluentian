@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../core/theme.dart';
+import '../core/app_localization.dart';
 import '../models/culture_story_model.dart';
 import '../providers/auth_provider.dart';
 import '../services/content_api.dart';
@@ -262,7 +263,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LText(
                           cleaned,
                           style: GoogleFonts.inter(
                             fontSize: 26,
@@ -270,7 +271,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             color: FluentianColors.textPrimary,
                           ),
                         ),
-                        Text(
+                        LText(
                           'From this Explore story',
                           style: GoogleFonts.inter(
                             fontSize: 12,
@@ -320,7 +321,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             if (!mounted) return;
                             ScaffoldMessenger.of(this.context).showSnackBar(
                               SnackBar(
-                                content: Text(
+                                content: LText(
                                   '$cleaned added to your word bank',
                                 ),
                                 behavior: SnackBarBehavior.floating,
@@ -342,7 +343,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           ),
                         )
                       : const Icon(Iconsax.add_circle),
-                  label: const Text('Save to my word bank'),
+                  label: const LText('Save to my word bank'),
                 ),
               ),
             ],
@@ -404,7 +405,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LText(
                           'Explore France',
                           style: GoogleFonts.inter(
                             fontSize: 20,
@@ -413,7 +414,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
+                        LText(
                           'Stories, sounds, and everyday culture',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -427,7 +428,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'My word bank',
+                    tooltip: context.tr('My word bank'),
                     onPressed: _showWordBank,
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.white.withValues(alpha: .14),
@@ -525,7 +526,7 @@ class _CultureStoryView extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
+                      child: LText(
                         story.title,
                         style: GoogleFonts.inter(
                           fontSize: 25,
@@ -549,7 +550,7 @@ class _CultureStoryView extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Expanded(
-                      child: Text(
+                      child: LText(
                         story.location,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
@@ -605,7 +606,7 @@ class _TranslateHintCard extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
+            child: LText(
               'Tap any sentence to reveal its translation. Long press a paragraph for the full translation.',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -647,7 +648,7 @@ class _WordContext extends StatelessWidget {
           children: [
             Icon(icon, size: 15, color: FluentianColors.primary),
             const SizedBox(width: 7),
-            Text(
+            LText(
               label,
               style: GoogleFonts.inter(
                 fontSize: 10,
@@ -659,7 +660,7 @@ class _WordContext extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        Text(
+        LText(
           text,
           style: GoogleFonts.inter(
             fontSize: 14,
@@ -697,7 +698,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
+          content: LText(
             'Could not play pronunciation. Check the device speech settings.',
           ),
           behavior: SnackBarBehavior.floating,
@@ -751,7 +752,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            LText(
                               'SAVED WORD',
                               style: GoogleFonts.inter(
                                 color: Colors.white70,
@@ -761,7 +762,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                               ),
                             ),
                             const SizedBox(height: 6),
-                            Text(
+                            LText(
                               item.word,
                               style: GoogleFonts.inter(
                                 color: Colors.white,
@@ -771,7 +772,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                             ),
                             if (item.translation.isNotEmpty) ...[
                               const SizedBox(height: 4),
-                              Text(
+                              LText(
                                 item.translation,
                                 style: GoogleFonts.inter(
                                   color: Colors.white70,
@@ -784,7 +785,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                         ),
                       ),
                       IconButton.filled(
-                        tooltip: 'Hear pronunciation',
+                        tooltip: context.tr('Hear pronunciation'),
                         onPressed: () => _speak(item.word),
                         style: IconButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -828,7 +829,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(
+                        child: LText(
                           'Listen, then say the word and the full sentence aloud.',
                           style: GoogleFonts.inter(
                             fontSize: 12,
@@ -853,7 +854,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                           _reload();
                         },
                         icon: const Icon(Icons.delete_outline),
-                        label: const Text('Remove'),
+                        label: const LText('Remove'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red.shade600,
                           minimumSize: const Size.fromHeight(50),
@@ -870,7 +871,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                               : item.sourceSentence,
                         ),
                         icon: const Icon(Iconsax.volume_high),
-                        label: const Text('Hear sentence'),
+                        label: const LText('Hear sentence'),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size.fromHeight(50),
                         ),
@@ -890,7 +891,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: FluentianColors.pageBg,
     appBar: AppBar(
-      title: const Text('My word bank'),
+      title: const LText('My word bank'),
       backgroundColor: FluentianColors.pageBg,
       surfaceTintColor: Colors.transparent,
     ),
@@ -922,7 +923,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  Text(
+                  LText(
                     'Your word bank is ready',
                     style: GoogleFonts.inter(
                       fontSize: 19,
@@ -930,7 +931,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  LText(
                     'Tap any word in an Explore story to save it with its real context.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
@@ -990,7 +991,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                             color: FluentianColors.primaryTint,
                             borderRadius: BorderRadius.circular(13),
                           ),
-                          child: Text(
+                          child: LText(
                             item.word.characters.first.toUpperCase(),
                             style: GoogleFonts.inter(
                               fontSize: 18,
@@ -1004,7 +1005,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              LText(
                                 item.word,
                                 style: GoogleFonts.inter(
                                   fontSize: 16,
@@ -1012,7 +1013,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
+                              LText(
                                 item.sourceSentence,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -1176,7 +1177,7 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
                     color: Colors.black.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Text(
+                  child: LText(
                     '${_currentMedia + 1}/${widget.media.length}',
                     style: GoogleFonts.inter(
                       color: Colors.white,
@@ -1215,7 +1216,7 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
-                    child: Text(
+                    child: LText(
                       widget.media[_currentMedia].caption,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -1356,7 +1357,7 @@ class _ExploreEmptyState extends StatelessWidget {
               color: FluentianColors.textSecondary,
             ),
             const SizedBox(height: 12),
-            Text(
+            LText(
               'No culture stories yet',
               style: GoogleFonts.inter(
                 fontSize: 18,
@@ -1365,7 +1366,7 @@ class _ExploreEmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            LText(
               'Published stories from the backend will appear here.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
@@ -1378,7 +1379,7 @@ class _ExploreEmptyState extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Iconsax.refresh),
-              label: const Text('Refresh'),
+              label: const LText('Refresh'),
             ),
           ],
         ),
@@ -1408,7 +1409,7 @@ class _MetaChip extends StatelessWidget {
           Icon(icon, size: 14, color: FluentianColors.primary),
           const SizedBox(width: 6),
           Flexible(
-            child: Text(
+            child: LText(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

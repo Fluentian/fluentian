@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 
@@ -125,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen>
                     // App name
                     Opacity(
                       opacity: _textOpacity.value,
-                      child: Text(
+                      child: LText(
                         'Fluentian',
                         style: GoogleFonts.inter(
                           fontSize: 28,
@@ -140,7 +141,7 @@ class _SplashScreenState extends State<SplashScreen>
                     // Tagline
                     Opacity(
                       opacity: _textOpacity.value,
-                      child: Text(
+                      child: LText(
                         'French made for you',
                         style: GoogleFonts.inter(
                           fontSize: 16,

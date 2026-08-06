@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
@@ -35,11 +36,11 @@ class StatChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (emoji != null)
-            Text(emoji!, style: const TextStyle(fontSize: 14))
+            LText(emoji!, style: const TextStyle(fontSize: 14))
           else if (icon != null)
             Icon(icon!, size: 14, color: color),
           const SizedBox(width: 4),
-          Text(
+          LText(
             value,
             style: GoogleFonts.inter(
               fontSize: 12,
@@ -205,7 +206,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
             ),
             const SizedBox(width: 6),
           ],
-          Text(
+          LText(
             widget.compact
                 ? '${widget.hearts}/${widget.maxHearts}'
                 : _countdown,
@@ -217,7 +218,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
           ),
           if (!widget.compact && widget.hearts < widget.maxHearts) ...[
             const SizedBox(width: 4),
-            Text(
+            LText(
               'next',
               style: GoogleFonts.inter(
                 fontSize: 10,
@@ -252,7 +253,7 @@ class SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
+          LText(
             title,
             style: GoogleFonts.inter(
               fontSize: 16,
@@ -263,7 +264,7 @@ class SectionHeader extends StatelessWidget {
           if (actionText != null)
             GestureDetector(
               onTap: onTap,
-              child: Text(
+              child: LText(
                 actionText!,
                 style: GoogleFonts.inter(
                   fontSize: 14,
@@ -401,7 +402,7 @@ class FluentianButton extends StatelessWidget {
           const SizedBox(width: 8),
         ],
         Flexible(
-          child: Text(
+          child: LText(
             text,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
@@ -439,7 +440,7 @@ class PillBadge extends StatelessWidget {
         color: bgColor,
         borderRadius: BorderRadius.circular(FluentianRadius.pill),
       ),
-      child: Text(
+      child: LText(
         text,
         style: GoogleFonts.inter(
           fontSize: fontSize,
@@ -465,7 +466,7 @@ class XpChip extends StatelessWidget {
         color: FluentianColors.accentTint,
         borderRadius: BorderRadius.circular(FluentianRadius.chip),
       ),
-      child: Text(
+      child: LText(
         value,
         style: GoogleFonts.inter(
           fontSize: 11,
@@ -557,7 +558,7 @@ class ToggleRow extends StatelessWidget {
               child: Icon(icon, size: 20, color: FluentianColors.textSecondary),
             ),
           Expanded(
-            child: Text(
+            child: LText(
               label,
               style: GoogleFonts.inter(
                 fontSize: 15,
@@ -614,7 +615,7 @@ class SettingsRow extends StatelessWidget {
                 ),
               ),
             Expanded(
-              child: Text(
+              child: LText(
                 label,
                 style: GoogleFonts.inter(
                   fontSize: 15,
@@ -624,7 +625,7 @@ class SettingsRow extends StatelessWidget {
               ),
             ),
             if (trailing != null)
-              Text(
+              LText(
                 trailing!,
                 style: GoogleFonts.inter(
                   fontSize: 14,

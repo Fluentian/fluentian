@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
@@ -68,7 +69,7 @@ class FluentianBottomNav extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  LText(
                     _tabs[index].label,
                     style: GoogleFonts.inter(
                       fontSize: 11,

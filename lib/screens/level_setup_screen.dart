@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
@@ -35,7 +36,7 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
                     ),
                   ),
                   const Spacer(),
-                  Text(
+                  LText(
                     'Step 1 of 3',
                     style: GoogleFonts.inter(
                       fontSize: 13,
@@ -55,7 +56,7 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-                    Text(
+                    LText(
                       "What's your French level?",
                       style: GoogleFonts.inter(
                         fontSize: 32,
@@ -64,7 +65,7 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    LText(
                       "We'll create the perfect path for you.",
                       style: GoogleFonts.inter(
                         fontSize: 16,
@@ -90,7 +91,7 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
                             builder: (_) => const PlacementTestScreen(),
                           ),
                         ),
-                        child: Text(
+                        child: LText(
                           'Take placement test instead',
                           style: GoogleFonts.inter(
                             fontSize: 14,
@@ -170,7 +171,7 @@ class _LevelCard extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Text(
+                child: LText(
                   '${CEFRLevel.values.indexOf(level) + 1}',
                   style: GoogleFonts.inter(
                     fontSize: 14,
@@ -186,7 +187,7 @@ class _LevelCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LText(
                     level.name,
                     style: GoogleFonts.inter(
                       fontSize: 16,
@@ -194,7 +195,7 @@ class _LevelCard extends StatelessWidget {
                       color: FluentianColors.textPrimary,
                     ),
                   ),
-                  Text(
+                  LText(
                     level.description,
                     style: GoogleFonts.inter(
                       fontSize: 13,

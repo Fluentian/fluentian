@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:livekit_client/livekit_client.dart';
@@ -78,7 +79,7 @@ class _SafetyAction extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LText(
                     title,
                     style: GoogleFonts.inter(
                       color: Colors.white,
@@ -87,7 +88,7 @@ class _SafetyAction extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
+                  LText(
                     subtitle,
                     style: GoogleFonts.inter(
                       color: Colors.white54,
@@ -432,14 +433,14 @@ class _CallScreenState extends State<CallScreen> {
       child: Row(
         children: [
           IconButton(
-            tooltip: 'Close',
+            tooltip: context.tr('Close'),
             icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
             onPressed: _leave,
           ),
           Expanded(
             child: Column(
               children: [
-                Text(
+                LText(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -449,7 +450,7 @@ class _CallScreenState extends State<CallScreen> {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                Text(
+                LText(
                   _status,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -461,7 +462,7 @@ class _CallScreenState extends State<CallScreen> {
           _StatusPill(icon: Iconsax.profile_2user, label: '$_participantCount'),
           const SizedBox(width: 6),
           IconButton(
-            tooltip: 'Safety center',
+            tooltip: context.tr('Safety center'),
             onPressed: _showSafetyCenter,
             icon: const Icon(Iconsax.shield_tick, color: Colors.white),
           ),
@@ -520,7 +521,7 @@ class _CallScreenState extends State<CallScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LText(
                           'Safety center',
                           style: GoogleFonts.inter(
                             color: Colors.white,
@@ -528,7 +529,7 @@ class _CallScreenState extends State<CallScreen> {
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        Text(
+                        LText(
                           'You are always in control of your room',
                           style: GoogleFonts.inter(
                             color: Colors.white60,
@@ -561,7 +562,7 @@ class _CallScreenState extends State<CallScreen> {
                 },
               ),
               const SizedBox(height: 18),
-              Text(
+              LText(
                 'PEOPLE IN THIS ROOM',
                 style: GoogleFonts.inter(
                   color: Colors.white54,
@@ -572,7 +573,7 @@ class _CallScreenState extends State<CallScreen> {
               ),
               const SizedBox(height: 10),
               if (participants.isEmpty)
-                Text(
+                LText(
                   'No other participants are connected yet.',
                   style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
                 )
@@ -608,7 +609,7 @@ class _CallScreenState extends State<CallScreen> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text(
+                      child: LText(
                         'Reports are confidential. Blocking prevents future direct matching and is saved to your account.',
                         style: GoogleFonts.inter(
                           color: Colors.white60,
@@ -661,7 +662,7 @@ class _CallScreenState extends State<CallScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(
+                LText(
                   'Report ${participant.name.isEmpty ? 'learner' : participant.name}',
                   style: GoogleFonts.inter(
                     fontSize: 20,
@@ -669,7 +670,7 @@ class _CallScreenState extends State<CallScreen> {
                   ),
                 ),
                 const SizedBox(height: 5),
-                Text(
+                LText(
                   'Choose the reason that best describes what happened.',
                   style: GoogleFonts.inter(
                     fontSize: 12,
@@ -679,8 +680,8 @@ class _CallScreenState extends State<CallScreen> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   initialValue: category,
-                  decoration: const InputDecoration(
-                    labelText: 'Reason',
+                  decoration: InputDecoration(
+                    labelText: context.tr('Reason'),
                     prefixIcon: Icon(Iconsax.warning_2),
                     border: OutlineInputBorder(),
                   ),
@@ -697,7 +698,7 @@ class _CallScreenState extends State<CallScreen> {
                           .map(
                             (entry) => DropdownMenuItem(
                               value: entry.key,
-                              child: Text(entry.value),
+                              child: LText(entry.value),
                             ),
                           )
                           .toList(),
@@ -710,10 +711,11 @@ class _CallScreenState extends State<CallScreen> {
                   controller: details,
                   maxLines: 3,
                   maxLength: 2000,
-                  decoration: const InputDecoration(
-                    labelText: 'What happened? (optional)',
-                    hintText:
-                        'Share the key details that will help us review this report',
+                  decoration: InputDecoration(
+                    labelText: context.tr('What happened? (optional)'),
+                    hintText: context.tr(
+                      'Share the key details that will help us review this report',
+                    ),
                     alignLabelWithHint: true,
                     border: OutlineInputBorder(),
                   ),
@@ -722,8 +724,8 @@ class _CallScreenState extends State<CallScreen> {
                   contentPadding: EdgeInsets.zero,
                   value: block,
                   activeTrackColor: FluentianColors.primary,
-                  title: const Text('Block this learner'),
-                  subtitle: const Text('Avoid future direct matching'),
+                  title: const LText('Block this learner'),
+                  subtitle: const LText('Avoid future direct matching'),
                   onChanged: (value) => setSheetState(() => block = value),
                 ),
                 const SizedBox(height: 8),
@@ -752,7 +754,7 @@ class _CallScreenState extends State<CallScreen> {
                               if (mounted) {
                                 ScaffoldMessenger.of(this.context).showSnackBar(
                                   const SnackBar(
-                                    content: Text(
+                                    content: LText(
                                       'Report received. Thank you for helping keep Fluentian safe.',
                                     ),
                                   ),
@@ -774,7 +776,7 @@ class _CallScreenState extends State<CallScreen> {
                             ),
                           )
                         : const Icon(Iconsax.shield_cross),
-                    label: const Text('Submit confidential report'),
+                    label: const LText('Submit confidential report'),
                   ),
                 ),
               ],
@@ -844,7 +846,7 @@ class _CallScreenState extends State<CallScreen> {
         color: Colors.white.withValues(alpha: 0.08),
       ),
       child: Center(
-        child: Text(
+        child: LText(
           time,
           style: GoogleFonts.inter(
             color: Colors.white,
@@ -888,7 +890,7 @@ class _CallScreenState extends State<CallScreen> {
           SizedBox(height: compact ? 18 : 26),
           _buildRoomAvatar(),
           SizedBox(height: compact ? 14 : 22),
-          Text(
+          LText(
             '$_participantCount speaking now',
             style: GoogleFonts.inter(
               color: Colors.white,
@@ -897,7 +899,7 @@ class _CallScreenState extends State<CallScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          LText(
             _matchedLevel == null
                 ? 'Guided French conversation'
                 : '$_matchedLevel guided French conversation',
@@ -938,7 +940,7 @@ class _CallScreenState extends State<CallScreen> {
                 color: Colors.black.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
+              child: LText(
                 time,
                 style: GoogleFonts.inter(
                   color: Colors.white,
@@ -1040,7 +1042,7 @@ class _CallScreenState extends State<CallScreen> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          Text(
+          LText(
             'Speaking prompts',
             style: GoogleFonts.inter(
               color: Colors.white,
@@ -1057,7 +1059,7 @@ class _CallScreenState extends State<CallScreen> {
           const SizedBox(height: 8),
           _buildQuickActions(),
           const SizedBox(height: 14),
-          Text(
+          LText(
             _roomName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1092,7 +1094,7 @@ class _CallScreenState extends State<CallScreen> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          Text(
+          LText(
             'Practice guide',
             style: GoogleFonts.inter(
               color: Colors.white,
@@ -1101,7 +1103,7 @@ class _CallScreenState extends State<CallScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          LText(
             'Use one prompt, then pass the turn.',
             style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
           ),
@@ -1116,7 +1118,7 @@ class _CallScreenState extends State<CallScreen> {
           const SizedBox(height: 16),
           _buildQuickActions(),
           const SizedBox(height: 14),
-          Text(
+          LText(
             _roomName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1140,7 +1142,7 @@ class _CallScreenState extends State<CallScreen> {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
+            child: LText(
               prompt,
               style: GoogleFonts.inter(color: Colors.white70, height: 1.35),
             ),
@@ -1171,7 +1173,7 @@ class _CallScreenState extends State<CallScreen> {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
+            child: LText(
               _matchReason!,
               style: GoogleFonts.inter(
                 color: Colors.white70,
@@ -1206,7 +1208,7 @@ class _CallScreenState extends State<CallScreen> {
               size: 34,
             ),
             const SizedBox(height: 12),
-            Text(
+            LText(
               _error!,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(color: Colors.white, height: 1.35),
@@ -1220,7 +1222,7 @@ class _CallScreenState extends State<CallScreen> {
                 });
                 _joinSpeakingRoom();
               },
-              child: const Text('Try again'),
+              child: const LText('Try again'),
             ),
           ],
         ),
@@ -1268,7 +1270,7 @@ class _CallScreenState extends State<CallScreen> {
                 ],
                 _CallControl(
                   icon: Icons.call_end,
-                  tooltip: 'End call',
+                  tooltip: context.tr('End call'),
                   backgroundColor: FluentianColors.error,
                   iconColor: Colors.white,
                   onTap: _leave,
@@ -1459,7 +1461,7 @@ class _StatusPill extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white70, size: 16),
           const SizedBox(width: 6),
-          Text(
+          LText(
             label,
             style: GoogleFonts.inter(
               color: Colors.white,
@@ -1494,7 +1496,7 @@ class _MiniStat extends StatelessWidget {
           Icon(icon, color: FluentianColors.primaryLight, size: 17),
           const SizedBox(width: 7),
           Flexible(
-            child: Text(
+            child: LText(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1531,7 +1533,7 @@ class _SmallAction extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white70, size: 17),
           const SizedBox(width: 7),
-          Text(
+          LText(
             label,
             style: GoogleFonts.inter(
               color: Colors.white70,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -34,7 +35,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     if (code.isEmpty || pwd.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields.')),
+        const SnackBar(content: LText('Please fill in all fields.')),
       );
       return;
     }
@@ -94,7 +95,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          LText(
             'Set a new password',
             style: GoogleFonts.inter(
               fontSize: 24,
@@ -111,7 +112,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 height: 1.5,
               ),
               children: [
-                const TextSpan(text: 'We sent a verification code to '),
+                TextSpan(text: context.tr('We sent a verification code to ')),
                 TextSpan(
                   text: widget.email,
                   style: const TextStyle(
@@ -119,8 +120,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     color: AuthColors.heading,
                   ),
                 ),
-                const TextSpan(
-                  text: '. Enter it below along with your new password.',
+                TextSpan(
+                  text: context.tr(
+                    '. Enter it below along with your new password.',
+                  ),
                 ),
               ],
             ),
@@ -212,7 +215,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         const SizedBox(width: 4),
         Expanded(child: _buildSegment(str >= 4 ? c : AuthColors.border)),
         const SizedBox(width: 12),
-        Text(
+        LText(
           label,
           style: GoogleFonts.inter(
             fontSize: 12,
@@ -260,7 +263,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          Text(
+          LText(
             'Password updated!',
             style: GoogleFonts.inter(
               fontSize: 24,
@@ -269,7 +272,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
+          LText(
             'Your password has been successfully changed. You can now sign in.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
@@ -314,7 +317,7 @@ class _ErrorBanner extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
+            child: LText(
               message,
               style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
             ),

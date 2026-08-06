@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -230,7 +231,7 @@ class _McqScreenState extends State<McqScreen>
         });
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Failed to load audio.')));
+        ).showSnackBar(const SnackBar(content: LText('Failed to load audio.')));
       }
     }
   }
@@ -262,7 +263,7 @@ class _McqScreenState extends State<McqScreen>
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Failed to load audio.')));
+        ).showSnackBar(const SnackBar(content: LText('Failed to load audio.')));
       }
     }
   }
@@ -453,7 +454,7 @@ class _McqScreenState extends State<McqScreen>
               ),
             ),
             const SizedBox(height: 16),
-            Text(
+            LText(
               'Hearts are refilling',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
@@ -463,7 +464,7 @@ class _McqScreenState extends State<McqScreen>
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            LText(
               'Take a quick break, review a lesson, or come back when the next heart is ready.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
@@ -492,13 +493,13 @@ class _McqScreenState extends State<McqScreen>
               child: ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Iconsax.clock),
-                label: const Text('Got it'),
+                label: const LText('Got it'),
               ),
             ),
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Stay here'),
+              child: const LText('Stay here'),
             ),
           ],
         ),
@@ -640,7 +641,7 @@ class _McqScreenState extends State<McqScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            LText(
               correct ? 'Correct! 🎉' : 'Not quite 💪',
               style: GoogleFonts.inter(
                 fontSize: 20,
@@ -660,7 +661,7 @@ class _McqScreenState extends State<McqScreen>
                     size: 16,
                   ),
                   const SizedBox(width: 4),
-                  Text(
+                  LText(
                     '-1',
                     style: GoogleFonts.inter(
                       fontSize: 13,
@@ -689,7 +690,7 @@ class _McqScreenState extends State<McqScreen>
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
+                      child: LText(
                         correctAnswer,
                         style: GoogleFonts.inter(
                           fontSize: 14,
@@ -710,7 +711,7 @@ class _McqScreenState extends State<McqScreen>
                     AiTutorSheet.show(
                       context,
                       systemContext:
-                          'Target language: French. You are a helpful French tutor. The user answered a French lesson question incorrectly. Question: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Learner answer: "$userAnswerText". Correct answer: "$correctAnswer". Explain the specific difference simply in English, using French examples when useful.',
+                          'Target language: French. The learner explanation language is ${AppLocaleController.activeLanguageName}. You are a helpful French tutor. The user answered a French lesson question incorrectly. Question: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Learner answer: "$userAnswerText". Correct answer: "$correctAnswer". Explain the specific difference simply in ${AppLocaleController.activeLanguageName}, using French examples when useful.',
                       initialPrompt:
                           'Why was my answer "$userAnswerText" incorrect? Please explain how it differs from "$correctAnswer".',
                     );
@@ -719,7 +720,7 @@ class _McqScreenState extends State<McqScreen>
                     Iconsax.message5,
                     color: FluentianColors.primary,
                   ),
-                  label: const Text(
+                  label: const LText(
                     'Ask AI why',
                     style: TextStyle(
                       color: FluentianColors.primary,
@@ -764,7 +765,7 @@ class _McqScreenState extends State<McqScreen>
                           strokeWidth: 2,
                         ),
                       )
-                    : Text(correct ? 'Continue' : 'Got it'),
+                    : LText(correct ? 'Continue' : 'Got it'),
               ),
             ),
           ],
@@ -852,7 +853,7 @@ class _McqScreenState extends State<McqScreen>
   Widget build(BuildContext context) {
     final questions = _activeQuestions;
     if (questions.isEmpty) {
-      return const Scaffold(body: Center(child: Text("No questions found.")));
+      return const Scaffold(body: Center(child: LText("No questions found.")));
     }
 
     final progress = (_currentIndex) / questions.length;
@@ -912,7 +913,7 @@ class _McqScreenState extends State<McqScreen>
                 child: Column(
                   children: [
                     const SizedBox(height: 16),
-                    Text(
+                    LText(
                       q.questionKind.replaceAll('_', ' ').toUpperCase(),
                       style: GoogleFonts.inter(
                         fontSize: 12,
@@ -922,7 +923,7 @@ class _McqScreenState extends State<McqScreen>
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text(
+                    LText(
                       q.promptText.isNotEmpty
                           ? q.promptText
                           : 'Follow the prompt below:',
@@ -1005,7 +1006,7 @@ class _McqScreenState extends State<McqScreen>
                               ),
                             ),
                             const SizedBox(width: 12),
-                            Text(
+                            LText(
                               _audioLoading
                                   ? 'Loading audio...'
                                   : _audioPlaying
@@ -1167,7 +1168,7 @@ class _McqScreenState extends State<McqScreen>
                         : Colors.grey.shade100,
                   ),
                   child: Center(
-                    child: Text(
+                    child: LText(
                       String.fromCharCode(65 + i),
                       style: GoogleFonts.inter(
                         fontSize: 13,
@@ -1181,7 +1182,7 @@ class _McqScreenState extends State<McqScreen>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
+                  child: LText(
                     optionText,
                     style: GoogleFonts.inter(
                       fontSize: 16,
@@ -1264,7 +1265,7 @@ class _McqScreenState extends State<McqScreen>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
+                  child: LText(
                     optionText,
                     style: GoogleFonts.inter(
                       fontSize: 16,
@@ -1302,7 +1303,7 @@ class _McqScreenState extends State<McqScreen>
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.grey.shade200),
           ),
-          child: Text(
+          child: LText(
             displaySentence,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
@@ -1322,7 +1323,7 @@ class _McqScreenState extends State<McqScreen>
             final optionText = options[i];
             final isSelected = _selected == i;
             return ChoiceChip(
-              label: Text(
+              label: LText(
                 optionText,
                 style: GoogleFonts.inter(
                   color: isSelected
@@ -1361,7 +1362,7 @@ class _McqScreenState extends State<McqScreen>
           ),
           child: _assembledWords.isEmpty
               ? Center(
-                  child: Text(
+                  child: LText(
                     'Tap words below to translate',
                     style: GoogleFonts.inter(
                       color: Colors.grey.shade400,
@@ -1393,7 +1394,7 @@ class _McqScreenState extends State<McqScreen>
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [FluentianShadows.subtle],
                         ),
-                        child: Text(
+                        child: LText(
                           word,
                           style: GoogleFonts.inter(
                             color: Colors.white,
@@ -1432,7 +1433,7 @@ class _McqScreenState extends State<McqScreen>
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Text(
+                child: LText(
                   word,
                   style: GoogleFonts.inter(
                     color: FluentianColors.textPrimary,
@@ -1461,7 +1462,7 @@ class _McqScreenState extends State<McqScreen>
             fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
-            hintText: 'Write your answer in French',
+            hintText: context.tr('Write your answer in French'),
             hintStyle: GoogleFonts.inter(
               color: Colors.grey.shade400,
               fontWeight: FontWeight.normal,
@@ -1585,7 +1586,7 @@ class _McqScreenState extends State<McqScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (badge.isNotEmpty) ...[
-                          Text(
+                          LText(
                             badge,
                             style: GoogleFonts.inter(
                               fontSize: 16,
@@ -1596,7 +1597,7 @@ class _McqScreenState extends State<McqScreen>
                           const SizedBox(width: 8),
                         ],
                         Expanded(
-                          child: Text(
+                          child: LText(
                             left,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
@@ -1710,7 +1711,7 @@ class _McqScreenState extends State<McqScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (badge.isNotEmpty) ...[
-                          Text(
+                          LText(
                             badge,
                             style: GoogleFonts.inter(
                               fontSize: 16,
@@ -1721,7 +1722,7 @@ class _McqScreenState extends State<McqScreen>
                           const SizedBox(width: 8),
                         ],
                         Expanded(
-                          child: Text(
+                          child: LText(
                             right,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
@@ -1751,7 +1752,7 @@ class _McqScreenState extends State<McqScreen>
 
     return Column(
       children: [
-        Text(
+        LText(
           phrase,
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
@@ -1794,7 +1795,7 @@ class _McqScreenState extends State<McqScreen>
                           size: 20,
                         ),
                   const SizedBox(width: 8),
-                  Text(
+                  LText(
                     _audioLoading
                         ? 'Loading...'
                         : _audioPlaying
@@ -1879,7 +1880,7 @@ class _McqScreenState extends State<McqScreen>
               ),
             ),
             const SizedBox(height: 12),
-            Text(
+            LText(
               isRecording
                   ? 'Recording... Tap to stop'
                   : isAnalyzing
@@ -1917,7 +1918,7 @@ class _McqScreenState extends State<McqScreen>
                       size: 24,
                     ),
                     const SizedBox(width: 8),
-                    Text(
+                    LText(
                       'Result: ${_pronunciationScore.toInt()}% Match',
                       style: GoogleFonts.inter(
                         fontSize: 18,
@@ -1958,7 +1959,7 @@ class _MetricRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 100,
-            child: Text(
+            child: LText(
               label,
               style: GoogleFonts.inter(
                 fontSize: 13,
@@ -1978,7 +1979,7 @@ class _MetricRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Text(
+          LText(
             '${(value * 100).toInt()}%',
             style: GoogleFonts.inter(
               fontSize: 12,
@@ -2020,7 +2021,7 @@ class _QuizHudChip extends StatelessWidget {
         children: [
           Icon(icon, size: 15, color: color),
           const SizedBox(width: 5),
-          Text(
+          LText(
             label,
             style: GoogleFonts.inter(
               fontSize: 12,

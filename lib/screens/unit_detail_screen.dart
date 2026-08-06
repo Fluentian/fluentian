@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -45,7 +46,7 @@ class UnitDetailScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text(
+                LText(
                   'Unit ${unit.unitNo} — ${unit.title}',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
@@ -64,7 +65,7 @@ class UnitDetailScreen extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(50),
                   ),
-                  child: Text(
+                  child: LText(
                     'Lessons: ${unit.lessons.length}',
                     style: GoogleFonts.inter(
                       fontSize: 12,
@@ -80,21 +81,27 @@ class UnitDetailScreen extends StatelessWidget {
                         .where((l) => content.isLessonCompleted(l.id))
                         .length;
                     final totalCount = unit.lessons.length;
-                    final progress = totalCount > 0 ? completedCount / totalCount : 0.0;
-                    
+                    final progress = totalCount > 0
+                        ? completedCount / totalCount
+                        : 0.0;
+
                     return Column(
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
                             value: progress,
-                            backgroundColor: Colors.white.withValues(alpha: 0.2),
-                            valueColor: const AlwaysStoppedAnimation(Colors.white),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.2,
+                            ),
+                            valueColor: const AlwaysStoppedAnimation(
+                              Colors.white,
+                            ),
                             minHeight: 6,
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text(
+                        LText(
                           '$completedCount of $totalCount lessons complete',
                           style: GoogleFonts.inter(
                             fontSize: 12,
@@ -129,7 +136,7 @@ class UnitDetailScreen extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Iconsax.book_1),
-                label: Text(
+                label: LText(
                   'Guidebook',
                   style: GoogleFonts.inter(
                     fontSize: 14,
@@ -163,11 +170,11 @@ class UnitDetailScreen extends StatelessWidget {
     if (unit.lessons.isEmpty) {
       return [
         Center(
-          child: Text(
+          child: LText(
             'No lessons available yet.',
             style: GoogleFonts.inter(color: Colors.grey),
           ),
-        )
+        ),
       ];
     }
 
@@ -176,7 +183,7 @@ class UnitDetailScreen extends StatelessWidget {
       final l = unit.lessons[i];
       final isCompleted = content.isLessonCompleted(l.id);
       final isUnlocked = content.isLessonUnlocked(unit.lessons, i);
-      
+
       _NodeState state;
       if (isCompleted) {
         state = _NodeState.completed;
@@ -219,15 +226,17 @@ class UnitDetailScreen extends StatelessWidget {
           icon = Iconsax.category_24;
       }
 
-      nodes.add(_LessonNode(
-        id: l.id,
-        name: l.title,
-        iconData: icon,
-        type: l.lessonKind,
-        xp: '${l.xpReward} XP',
-        state: state,
-        offset: i % 2 == 0 ? 0 : 1,
-      ));
+      nodes.add(
+        _LessonNode(
+          id: l.id,
+          name: l.title,
+          iconData: icon,
+          type: l.lessonKind,
+          xp: '${l.xpReward} XP',
+          state: state,
+          offset: i % 2 == 0 ? 0 : 1,
+        ),
+      );
     }
 
     final widgets = <Widget>[];
@@ -310,7 +319,7 @@ class UnitDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          LText(
             'Checkpoint',
             style: GoogleFonts.inter(
               fontSize: 11,
@@ -368,7 +377,7 @@ class UnitDetailScreen extends StatelessWidget {
           child: Center(child: icon),
         ),
         const SizedBox(height: 4),
-        Text(
+        LText(
           l.name,
           style: GoogleFonts.inter(
             fontSize: 12,
@@ -379,7 +388,7 @@ class UnitDetailScreen extends StatelessWidget {
           ),
         ),
         if (l.state == _NodeState.active)
-          Text(
+          LText(
             'Start →',
             style: GoogleFonts.inter(
               fontSize: 11,

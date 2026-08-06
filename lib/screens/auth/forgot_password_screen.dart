@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -34,7 +35,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter your email address.'),
+          content: LText('Please enter your email address.'),
           duration: AuthProvider.errorDisplayDuration,
         ),
       );
@@ -57,7 +58,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       final error = context.read<AuthProvider>().errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
+          content: LText(
             error ?? 'Failed to send reset code. Please try again.',
           ),
           duration: AuthProvider.errorDisplayDuration,
@@ -122,7 +123,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LText(
                           'Forgot your password?',
                           style: GoogleFonts.inter(
                             fontSize: 22,
@@ -131,7 +132,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
+                        LText(
                           "No worries. Enter your email and we'll send you a 6-digit verification code to reset your password.",
                           style: GoogleFonts.inter(
                             fontSize: 15,
@@ -174,7 +175,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   color: AuthColors.primary,
                                 ),
                                 const SizedBox(width: 6),
-                                Text(
+                                LText(
                                   'Back to sign in',
                                   style: GoogleFonts.inter(
                                     fontSize: 14,
@@ -214,7 +215,7 @@ class _SmallLogo extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Center(
-            child: Text(
+            child: LText(
               'F',
               style: TextStyle(
                 color: Colors.white,
@@ -225,7 +226,7 @@ class _SmallLogo extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        Text(
+        LText(
           'fluentian',
           style: GoogleFonts.inter(
             fontSize: 18,

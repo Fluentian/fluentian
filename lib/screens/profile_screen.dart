@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../core/constants.dart';
+import '../core/app_localization.dart';
 import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
@@ -63,7 +64,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       child: Center(
-                        child: Text(
+                        child: LText(
                           initial,
                           style: GoogleFonts.inter(
                             fontSize: 30,
@@ -78,7 +79,7 @@ class ProfileScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          LText(
                             user.displayName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -89,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 3),
-                          Text(
+                          LText(
                             '@${user.username}',
                             style: GoogleFonts.inter(
                               fontSize: 13,
@@ -157,7 +158,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
+                          child: LText(
                             user.learningGoal!,
                             style: GoogleFonts.inter(
                               fontSize: 13,
@@ -185,7 +186,7 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
+                    LText(
                       'Level progress',
                       style: GoogleFonts.inter(
                         fontSize: 16,
@@ -194,7 +195,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Text(
+                    LText(
                       '${(xpProgress * 100).round()}%',
                       style: GoogleFonts.inter(
                         fontSize: 13,
@@ -228,7 +229,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Expanded(
-                      child: Text(
+                      child: LText(
                         '${xp % nextLevelXp} of $nextLevelXp XP toward the next milestone',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -306,7 +307,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    Text(
+                    LText(
                       'Learning summary',
                       style: GoogleFonts.inter(
                         fontSize: 16,
@@ -345,7 +346,7 @@ class ProfileScreen extends StatelessWidget {
                 context,
               ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
               icon: const Icon(Iconsax.user_edit),
-              label: const Text('Personalize my profile'),
+              label: const LText('Personalize my profile'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: FluentianColors.textPrimary,
                 foregroundColor: Colors.white,
@@ -399,7 +400,7 @@ class _MetricCard extends StatelessWidget {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Text(
+                child: LText(
                   value,
                   maxLines: 1,
                   style: GoogleFonts.inter(
@@ -411,7 +412,7 @@ class _MetricCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 5),
-              Text(
+              LText(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -463,7 +464,7 @@ class _SummaryLine extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
+            child: LText(
               label,
               style: GoogleFonts.inter(
                 fontSize: 14,
@@ -473,7 +474,7 @@ class _SummaryLine extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Text(
+          LText(
             value,
             style: GoogleFonts.inter(
               fontSize: 14,
@@ -508,7 +509,7 @@ class _Pill extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 14),
           const SizedBox(width: 5),
-          Text(
+          LText(
             text,
             style: GoogleFonts.inter(
               fontSize: 12,
@@ -542,7 +543,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 4),
-    child: Text(
+    child: LText(
       text,
       style: GoogleFonts.inter(
         fontSize: 11,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -84,7 +85,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      LText(
                         'Live practice',
                         style: GoogleFonts.inter(
                           fontSize: 22,
@@ -93,7 +94,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
+                      LText(
                         'Rooms open when another learner is online',
                         style: GoogleFonts.inter(
                           fontSize: 13,
@@ -205,7 +206,7 @@ class _Heading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(0, 22, 0, 10),
-    child: Text(
+    child: LText(
       text,
       style: GoogleFonts.inter(
         fontSize: 16,
@@ -238,7 +239,7 @@ class _MatchCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LText(
                     room.title,
                     style: GoogleFonts.inter(
                       color: Colors.white,
@@ -246,7 +247,7 @@ class _MatchCard extends StatelessWidget {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  Text(
+                  LText(
                     'Private · 2 people · ${room.eligibilityLabel}',
                     style: GoogleFonts.inter(
                       color: Colors.white70,
@@ -260,7 +261,7 @@ class _MatchCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 14),
-        Text(
+        LText(
           room.description,
           style: GoogleFonts.inter(color: Colors.white, height: 1.4),
         ),
@@ -270,7 +271,7 @@ class _MatchCard extends StatelessWidget {
           child: ElevatedButton.icon(
             onPressed: onJoin,
             icon: Icon(room.isOpen ? Iconsax.call : Iconsax.clock),
-            label: Text(
+            label: LText(
               room.isOpen ? 'Find my partner' : 'Waiting for learners',
             ),
             style: ElevatedButton.styleFrom(
@@ -326,7 +327,7 @@ class _RoomCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LText(
                   room.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -337,7 +338,7 @@ class _RoomCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
+                LText(
                   enabled
                       ? '${room.eligibilityLabel} · Open now'
                       : room.isOpen
@@ -383,9 +384,9 @@ class _MessageCard extends StatelessWidget {
     padding: const EdgeInsets.all(30),
     child: Column(
       children: [
-        Text(message),
+        LText(message),
         const SizedBox(height: 12),
-        OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+        OutlinedButton(onPressed: onRetry, child: const LText('Retry')),
       ],
     ),
   );

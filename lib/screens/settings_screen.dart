@@ -5,7 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
+import '../core/app_localization.dart';
 import '../providers/auth_provider.dart';
+import '../providers/content_provider.dart';
 import '../services/app_logger.dart';
 import '../services/local_push_service.dart';
 
@@ -27,7 +29,7 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
       appBar: AppBar(
-        title: Text(
+        title: LText(
           'Your settings',
           style: GoogleFonts.inter(fontWeight: FontWeight.w900),
         ),
@@ -39,6 +41,24 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         children: [
           _AccountHeader(onEdit: () => _showProfileEditor(context)),
+          const SizedBox(height: 16),
+          _SettingsGroup(
+            title: 'Learning language',
+            children: [
+              _LanguageRow(
+                locale: context.watch<AppLocaleController>().locale,
+                onChanged: (locale) async {
+                  await context.read<AppLocaleController>().setLocale(locale);
+                  if (!context.mounted) return;
+                  await context.read<AuthProvider>().updateLearningLanguage(
+                    locale.languageCode,
+                  );
+                  if (!context.mounted) return;
+                  await context.read<ContentProvider>().changeContentLanguage();
+                },
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           _SettingsGroup(
             title: 'Learning',
@@ -235,7 +255,7 @@ class SettingsScreen extends StatelessWidget {
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not save setting.')));
+      ).showSnackBar(const SnackBar(content: LText('Could not save setting.')));
     }
   }
 
@@ -258,12 +278,12 @@ class SettingsScreen extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Test notification sent.')));
+      ).showSnackBar(const SnackBar(content: LText('Test notification sent.')));
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Enable notifications before sending a test.'),
+          content: LText('Enable notifications before sending a test.'),
         ),
       );
     }
@@ -278,7 +298,7 @@ class SettingsScreen extends StatelessWidget {
     }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the privacy policy.')),
+        const SnackBar(content: LText('Could not open the privacy policy.')),
       );
     }
   }
@@ -291,21 +311,21 @@ class SettingsScreen extends StatelessWidget {
           Icons.warning_amber_rounded,
           color: FluentianColors.error,
         ),
-        title: const Text('Delete your account?'),
-        content: const Text(
+        title: const LText('Delete your account?'),
+        content: const LText(
           'This permanently removes your profile, learning progress, messages, social data, notifications, and device tokens. This cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Keep account'),
+            child: const LText('Keep account'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: FluentianColors.error,
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Delete permanently'),
+            child: const LText('Delete permanently'),
           ),
         ],
       ),
@@ -316,7 +336,7 @@ class SettingsScreen extends StatelessWidget {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
+        content: LText(
           ok
               ? 'Your account was deleted.'
               : auth.errorMessage ?? 'Could not delete your account.',
@@ -403,7 +423,7 @@ class SettingsScreen extends StatelessWidget {
                                 width: 2,
                               ),
                             ),
-                            child: Text(
+                            child: LText(
                               initial,
                               style: GoogleFonts.inter(
                                 color: Colors.white,
@@ -417,7 +437,7 @@ class SettingsScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                LText(
                                   'Make your profile yours',
                                   style: GoogleFonts.inter(
                                     color: Colors.white,
@@ -426,7 +446,7 @@ class SettingsScreen extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
+                                LText(
                                   'Help your learning circle know who you are and what you are aiming for.',
                                   style: GoogleFonts.inter(
                                     color: Colors.white.withValues(alpha: .78),
@@ -487,7 +507,7 @@ class SettingsScreen extends StatelessWidget {
                                   setState(() => isSaving = false);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Could not save profile.'),
+                                      content: LText('Could not save profile.'),
                                     ),
                                   );
                                 }
@@ -501,7 +521,7 @@ class SettingsScreen extends StatelessWidget {
                                 ),
                               )
                             : const Icon(Icons.check_circle_outline_rounded),
-                        label: Text(
+                        label: LText(
                           isSaving ? 'Saving your profile…' : 'Save my profile',
                         ),
                         style: ElevatedButton.styleFrom(
@@ -600,7 +620,7 @@ class _DebugLogsRow extends StatelessWidget {
         if (!context.mounted) return;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Debug logs copied.')));
+        ).showSnackBar(const SnackBar(content: LText('Debug logs copied.')));
       },
       trailing: const Icon(
         Icons.copy_rounded,
@@ -646,7 +666,7 @@ class _AccountHeader extends StatelessWidget {
               border: Border.all(color: Colors.white.withValues(alpha: .25)),
             ),
             child: Center(
-              child: Text(
+              child: LText(
                 initial,
                 style: GoogleFonts.inter(
                   fontSize: 22,
@@ -661,7 +681,7 @@ class _AccountHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LText(
                   user.displayName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -672,7 +692,7 @@ class _AccountHeader extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
+                LText(
                   user.email,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -685,7 +705,7 @@ class _AccountHeader extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Edit profile',
+            tooltip: context.tr('Edit profile'),
             onPressed: onEdit,
             style: IconButton.styleFrom(
               backgroundColor: Colors.white.withValues(alpha: .14),
@@ -712,7 +732,7 @@ class _SettingsGroup extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(
+          child: LText(
             title,
             style: GoogleFonts.inter(
               fontSize: 11,
@@ -745,6 +765,41 @@ class _SettingsGroup extends StatelessWidget {
   }
 }
 
+class _LanguageRow extends StatelessWidget {
+  final Locale locale;
+  final ValueChanged<Locale> onChanged;
+
+  const _LanguageRow({required this.locale, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    const options = [
+      (Locale('en'), 'English'),
+      (Locale('am'), 'አማርኛ'),
+      (Locale('om'), 'Afaan Oromoo'),
+    ];
+    return _RowShell(
+      icon: Icons.language_rounded,
+      label: 'Learning language',
+      trailing: DropdownButton<String>(
+        value: locale.languageCode,
+        underline: const SizedBox.shrink(),
+        items: options
+            .map(
+              (option) => DropdownMenuItem(
+                value: option.$1.languageCode,
+                child: LText(option.$2),
+              ),
+            )
+            .toList(),
+        onChanged: (code) {
+          if (code != null) onChanged(Locale(code));
+        },
+      ),
+    );
+  }
+}
+
 class _DailyGoalRow extends StatelessWidget {
   final int minutes;
   final ValueChanged<int> onChanged;
@@ -763,7 +818,7 @@ class _DailyGoalRow extends StatelessWidget {
         items: options
             .map(
               (value) =>
-                  DropdownMenuItem(value: value, child: Text('$value min')),
+                  DropdownMenuItem(value: value, child: LText('$value min')),
             )
             .toList(),
         onChanged: (value) {
@@ -792,7 +847,7 @@ class _TimeRow extends StatelessWidget {
       label: 'Reminder time',
       enabled: enabled,
       onTap: enabled ? onTap : null,
-      trailing: Text(
+      trailing: LText(
         time,
         style: GoogleFonts.inter(
           fontSize: 14,
@@ -828,7 +883,7 @@ class _FontScaleRow extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
+                child: LText(
                   'Font size',
                   style: GoogleFonts.inter(
                     fontSize: 15,
@@ -846,7 +901,7 @@ class _FontScaleRow extends StatelessWidget {
               segments: List.generate(
                 labels.length,
                 (index) =>
-                    ButtonSegment(value: index, label: Text(labels[index])),
+                    ButtonSegment(value: index, label: LText(labels[index])),
               ),
               selected: {value.clamp(0, 2)},
               onSelectionChanged: (selected) => onChanged(selected.first),
@@ -876,7 +931,7 @@ class _SwitchRow extends StatelessWidget {
     return SwitchListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       secondary: _SettingIcon(icon: icon),
-      title: Text(
+      title: LText(
         label,
         style: GoogleFonts.inter(
           fontSize: 14,
@@ -921,7 +976,7 @@ class _SliderRow extends StatelessWidget {
               Icon(icon, color: FluentianColors.primary),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
+                child: LText(
                   label,
                   style: GoogleFonts.inter(
                     fontSize: 15,
@@ -929,7 +984,7 @@ class _SliderRow extends StatelessWidget {
                   ),
                 ),
               ),
-              Text(
+              LText(
                 displayValue,
                 style: GoogleFonts.inter(
                   fontSize: 13,
@@ -978,7 +1033,7 @@ class _RowShell extends StatelessWidget {
             _SettingIcon(icon: icon, enabled: enabled),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
+              child: LText(
                 label,
                 style: GoogleFonts.inter(
                   fontSize: 15,
@@ -1020,7 +1075,7 @@ class _DangerAction extends StatelessWidget {
           children: [
             const Icon(Icons.logout_rounded, color: FluentianColors.error),
             const SizedBox(width: 12),
-            Text(
+            LText(
               isLoading ? 'Signing out...' : 'Sign out',
               style: GoogleFonts.inter(
                 fontSize: 14,

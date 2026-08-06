@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -92,7 +93,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: const LText('Notifications'),
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         actions: [
@@ -104,7 +105,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               return TextButton.icon(
                 onPressed: _markAllRead,
                 icon: const Icon(Iconsax.tick_circle, size: 16),
-                label: const Text('Mark all read'),
+                label: const LText('Mark all read'),
                 style: TextButton.styleFrom(
                   foregroundColor: FluentianColors.primary,
                   textStyle: GoogleFonts.inter(
@@ -243,7 +244,7 @@ class _InboxHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LText(
                   data.unreadCount == 0
                       ? 'You are all caught up'
                       : '${data.unreadCount} unread update${data.unreadCount == 1 ? '' : 's'}',
@@ -256,7 +257,7 @@ class _InboxHeader extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
+                LText(
                   '${data.items.length} total - ${data.localCount} from this app',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -300,7 +301,7 @@ class _SyncWarning extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
+            child: LText(
               message ?? 'Backend notifications could not sync right now.',
               style: GoogleFonts.inter(
                 color: FluentianColors.textPrimary,
@@ -374,7 +375,7 @@ class _NotificationTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Text(
+                          child: LText(
                             item.title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -401,7 +402,7 @@ class _NotificationTile extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 5),
-                    Text(
+                    LText(
                       item.body,
                       style: GoogleFonts.inter(
                         fontSize: 13,
@@ -420,7 +421,7 @@ class _NotificationTile extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
+                          child: LText(
                             _formatDate(item.createdAt),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -484,7 +485,7 @@ class _SourcePill extends StatelessWidget {
         color: tint,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
+      child: LText(
         label,
         style: GoogleFonts.inter(
           fontSize: 10.5,
@@ -541,7 +542,7 @@ class _MessageState extends StatelessWidget {
                   child: Icon(icon, size: 30, color: FluentianColors.primary),
                 ),
                 const SizedBox(height: 14),
-                Text(
+                LText(
                   title,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
@@ -551,7 +552,7 @@ class _MessageState extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
+                LText(
                   message,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
@@ -563,7 +564,7 @@ class _MessageState extends StatelessWidget {
                 ),
                 if (actionLabel != null && onAction != null) ...[
                   const SizedBox(height: 18),
-                  FilledButton(onPressed: onAction, child: Text(actionLabel!)),
+                  FilledButton(onPressed: onAction, child: LText(actionLabel!)),
                 ],
               ],
             ),

@@ -113,6 +113,11 @@ class AuthApi {
     return UserModel.fromJson(json);
   }
 
+  Future<UserModel> updateUser(Map<String, dynamic> data) async {
+    final json = await _client.patch('/users/me', data);
+    return UserModel.fromJson(json);
+  }
+
   /// Update user settings fields.
   Future<void> updateSettings(Map<String, dynamic> data) async {
     await _client.patch('/users/me/settings', data);

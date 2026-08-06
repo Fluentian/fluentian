@@ -11,6 +11,7 @@ import '../providers/content_provider.dart';
 import '../services/in_app_notification_service.dart';
 import '../services/notifications_api.dart';
 import '../core/theme.dart';
+import '../core/app_localization.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/bottom_nav.dart';
 import 'profile_screen.dart';
@@ -84,6 +85,20 @@ class _HomeContentState extends State<_HomeContent> {
     });
   }
 
+  Future<void> _refreshHome() async {
+    final content = context.read<ContentProvider>();
+    final auth = context.read<AuthProvider>();
+    final dueQuestions = content.getDueSrsQuestions();
+    await Future.wait([
+      content.loadHomeData(showLoading: false),
+      content.loadLessonProgress(),
+      auth.refreshHearts(),
+      dueQuestions,
+    ]);
+    if (!mounted) return;
+    setState(() => _dueQuestionsFuture = dueQuestions);
+  }
+
   UnitModel? _unitForLesson(ContentProvider content, String lessonId) {
     for (final course in content.courses) {
       for (final unit in course.units) {
@@ -114,7 +129,7 @@ class _HomeContentState extends State<_HomeContent> {
                       color: Colors.grey,
                     ),
                     const SizedBox(height: 16),
-                    Text(
+                    LText(
                       content.error ?? 'Connection error',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
@@ -125,7 +140,7 @@ class _HomeContentState extends State<_HomeContent> {
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => content.loadHomeData(),
-                      child: const Text('Retry'),
+                      child: const LText('Retry'),
                     ),
                   ],
                 ),
@@ -156,269 +171,285 @@ class _HomeContentState extends State<_HomeContent> {
           );
           final dailyChallengeComplete = lessonsToday >= dailyLessonGoal;
 
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _HomeHero(
-                  greeting: user?.greeting ?? 'Hello',
-                  displayName: user?.displayName ?? 'Learner',
-                  streak: streak,
-                  xp: xp,
-                  xpProgress: xpProgress,
-                  xpForNextLevel: xpForNextLevel,
-                  hearts: hearts,
-                  maxHearts: auth.maxHearts,
-                  nextHeartRefillAt: auth.nextHeartRefillAt,
-                  onHeartRefreshDue: () => auth.refreshHearts(),
-                ),
-                const SizedBox(height: 20),
+          return RefreshIndicator(
+            onRefresh: _refreshHome,
+            color: FluentianColors.primary,
+            backgroundColor: Colors.white,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _HomeHero(
+                    greeting: user?.greeting ?? 'Hello',
+                    displayName: user?.displayName ?? 'Learner',
+                    streak: streak,
+                    xp: xp,
+                    xpProgress: xpProgress,
+                    xpForNextLevel: xpForNextLevel,
+                    hearts: hearts,
+                    maxHearts: auth.maxHearts,
+                    nextHeartRefillAt: auth.nextHeartRefillAt,
+                    onHeartRefreshDue: () => auth.refreshHearts(),
+                  ),
+                  const SizedBox(height: 20),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: content.courses.isEmpty
-                      ? const _NoCoursesCard()
-                      : nextLesson == null
-                      ? _AllCaughtUpCard(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  LessonListScreen(initialUnitId: nextUnit?.id),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: content.courses.isEmpty
+                        ? const _NoCoursesCard()
+                        : nextLesson == null
+                        ? _AllCaughtUpCard(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => LessonListScreen(
+                                  initialUnitId: nextUnit?.id,
+                                ),
+                              ),
+                            ),
+                          )
+                        : _ContinueJourneyCard(
+                            lesson: nextLesson,
+                            chapterTitle:
+                                nextUnit?.title ?? 'Your learning path',
+                            chapterNumber: nextUnit?.unitNo,
+                            onContinue: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    LessonDetailScreen(lessonId: nextLesson.id),
+                              ),
+                            ),
+                            onViewJourney: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => LessonListScreen(
+                                  initialUnitId: nextUnit?.id,
+                                ),
+                              ),
                             ),
                           ),
-                        )
-                      : _ContinueJourneyCard(
-                          lesson: nextLesson,
-                          chapterTitle: nextUnit?.title ?? 'Your learning path',
-                          chapterNumber: nextUnit?.unitNo,
-                          onContinue: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  LessonDetailScreen(lessonId: nextLesson.id),
-                            ),
-                          ),
-                          onViewJourney: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  LessonListScreen(initialUnitId: nextUnit?.id),
-                            ),
-                          ),
-                        ),
-                ),
+                  ),
 
-                if (content.courses.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  const _HomeSectionLabel(text: 'TODAY'),
-                  const SizedBox(height: 10),
+                  if (content.courses.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    const _HomeSectionLabel(text: 'TODAY'),
+                    const SizedBox(height: 10),
 
-                  // SRS Daily Review Banner
-                  FutureBuilder<List<QuestionModel>>(
-                    future: _dueQuestionsFuture,
-                    builder: (context, snapshot) {
-                      final dueQuestions = snapshot.data;
-                      if (dueQuestions != null && dueQuestions.isNotEmpty) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                    // SRS Daily Review Banner
+                    FutureBuilder<List<QuestionModel>>(
+                      future: _dueQuestionsFuture,
+                      builder: (context, snapshot) {
+                        final dueQuestions = snapshot.data;
+                        if (dueQuestions != null && dueQuestions.isNotEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: FluentianColors.border,
+                                ),
+                                boxShadow: [FluentianShadows.subtle],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 46,
+                                    height: 46,
+                                    decoration: BoxDecoration(
+                                      color: FluentianColors.primaryTint,
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: const Icon(
+                                      Iconsax.message5,
+                                      color: FluentianColors.primary,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        LText(
+                                          'Daily Review Time!',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 16,
+                                            color: FluentianColors.textPrimary,
+                                          ),
+                                        ),
+                                        LText(
+                                          '${dueQuestions.length} questions ready for you',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            color:
+                                                FluentianColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  SizedBox(
+                                    height: 42,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        await Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const SrsReviewScreen(),
+                                          ),
+                                        );
+                                        if (mounted) _refreshDueQuestions();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            FluentianColors.primary,
+                                        minimumSize: const Size(84, 42),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const LText(
+                                        'Review',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+
+                    // Daily challenge
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(18),
+                          onTap: dailyChallengeComplete
+                              ? null
+                              : () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => LessonListScreen(
+                                      initialUnitId: nextUnit?.id,
+                                    ),
+                                  ),
+                                ),
                           child: Container(
-                            padding: const EdgeInsets.all(14),
-                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: FluentianColors.border),
+                              border: Border.all(
+                                color: dailyChallengeComplete
+                                    ? FluentianColors.success.withValues(
+                                        alpha: .35,
+                                      )
+                                    : FluentianColors.border,
+                              ),
                               boxShadow: [FluentianShadows.subtle],
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  width: 46,
-                                  height: 46,
+                                  width: 48,
+                                  height: 48,
                                   decoration: BoxDecoration(
-                                    color: FluentianColors.primaryTint,
+                                    color: dailyChallengeComplete
+                                        ? FluentianColors.success.withValues(
+                                            alpha: .12,
+                                          )
+                                        : const Color(0xFFFFF7ED),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
-                                  child: const Icon(
-                                    Iconsax.message5,
-                                    color: FluentianColors.primary,
-                                    size: 24,
+                                  child: Icon(
+                                    dailyChallengeComplete
+                                        ? Iconsax.tick_circle5
+                                        : Iconsax.cup5,
+                                    color: dailyChallengeComplete
+                                        ? FluentianColors.success
+                                        : FluentianColors.warning,
+                                    size: 25,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        'Daily Review Time!',
+                                      LText(
+                                        'DAILY CHALLENGE',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w900,
+                                          color: FluentianColors.warning,
+                                          letterSpacing: 0,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      LText(
+                                        dailyChallengeComplete
+                                            ? 'Daily challenge complete!'
+                                            : 'Complete $dailyLessonGoal lessons today',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w800,
                                           fontSize: 16,
+                                          fontWeight: FontWeight.w800,
                                           color: FluentianColors.textPrimary,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${dueQuestions.length} questions ready for you',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          color: FluentianColors.textSecondary,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                SizedBox(
-                                  height: 42,
-                                  child: ElevatedButton(
-                                    onPressed: () async {
-                                      await Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              const SrsReviewScreen(),
-                                        ),
-                                      );
-                                      if (mounted) _refreshDueQuestions();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: FluentianColors.primary,
-                                      minimumSize: const Size(84, 42),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Review',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                      ),
+                                CircularPercentIndicator(
+                                  radius: 24,
+                                  lineWidth: 5,
+                                  percent: lessonsToday / dailyLessonGoal,
+                                  center: LText(
+                                    '$lessonsToday/$dailyLessonGoal',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      color: FluentianColors.warning,
                                     ),
                                   ),
+                                  progressColor: dailyChallengeComplete
+                                      ? FluentianColors.success
+                                      : FluentianColors.warning,
+                                  backgroundColor: const Color(
+                                    0xFFF59E0B,
+                                  ).withValues(alpha: 0.15),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-
-                  // Daily challenge
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Material(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(18),
-                        onTap: dailyChallengeComplete
-                            ? null
-                            : () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => LessonListScreen(
-                                    initialUnitId: nextUnit?.id,
-                                  ),
-                                ),
-                              ),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: dailyChallengeComplete
-                                  ? FluentianColors.success.withValues(
-                                      alpha: .35,
-                                    )
-                                  : FluentianColors.border,
-                            ),
-                            boxShadow: [FluentianShadows.subtle],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: dailyChallengeComplete
-                                      ? FluentianColors.success.withValues(
-                                          alpha: .12,
-                                        )
-                                      : const Color(0xFFFFF7ED),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: Icon(
-                                  dailyChallengeComplete
-                                      ? Iconsax.tick_circle5
-                                      : Iconsax.cup5,
-                                  color: dailyChallengeComplete
-                                      ? FluentianColors.success
-                                      : FluentianColors.warning,
-                                  size: 25,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'DAILY CHALLENGE',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w900,
-                                        color: FluentianColors.warning,
-                                        letterSpacing: 0,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      dailyChallengeComplete
-                                          ? 'Daily challenge complete!'
-                                          : 'Complete $dailyLessonGoal lessons today',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w800,
-                                        color: FluentianColors.textPrimary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              CircularPercentIndicator(
-                                radius: 24,
-                                lineWidth: 5,
-                                percent: lessonsToday / dailyLessonGoal,
-                                center: Text(
-                                  '$lessonsToday/$dailyLessonGoal',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w900,
-                                    color: FluentianColors.warning,
-                                  ),
-                                ),
-                                progressColor: dailyChallengeComplete
-                                    ? FluentianColors.success
-                                    : FluentianColors.warning,
-                                backgroundColor: const Color(
-                                  0xFFF59E0B,
-                                ).withValues(alpha: 0.15),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
 
-                const SizedBox(height: 28),
-              ],
+                  const SizedBox(height: 28),
+                ],
+              ),
             ),
           );
         },
@@ -460,7 +491,7 @@ class _NoCoursesCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              LText(
                 'Your journey is being prepared',
                 style: GoogleFonts.inter(
                   fontSize: 15,
@@ -469,7 +500,7 @@ class _NoCoursesCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
+              LText(
                 'Your first course will appear here as soon as it is ready.',
                 style: GoogleFonts.inter(
                   fontSize: 12,
@@ -528,7 +559,7 @@ class _AllCaughtUpCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LText(
                       'You’re all caught up',
                       style: GoogleFonts.inter(
                         fontSize: 14,
@@ -537,7 +568,7 @@ class _AllCaughtUpCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
+                    LText(
                       'Browse the roadmap and revisit any lesson.',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -621,7 +652,7 @@ class _ContinueJourneyCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LText(
                   chapterLabel,
                   style: GoogleFonts.inter(
                     fontSize: 11,
@@ -631,7 +662,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 7),
-                Text(
+                LText(
                   lesson.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -643,7 +674,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
+                LText(
                   chapterTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -669,7 +700,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                     FilledButton.icon(
                       onPressed: onContinue,
                       icon: const Icon(Iconsax.play, size: 17),
-                      label: const Text('Start'),
+                      label: const LText('Start'),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: FluentianColors.primary,
@@ -695,7 +726,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                       size: 16,
                       color: Colors.white.withValues(alpha: .8),
                     ),
-                    label: Text(
+                    label: LText(
                       'View all lessons',
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.w800,
@@ -728,7 +759,7 @@ class _MissionDetail extends StatelessWidget {
     children: [
       Icon(icon, size: 16, color: Colors.white.withValues(alpha: .72)),
       const SizedBox(width: 5),
-      Text(
+      LText(
         text,
         style: GoogleFonts.inter(
           fontSize: 12,
@@ -748,7 +779,7 @@ class _HomeSectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: Text(
+    child: LText(
       text,
       style: GoogleFonts.inter(
         fontSize: 11,
@@ -827,7 +858,7 @@ class _HomeHero extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            LText(
                               greeting.toUpperCase(),
                               style: GoogleFonts.inter(
                                 fontSize: 11,
@@ -837,7 +868,7 @@ class _HomeHero extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
+                            LText(
                               displayName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -855,7 +886,7 @@ class _HomeHero extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Text(
+                  LText(
                     streak > 0
                         ? 'Your $streak-day streak is waiting for today’s win.'
                         : 'One small lesson is all it takes to begin.',
@@ -888,7 +919,7 @@ class _HomeHero extends StatelessWidget {
                   const SizedBox(height: 18),
                   Row(
                     children: [
-                      Text(
+                      LText(
                         'LEVEL PROGRESS',
                         style: GoogleFonts.inter(
                           fontSize: 10,
@@ -898,7 +929,7 @@ class _HomeHero extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Text(
+                      LText(
                         '${_compactNumber(xp)} XP',
                         style: GoogleFonts.inter(
                           fontSize: 12,
@@ -959,7 +990,7 @@ class _HeroPill extends StatelessWidget {
       children: [
         Icon(icon, color: FluentianColors.warning, size: 15),
         const SizedBox(width: 5),
-        Text(
+        LText(
           text,
           style: GoogleFonts.inter(
             fontSize: 11,
@@ -1068,7 +1099,7 @@ class _NotificationButtonState extends State<_NotificationButton> {
                     shape: BoxShape.circle,
                   ),
                   child: Center(
-                    child: Text(
+                    child: LText(
                       unread > 9 ? '9+' : '$unread',
                       style: GoogleFonts.inter(
                         fontSize: 10,

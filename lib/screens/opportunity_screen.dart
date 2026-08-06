@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
@@ -92,7 +93,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LText(
                           'Opportunities',
                           style: GoogleFonts.inter(
                             fontSize: 24,
@@ -100,7 +101,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                             color: FluentianColors.textPrimary,
                           ),
                         ),
-                        Text(
+                        LText(
                           'Find your next step',
                           style: GoogleFonts.inter(
                             fontSize: 13,
@@ -169,7 +170,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                             ),
                             const SizedBox(width: 6),
                           ],
-                          Text(
+                          LText(
                             label,
                             style: GoogleFonts.inter(
                               fontSize: 13,
@@ -211,7 +212,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                               color: FluentianColors.error,
                             ),
                             const SizedBox(height: 16),
-                            Text(
+                            LText(
                               'Could not load opportunities',
                               style: GoogleFonts.inter(
                                 fontSize: 16,
@@ -219,7 +220,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
+                            LText(
                               _error!,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
@@ -230,7 +231,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                             ElevatedButton.icon(
                               onPressed: _fetchOpportunities,
                               icon: const Icon(Iconsax.refresh),
-                              label: const Text('Try Again'),
+                              label: const LText('Try Again'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: FluentianColors.accent,
                                 foregroundColor: FluentianColors.primaryDark,
@@ -257,7 +258,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                                   color: Colors.grey.shade300,
                                 ),
                                 const SizedBox(height: 16),
-                                Text(
+                                LText(
                                   'No opportunities found',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.inter(
@@ -395,7 +396,7 @@ class _OpportunityCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 6),
                               Flexible(
-                                child: Text(
+                                child: LText(
                                   opportunity.type.toUpperCase(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -432,7 +433,7 @@ class _OpportunityCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Text(
+                            LText(
                               'Open',
                               style: GoogleFonts.inter(
                                 fontSize: 11,
@@ -446,7 +447,7 @@ class _OpportunityCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  Text(
+                  LText(
                     opportunity.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -458,7 +459,7 @@ class _OpportunityCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  LText(
                     opportunity.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -491,7 +492,7 @@ class _OpportunityCard extends StatelessWidget {
                       const SizedBox(width: 5),
                       ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 170),
-                        child: Text(
+                        child: LText(
                           deadlineText,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -507,7 +508,7 @@ class _OpportunityCard extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
+                      LText(
                         'View details',
                         style: GoogleFonts.inter(
                           fontSize: 14,

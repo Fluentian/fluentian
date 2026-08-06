@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
+import 'core/app_localization.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/content_provider.dart';
@@ -35,9 +37,10 @@ class FluentianApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ContentProvider()),
+        ChangeNotifierProvider(create: (_) => AppLocaleController()),
       ],
-      child: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
+      child: Consumer2<AuthProvider, AppLocaleController>(
+        builder: (context, auth, localeController, _) {
           final user = auth.user;
           final fontScale = switch (user?.fontScale ?? 1) {
             0 => 0.92,
@@ -62,6 +65,9 @@ class FluentianApp extends StatelessWidget {
             title: 'Fluentian',
             debugShowCheckedModeBanner: false,
             theme: theme,
+            locale: localeController.locale,
+            supportedLocales: AppLocaleController.supportedLocales,
+            localizationsDelegates: GlobalMaterialLocalizations.delegates,
             builder: (context, child) {
               final media = MediaQuery.of(context);
               return MediaQuery(
@@ -134,8 +140,16 @@ class _AppRootState extends State<_AppRoot> {
             } else {
               if (!_hasLoadedData) {
                 _hasLoadedData = true;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
+                final learnerLanguage = user?.baseLanguageCode ?? 'en';
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
                   if (context.mounted) {
+                    final localeController = context
+                        .read<AppLocaleController>();
+                    if (localeController.locale.languageCode !=
+                        learnerLanguage) {
+                      await localeController.setLocale(Locale(learnerLanguage));
+                    }
+                    if (!context.mounted) return;
                     context.read<ContentProvider>().loadHomeData();
                     context.read<ContentProvider>().loadLessonProgress();
                   }

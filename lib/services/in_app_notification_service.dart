@@ -14,12 +14,15 @@ class InAppNotificationService {
   Future<List<NotificationModel>> getNotifications({bool? isRead}) async {
     final prefs = await SharedPreferences.getInstance();
     final rawItems = prefs.getStringList(_storageKey) ?? [];
-    final notifications = rawItems
-        .map(_decode)
-        .whereType<NotificationModel>()
-        .where((notification) => isRead == null || notification.isRead == isRead)
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final notifications =
+        rawItems
+            .map(_decode)
+            .whereType<NotificationModel>()
+            .where(
+              (notification) => isRead == null || notification.isRead == isRead,
+            )
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return notifications;
   }
 
@@ -72,12 +75,13 @@ class InAppNotificationService {
     NotificationModel Function(NotificationModel notification) transform,
   ) async {
     final prefs = await SharedPreferences.getInstance();
-    final items = (prefs.getStringList(_storageKey) ?? [])
-        .map(_decode)
-        .whereType<NotificationModel>()
-        .map(transform)
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final items =
+        (prefs.getStringList(_storageKey) ?? [])
+            .map(_decode)
+            .whereType<NotificationModel>()
+            .map(transform)
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     await prefs.setStringList(_storageKey, items.map(_encode).toList());
   }
 

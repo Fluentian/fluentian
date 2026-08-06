@@ -544,6 +544,27 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateLearningLanguage(String languageCode) async {
+    final previous = _user;
+    if (previous == null) return false;
+    _user = previous.copyWith(baseLanguageCode: languageCode);
+    notifyListeners();
+    try {
+      final updated = await _authApi.updateUser({
+        'base_language_code': languageCode,
+      });
+      _user = updated;
+      await _apiClient.saveUser(updated);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _user = previous;
+      notifyListeners();
+      if (kDebugMode) debugPrint('Update learning language error: $e');
+      return false;
+    }
+  }
+
   Future<bool> updateSettings(Map<String, dynamic> data) async {
     final previous = _user;
     if (previous == null) return false;

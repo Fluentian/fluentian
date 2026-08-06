@@ -1,5 +1,6 @@
 import '../models/course_model.dart';
 import '../models/culture_story_model.dart';
+import '../core/app_localization.dart';
 import 'api_client.dart';
 
 /// Calls the Fluentian backend content endpoints.
@@ -9,9 +10,14 @@ class ContentApi {
 
   final _client = ApiClient.instance;
 
+  String get _languageQuery =>
+      'content_language=${Uri.encodeQueryComponent(AppLocaleController.activeLanguageCode)}';
+
   /// Fetch all published courses. Optionally filter by [level] (e.g. 'A1').
   Future<List<CourseModel>> getCourses({String? level}) async {
-    final query = level != null ? '?level=$level' : '';
+    final query = level != null
+        ? '?level=${Uri.encodeQueryComponent(level)}&$_languageQuery'
+        : '?$_languageQuery';
     final items = await _client.getList('/content/courses$query');
     return items
         .map((e) => CourseModel.fromJson(e as Map<String, dynamic>))
@@ -20,13 +26,17 @@ class ContentApi {
 
   /// Fetch a single course with its units.
   Future<CourseModel> getCourse(String courseId) async {
-    final json = await _client.get('/content/courses/$courseId');
+    final json = await _client.get(
+      '/content/courses/$courseId?$_languageQuery',
+    );
     return CourseModel.fromJson(json);
   }
 
   /// Fetch units for a course.
   Future<List<UnitModel>> getCourseUnits(String courseId) async {
-    final items = await _client.getList('/content/courses/$courseId/units');
+    final items = await _client.getList(
+      '/content/courses/$courseId/units?$_languageQuery',
+    );
     return items
         .map((e) => UnitModel.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -34,13 +44,17 @@ class ContentApi {
 
   /// Fetch full lesson detail (blocks + questions).
   Future<LessonDetailModel> getLessonDetail(String lessonId) async {
-    final json = await _client.get('/content/lessons/$lessonId');
+    final json = await _client.get(
+      '/content/lessons/$lessonId?$_languageQuery',
+    );
     return LessonDetailModel.fromJson(json);
   }
 
   /// Fetch only questions for a lesson (lighter call for quiz flow).
   Future<List<QuestionModel>> getLessonQuestions(String lessonId) async {
-    final items = await _client.getList('/content/lessons/$lessonId/questions');
+    final items = await _client.getList(
+      '/content/lessons/$lessonId/questions?$_languageQuery',
+    );
     return items
         .map((e) => QuestionModel.fromJson(e as Map<String, dynamic>))
         .toList();

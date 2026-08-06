@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -181,7 +182,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      LText(
                         'AI Tutor',
                         style: GoogleFonts.inter(
                           fontSize: 18,
@@ -190,7 +191,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(
+                      LText(
                         'Get hints, examples, and cleaner explanations',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -204,7 +205,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Close',
+                  tooltip: context.tr('Close'),
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(Iconsax.close_circle),
                   color: FluentianColors.textSecondary,
@@ -277,7 +278,9 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                         size: 20,
                         color: FluentianColors.textSecondary,
                       ),
-                      hintText: 'Ask why, request an example, or get a hint',
+                      hintText: context.tr(
+                        'Ask why, request an example, or get a hint',
+                      ),
                       hintStyle: GoogleFonts.inter(
                         color: FluentianColors.textSecondary,
                         fontSize: 14,
@@ -310,7 +313,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                       boxShadow: _isLoading ? null : [FluentianShadows.subtle],
                     ),
                     child: IconButton(
-                      tooltip: 'Send',
+                      tooltip: context.tr('Send'),
                       icon: const Icon(
                         Iconsax.send_1,
                         color: Colors.white,
@@ -362,7 +365,7 @@ class _PromptChip extends StatelessWidget {
               children: [
                 Icon(icon, size: 16, color: FluentianColors.primary),
                 const SizedBox(width: 6),
-                Text(
+                LText(
                   label,
                   style: GoogleFonts.inter(
                     fontSize: 12,
@@ -420,7 +423,7 @@ class _TutorMessageBubble extends StatelessWidget {
                   boxShadow: isUser ? null : [FluentianShadows.subtle],
                 ),
                 child: isUser
-                    ? Text(
+                    ? LText(
                         message.content,
                         style: GoogleFonts.inter(
                           color: Colors.white,
@@ -612,7 +615,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(
+                child: LText(
                   isPoll ? 'Quick poll' : 'Mini quiz',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -626,7 +629,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
             ],
           ),
           const SizedBox(height: 10),
-          Text(
+          LText(
             activity.question,
             style: GoogleFonts.inter(
               color: FluentianColors.textPrimary,
@@ -692,7 +695,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(
+                              child: LText(
                                 option.text,
                                 style: GoogleFonts.inter(
                                   color: FluentianColors.textPrimary,
@@ -716,7 +719,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                             ),
                           ),
                           const SizedBox(height: 5),
-                          Text(
+                          LText(
                             '${(percent * 100).round()}% chose this',
                             style: GoogleFonts.inter(
                               color: FluentianColors.textSecondary,
@@ -742,7 +745,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: FluentianColors.border),
               ),
-              child: Text(
+              child: LText(
                 [
                   if (!isPoll && selectedOption?.isCorrect == true) 'Correct!',
                   if (!isPoll && selectedOption?.isCorrect == false)
@@ -800,7 +803,7 @@ class _TypingBubble extends StatelessWidget {
                   children: [
                     _AnimatedDots(),
                     SizedBox(width: 10),
-                    Text(
+                    LText(
                       'Tutor is thinking',
                       style: TextStyle(
                         color: FluentianColors.textSecondary,

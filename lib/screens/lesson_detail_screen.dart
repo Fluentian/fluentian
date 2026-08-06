@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
@@ -66,19 +67,19 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     if (_lesson == null) {
       return Scaffold(
         backgroundColor: FluentianColors.pageBg,
-        appBar: AppBar(title: const Text('Error')),
+        appBar: AppBar(title: const LText('Error')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Failed to load lesson.'),
+              const LText('Failed to load lesson.'),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   setState(() => _isLoading = true);
                   _loadLesson();
                 },
-                child: const Text('Retry'),
+                child: const LText('Retry'),
               ),
             ],
           ),
@@ -107,7 +108,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: FluentianColors.textPrimary),
-        title: Text(
+        title: LText(
           _lesson!.title,
           style: GoogleFonts.inter(
             color: FluentianColors.textPrimary,
@@ -248,7 +249,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LText(
                       'Lesson path',
                       style: GoogleFonts.inter(
                         fontSize: 12,
@@ -257,7 +258,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
+                    LText(
                       _lesson!.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -299,7 +300,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
+          LText(
             'Read, listen, ask AI, then prove it in the quiz.',
             style: GoogleFonts.inter(
               fontSize: 12,
@@ -339,7 +340,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          Text(
+          LText(
             'Quiz-Only Session',
             style: GoogleFonts.inter(
               fontSize: 18,
@@ -348,7 +349,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          Text(
+          LText(
             'This lesson is an assessment designed to test your skills directly without preparatory reading material.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
@@ -469,7 +470,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    Text(
+                    LText(
                       _currentStep < blockCount
                           ? (_currentStep == 0 ? 'Start Lesson' : 'Next Lesson')
                           : quizQuestions.isEmpty
@@ -508,7 +509,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 color: FluentianColors.primaryTint,
                 borderRadius: BorderRadius.circular(999),
               ),
-              child: Text(
+              child: LText(
                 'STEP $step OF $total',
                 style: GoogleFonts.inter(
                   color: FluentianColors.primary,
@@ -519,7 +520,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               ),
             ),
             const Spacer(),
-            Text(
+            LText(
               '${((step / total) * 100).round()}%',
               style: GoogleFonts.inter(
                 color: FluentianColors.textSecondary,
@@ -551,7 +552,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LText(
                     presentation.title,
                     style: GoogleFonts.inter(
                       color: FluentianColors.textPrimary,
@@ -561,7 +562,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(
+                  LText(
                     presentation.instruction,
                     style: GoogleFonts.inter(
                       color: FluentianColors.textSecondary,
@@ -578,7 +579,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         const SizedBox(height: 22),
         _buildBlock(block),
         const SizedBox(height: 6),
-        Text(
+        LText(
           step == total
               ? 'Great work — the quiz is next.'
               : 'Take your time. Continue when this feels clear.',
@@ -631,7 +632,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     if (lesson == null) {
       return [
         'Target language: French.',
-        'Base explanation language: English.',
+        'Base explanation language: ${AppLocaleController.activeLanguageName}.',
         if (focus != null) 'Current focus: $focus',
       ].join('\n');
     }
@@ -667,7 +668,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
 
     return [
       'Target language: French.',
-      'Base explanation language: English.',
+      'Base explanation language: ${AppLocaleController.activeLanguageName}.',
       'Lesson title: ${lesson.title}',
       'Lesson kind: ${lesson.lessonKind}',
       'Lesson XP: ${lesson.xpReward}',
@@ -703,7 +704,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text(
+                  child: LText(
                     text,
                     style: GoogleFonts.inter(
                       fontSize: 15,
@@ -719,7 +720,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   Column(
                     children: [
                       IconButton(
-                        tooltip: 'Listen',
+                        tooltip: context.tr('Listen'),
                         icon: const Icon(
                           Iconsax.volume_high,
                           color: FluentianColors.primary,
@@ -727,7 +728,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         onPressed: () => _speakBlock(block),
                       ),
                       IconButton(
-                        tooltip: 'Ask AI',
+                        tooltip: context.tr('Ask AI'),
                         icon: const Icon(
                           Iconsax.message5,
                           color: FluentianColors.primary,
@@ -776,7 +777,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LText(
                       word,
                       style: GoogleFonts.inter(
                         fontSize: 18,
@@ -786,7 +787,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     ),
                     if (showPhonetic && phonetic.trim().isNotEmpty) ...[
                       const SizedBox(height: 3),
-                      Text(
+                      LText(
                         phonetic,
                         style: GoogleFonts.inter(
                           fontSize: 13,
@@ -797,7 +798,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       ),
                     ],
                     const SizedBox(height: 4),
-                    Text(
+                    LText(
                       meaning,
                       style: GoogleFonts.inter(
                         fontSize: 14,
@@ -828,7 +829,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         context,
                         systemContext: _aiLessonContext(
                           focus:
-                              'Explain the French vocabulary word "$word" which means "$meaning". Give a French example sentence with an English explanation.',
+                              'Explain the French vocabulary word "$word" which means "$meaning". Give a French example sentence with an explanation in ${AppLocaleController.activeLanguageName}.',
                         ),
                         initialPrompt:
                             'Can you give me a French example sentence for the word "$word"?',
@@ -868,7 +869,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LText(
                       target,
                       style: GoogleFonts.inter(
                         fontSize: 20,
@@ -884,7 +885,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       color: FluentianColors.primary.withValues(alpha: 0.2),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    LText(
                       base,
                       style: GoogleFonts.inter(
                         fontSize: 14,
@@ -897,7 +898,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               ),
               if (block.ttsEnabled && block.textToSpeak.trim().isNotEmpty)
                 IconButton(
-                  tooltip: 'Listen',
+                  tooltip: context.tr('Listen'),
                   icon: const Icon(
                     Iconsax.volume_high,
                     color: FluentianColors.primary,
@@ -944,7 +945,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     size: 20,
                   ),
                   const SizedBox(width: 8),
-                  Text(
+                  LText(
                     'GRAMMAR RULE',
                     style: GoogleFonts.inter(
                       fontSize: 11,
@@ -956,7 +957,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              Text(
+              LText(
                 rule,
                 style: GoogleFonts.inter(
                   fontSize: 15,
@@ -972,7 +973,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   child: TextButton.icon(
                     onPressed: () => _speakBlock(block),
                     icon: const Icon(Iconsax.volume_high, size: 18),
-                    label: const Text('Listen'),
+                    label: const LText('Listen'),
                     style: TextButton.styleFrom(
                       foregroundColor: FluentianColors.primary,
                       padding: EdgeInsets.zero,
@@ -993,7 +994,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      LText(
                         'EXAMPLE',
                         style: GoogleFonts.inter(
                           fontSize: 9,
@@ -1003,7 +1004,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
+                      LText(
                         example,
                         style: GoogleFonts.inter(
                           fontSize: 13,
@@ -1054,7 +1055,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Could not play audio')));
+        ).showSnackBar(const SnackBar(content: LText('Could not play audio')));
       }
     }
   }
@@ -1099,7 +1100,7 @@ class _HeroMetric extends StatelessWidget {
             Icon(icon, color: Colors.white, size: 16),
             const SizedBox(width: 6),
             Flexible(
-              child: Text(
+              child: LText(
                 label,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(

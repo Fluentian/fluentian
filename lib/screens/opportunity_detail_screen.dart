@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,7 +20,7 @@ class OpportunityDetailScreen extends StatelessWidget {
     }
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not open this opportunity link.')),
+      const SnackBar(content: LText('Could not open this opportunity link.')),
     );
   }
 
@@ -64,7 +65,7 @@ class OpportunityDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
       appBar: AppBar(
-        title: Text(
+        title: LText(
           'Opportunity Details',
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
         ),
@@ -115,7 +116,7 @@ class OpportunityDetailScreen extends StatelessWidget {
                       final titleBlock = Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          LText(
                             opportunity.title,
                             maxLines: compact ? 3 : 2,
                             overflow: TextOverflow.ellipsis,
@@ -139,7 +140,7 @@ class OpportunityDetailScreen extends StatelessWidget {
                                 color: typeColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: Text(
+                              child: LText(
                                 opportunity.type.toUpperCase(),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -194,7 +195,7 @@ class OpportunityDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            Text(
+            LText(
               'Description',
               style: GoogleFonts.inter(
                 fontSize: 18,
@@ -203,7 +204,7 @@ class OpportunityDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Text(
+            LText(
               opportunity.description,
               style: GoogleFonts.inter(
                 fontSize: 15,
@@ -251,7 +252,7 @@ class OpportunityDetailScreen extends StatelessWidget {
                   size: 20,
                 ),
                 const SizedBox(width: 8),
-                Text(
+                LText(
                   opportunity.ctaUrl != null
                       ? (opportunity.ctaLabel?.trim().isNotEmpty == true
                             ? opportunity.ctaLabel!
@@ -285,7 +286,7 @@ class OpportunityDetailScreen extends StatelessWidget {
             Icon(icon, size: 16, color: FluentianColors.textSecondary),
             const SizedBox(width: 6),
             Flexible(
-              child: Text(
+              child: LText(
                 text,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

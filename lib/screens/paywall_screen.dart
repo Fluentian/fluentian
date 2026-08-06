@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
@@ -61,7 +62,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     ),
 
                     const SizedBox(height: 16),
-                    Text(
+                    LText(
                       'Fluentian Pro',
                       style: GoogleFonts.inter(
                         fontSize: 32,
@@ -70,7 +71,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    LText(
                       'Speak French fluently, faster',
                       style: GoogleFonts.inter(
                         fontSize: 16,
@@ -108,7 +109,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(
+                              child: LText(
                                 f,
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
@@ -159,7 +160,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     ),
 
                     const SizedBox(height: 12),
-                    Text(
+                    LText(
                       'Cancel anytime. Billed annually. 7-day free trial.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
@@ -171,7 +172,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: Text(
+                      child: LText(
                         'Continue with free plan →',
                         style: GoogleFonts.inter(
                           fontSize: 14,
@@ -247,7 +248,7 @@ class _PlanCard extends StatelessWidget {
                     color: const Color(0xFFF59E0B),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text(
+                  child: LText(
                     badge!,
                     style: GoogleFonts.inter(
                       fontSize: 10,
@@ -260,7 +261,7 @@ class _PlanCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LText(
                   title,
                   style: GoogleFonts.inter(
                     fontSize: 14,
@@ -269,7 +270,7 @@ class _PlanCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
+                LText(
                   price,
                   style: GoogleFonts.inter(
                     fontSize: 16,
@@ -288,7 +289,7 @@ class _PlanCard extends StatelessWidget {
                       color: FluentianColors.success.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Text(
+                    child: LText(
                       save!,
                       style: GoogleFonts.inter(
                         fontSize: 11,

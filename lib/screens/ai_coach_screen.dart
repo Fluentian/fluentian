@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
+import '../services/ai_service.dart';
 
 class AiCoachScreen extends StatefulWidget {
   const AiCoachScreen({super.key});
@@ -14,7 +16,10 @@ class AiCoachScreen extends StatefulWidget {
 
 class _AiCoachScreenState extends State<AiCoachScreen> {
   final _controller = TextEditingController();
+  final _scrollController = ScrollController();
   int _modeIndex = 0;
+  bool _isLoading = false;
+  late List<_ChatMsg> _messages;
   final _modes = [
     'Free chat',
     'Roleplay',
@@ -24,7 +29,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     'Culture',
   ];
 
-  List<_ChatMsg> get _currentMessages {
+  List<_ChatMsg> get _presetMessages {
     switch (_modeIndex) {
       case 1: // Roleplay
         return [
@@ -158,8 +163,66 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _messages = List<_ChatMsg>.of(_presetMessages);
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty || _isLoading) return;
+    setState(() {
+      _messages.add(_ChatMsg(true, text, null));
+      _controller.clear();
+      _isLoading = true;
+    });
+    _scrollToEnd();
+    final response = await AiService.instance.generateText(
+      messages: _messages
+          .where((message) => message.text?.trim().isNotEmpty == true)
+          .map(
+            (message) => AiMessage(
+              role: message.isUser ? 'user' : 'assistant',
+              content: message.text!,
+            ),
+          )
+          .toList(),
+      systemContext:
+          'Target language: French. Coaching mode: ${_modes[_modeIndex]}. '
+          'Explanation language: ${AppLocaleController.activeLanguageName}. '
+          'Help the learner practice French and explain corrections in the selected explanation language.',
+    );
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+      _messages.add(
+        _ChatMsg(
+          false,
+          response?.text ??
+              context.tr('The AI tutor is unavailable. Please try again.'),
+          null,
+        ),
+      );
+    });
+    _scrollToEnd();
+  }
+
+  void _scrollToEnd() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -198,7 +261,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LText(
                           'Marie — AI Coach',
                           style: GoogleFonts.inter(
                             fontSize: 16,
@@ -206,7 +269,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                             color: Colors.white,
                           ),
                         ),
-                        Text(
+                        LText(
                           'A2 · Free conversation',
                           style: GoogleFonts.inter(
                             fontSize: 12,
@@ -244,7 +307,10 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 itemCount: _modes.length,
                 itemBuilder: (_, i) => GestureDetector(
-                  onTap: () => setState(() => _modeIndex = i),
+                  onTap: () => setState(() {
+                    _modeIndex = i;
+                    _messages = List<_ChatMsg>.of(_presetMessages);
+                  }),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -260,7 +326,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                           : null,
                     ),
                     alignment: Alignment.center,
-                    child: Text(
+                    child: LText(
                       _modes[i],
                       style: GoogleFonts.inter(
                         fontSize: 13,
@@ -294,16 +360,17 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             // Chat messages
             Expanded(
               child: ListView.builder(
+                controller: _scrollController,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 8,
                 ),
-                itemCount: _currentMessages.length + 1,
+                itemCount: _messages.length + (_isLoading ? 1 : 0),
                 itemBuilder: (_, i) {
-                  if (i == _currentMessages.length) {
+                  if (i == _messages.length) {
                     return const _CoachTypingPreview();
                   }
-                  return _buildMessage(_currentMessages[i]);
+                  return _buildMessage(_messages[i]);
                 },
               ),
             ),
@@ -338,13 +405,15 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                       ),
                       child: TextField(
                         controller: _controller,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _sendMessage(),
                         style: GoogleFonts.inter(
                           fontSize: 15,
                           color: Colors.white,
                         ),
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Write a sentence in French',
+                          hintText: context.tr('Write a sentence in French'),
                           hintStyle: GoogleFonts.inter(
                             fontSize: 15,
                             color: Colors.grey.shade600,
@@ -368,17 +437,20 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade700,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Iconsax.send_1,
-                      color: Colors.white,
-                      size: 20,
+                  GestureDetector(
+                    onTap: _isLoading ? null : _sendMessage,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade700,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Iconsax.send_1,
+                        color: _isLoading ? Colors.white38 : Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
@@ -437,7 +509,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
               child: msg.feedback != null
                   ? _buildFeedback(msg.feedback!)
                   : isUser
-                  ? Text(
+                  ? LText(
                       msg.text!,
                       style: GoogleFonts.inter(
                         fontSize: 15,
@@ -541,7 +613,7 @@ class _FeedbackChip extends StatelessWidget {
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
+      child: LText(
         text,
         style: GoogleFonts.inter(
           fontSize: 13,
@@ -572,7 +644,7 @@ class _StatPill extends StatelessWidget {
         children: [
           Icon(icon, size: 13, color: Colors.white.withValues(alpha: 0.58)),
           const SizedBox(width: 5),
-          Text(
+          LText(
             text,
             style: GoogleFonts.inter(
               fontSize: 11,
@@ -606,7 +678,7 @@ class _CoachTypingPreview extends StatelessWidget {
             const _CoachThinkingDots(),
             const SizedBox(width: 10),
             Flexible(
-              child: Text(
+              child: LText(
                 'Marie is ready with hints, corrections, and examples',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

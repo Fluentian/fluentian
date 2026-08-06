@@ -21,9 +21,9 @@ class SoundEffectService {
     try {
       await player.setAsset(effect.assetPath);
       await player.play();
-      await player.processingStateStream.firstWhere(
-        (state) => state == ProcessingState.completed,
-      ).timeout(const Duration(seconds: 8));
+      await player.processingStateStream
+          .firstWhere((state) => state == ProcessingState.completed)
+          .timeout(const Duration(seconds: 8));
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Sound effect playback failed: ${effect.assetPath} $e');

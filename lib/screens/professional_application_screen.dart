@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../services/opportunities_api.dart';
@@ -58,14 +59,14 @@ class _ProfessionalApplicationScreenState
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Application submitted successfully!')),
+          const SnackBar(content: LText('Application submitted successfully!')),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        ).showSnackBar(SnackBar(content: LText('Error: ${e.toString()}')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -77,7 +78,7 @@ class _ProfessionalApplicationScreenState
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
+        title: LText(
           'Apply: ${widget.opportunity.title}',
           style: GoogleFonts.inter(fontSize: 16),
         ),
@@ -92,7 +93,7 @@ class _ProfessionalApplicationScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              LText(
                 'Professional Application',
                 style: GoogleFonts.inter(
                   fontSize: 24,
@@ -100,7 +101,7 @@ class _ProfessionalApplicationScreenState
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              LText(
                 'Fill in your details to apply for this opportunity.',
                 style: GoogleFonts.inter(
                   fontSize: 14,
@@ -198,7 +199,7 @@ class _ProfessionalApplicationScreenState
                             strokeWidth: 2,
                           ),
                         )
-                      : Text(
+                      : LText(
                           'Submit Application',
                           style: GoogleFonts.inter(
                             fontSize: 16,
@@ -219,7 +220,7 @@ class _ProfessionalApplicationScreenState
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Text(
+      child: LText(
         title.toUpperCase(),
         style: GoogleFonts.inter(
           fontSize: 11,
@@ -245,7 +246,7 @@ class _ProfessionalApplicationScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          LText(
             label,
             style: GoogleFonts.inter(
               fontSize: 13,

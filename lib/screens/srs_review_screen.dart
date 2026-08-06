@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
@@ -24,7 +25,9 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
   }
 
   Future<void> _loadQuestions() async {
-    final questions = await context.read<ContentProvider>().getDueSrsQuestions();
+    final questions = await context
+        .read<ContentProvider>()
+        .getDueSrsQuestions();
     if (mounted) {
       setState(() {
         _questions = questions;
@@ -49,7 +52,7 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           iconTheme: const IconThemeData(color: FluentianColors.textPrimary),
-          title: Text(
+          title: LText(
             'Daily Review',
             style: GoogleFonts.inter(
               color: FluentianColors.textPrimary,
@@ -68,7 +71,7 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
                 color: FluentianColors.success,
               ),
               const SizedBox(height: 16),
-              Text(
+              LText(
                 'You\'re all caught up!',
                 style: GoogleFonts.inter(
                   fontSize: 20,
@@ -77,7 +80,7 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              LText(
                 'No questions due for review right now.',
                 style: GoogleFonts.inter(
                   fontSize: 16,
@@ -92,9 +95,12 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
                 ),
-                child: Text(
+                child: LText(
                   'Go Back',
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,

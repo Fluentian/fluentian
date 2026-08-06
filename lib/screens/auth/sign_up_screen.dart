@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -129,7 +130,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
+          content: LText(message),
           duration: AuthProvider.errorDisplayDuration,
         ),
       );
@@ -165,7 +166,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (message != null && message.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
+          content: LText(message),
           duration: AuthProvider.errorDisplayDuration,
         ),
       );
@@ -194,7 +195,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
+              LText(
                 'Choose your language',
                 style: GoogleFonts.inter(
                   fontSize: 18,
@@ -232,7 +233,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
+              child: LText(
                 name,
                 style: GoogleFonts.inter(fontSize: 16, color: AuthColors.body),
               ),
@@ -379,11 +380,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           fontSize: 14,
                           color: AuthColors.placeholder,
                         ),
-                        children: const [
-                          TextSpan(text: 'Already have an account? '),
+                        children: [
                           TextSpan(
-                            text: 'Sign in',
-                            style: TextStyle(
+                            text: context.tr('Already have an account? '),
+                          ),
+                          TextSpan(
+                            text: context.tr('Sign in'),
+                            style: const TextStyle(
                               color: AuthColors.primary,
                               fontWeight: FontWeight.w600,
                               decoration: TextDecoration.underline,
@@ -442,7 +445,7 @@ class _StepHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        LText(
           title,
           style: GoogleFonts.inter(
             fontSize: 24,
@@ -451,7 +454,7 @@ class _StepHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
+        LText(
           subtitle,
           style: GoogleFonts.inter(
             fontSize: 15,
@@ -635,7 +638,7 @@ class _PasswordStep extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
+                    child: LText(
                       language,
                       style: GoogleFonts.inter(
                         fontSize: 16,
@@ -678,7 +681,7 @@ class _PasswordStep extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
+                child: LText(
                   'I agree to the Terms of Service and Privacy Policy.',
                   style: GoogleFonts.inter(
                     fontSize: 13,
@@ -716,7 +719,7 @@ class _ErrorBanner extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
+            child: LText(
               message,
               style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
             ),

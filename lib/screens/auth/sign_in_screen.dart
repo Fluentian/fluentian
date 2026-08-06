@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -48,7 +49,7 @@ class _SignInScreenState extends State<SignInScreen> {
           .clearError();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill in all fields.'),
+          content: LText('Please fill in all fields.'),
           duration: AuthProvider.errorDisplayDuration,
         ),
       );
@@ -86,7 +87,7 @@ class _SignInScreenState extends State<SignInScreen> {
           ..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
-              content: Text(message),
+              content: LText(message),
               duration: AuthProvider.errorDisplayDuration,
               behavior: SnackBarBehavior.floating,
             ),
@@ -111,7 +112,7 @@ class _SignInScreenState extends State<SignInScreen> {
     if (message != null && message.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
+          content: LText(message),
           duration: AuthProvider.errorDisplayDuration,
         ),
       );
@@ -146,7 +147,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LText(
                           'Welcome back',
                           style: GoogleFonts.inter(
                             fontSize: 24,
@@ -155,7 +156,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
+                        LText(
                           'Sign in to continue learning.',
                           style: GoogleFonts.inter(
                             fontSize: 15,
@@ -194,7 +195,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           child: GestureDetector(
                             onTap: () =>
                                 _openAuthPage(const ForgotPasswordScreen()),
-                            child: Text(
+                            child: LText(
                               'Forgot password?',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
@@ -238,7 +239,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            Text(
+                            LText(
                               'Remember me',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
@@ -287,7 +288,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       mode: LaunchMode.externalApplication,
                     ),
                     icon: const Icon(Icons.privacy_tip_outlined, size: 16),
-                    label: const Text('Privacy policy'),
+                    label: const LText('Privacy policy'),
                   ),
                   const SizedBox(height: 8),
                   GestureDetector(
@@ -298,11 +299,11 @@ class _SignInScreenState extends State<SignInScreen> {
                           fontSize: 14,
                           color: AuthColors.placeholder,
                         ),
-                        children: const [
-                          TextSpan(text: "Don't have an account? "),
+                        children: [
+                          TextSpan(text: context.tr("Don't have an account? ")),
                           TextSpan(
-                            text: 'Sign up',
-                            style: TextStyle(
+                            text: context.tr('Sign up'),
+                            style: const TextStyle(
                               color: AuthColors.primary,
                               fontWeight: FontWeight.w600,
                             ),
@@ -344,7 +345,7 @@ class _ErrorBanner extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
+            child: LText(
               message,
               style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
             ),
