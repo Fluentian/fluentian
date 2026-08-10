@@ -575,6 +575,7 @@ class AuthProvider extends ChangeNotifier {
       soundEnabled: data['sound_enabled'] as bool?,
       learningReminderEnabled: data['learning_reminder_enabled'] as bool?,
       reminderTime: data['reminder_time'] as String?,
+      timezone: data['timezone'] as String?,
       phoneticHintsEnabled: data['phonetic_hints_enabled'] as bool?,
       speakingExercisesEnabled: data['speaking_exercises_enabled'] as bool?,
       highContrastEnabled: data['high_contrast_enabled'] as bool?,

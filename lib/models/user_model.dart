@@ -16,6 +16,9 @@ class UserModel {
   final String? avatarUrl;
   final String? bio;
   final String? learningGoal;
+  final DateTime? birthDate;
+  final String? learningMotivation;
+  final String? priorFrenchExposure;
   final int dailyGoalMinutes;
   final int startingUnitNo;
   final String baseLanguageCode;
@@ -24,6 +27,7 @@ class UserModel {
   final bool soundEnabled;
   final bool learningReminderEnabled;
   final String reminderTime;
+  final String timezone;
   final bool opportunityNotificationsEnabled;
   final bool phoneticHintsEnabled;
   final bool speakingExercisesEnabled;
@@ -48,6 +52,9 @@ class UserModel {
     this.avatarUrl,
     this.bio,
     this.learningGoal,
+    this.birthDate,
+    this.learningMotivation,
+    this.priorFrenchExposure,
     this.dailyGoalMinutes = 15,
     this.startingUnitNo = 1,
     this.baseLanguageCode = 'en',
@@ -56,6 +63,7 @@ class UserModel {
     this.soundEnabled = true,
     this.learningReminderEnabled = true,
     this.reminderTime = '08:00',
+    this.timezone = 'Africa/Addis_Ababa',
     this.opportunityNotificationsEnabled = true,
     this.phoneticHintsEnabled = true,
     this.speakingExercisesEnabled = true,
@@ -91,6 +99,17 @@ class UserModel {
       learningGoal:
           profile?['learning_goal']?.toString() ??
           json['learning_goal']?.toString(),
+      birthDate: (profile?['birth_date'] ?? json['birth_date']) != null
+          ? DateTime.tryParse(
+              (profile?['birth_date'] ?? json['birth_date']).toString(),
+            )
+          : null,
+      learningMotivation:
+          profile?['learning_motivation']?.toString() ??
+          json['learning_motivation']?.toString(),
+      priorFrenchExposure:
+          profile?['prior_french_exposure']?.toString() ??
+          json['prior_french_exposure']?.toString(),
       dailyGoalMinutes: json['daily_goal_minutes'] as int? ?? 15,
       startingUnitNo: json['starting_unit_no'] as int? ?? 1,
       baseLanguageCode: json['base_language_code']?.toString() ?? 'en',
@@ -100,6 +119,8 @@ class UserModel {
       learningReminderEnabled:
           settings?['learning_reminder_enabled'] as bool? ?? true,
       reminderTime: settings?['reminder_time']?.toString() ?? '08:00',
+      timezone:
+          settings?['timezone']?.toString() ?? 'Africa/Addis_Ababa',
       opportunityNotificationsEnabled:
           settings?['opportunity_notifications_enabled'] as bool? ?? true,
       phoneticHintsEnabled:
@@ -131,6 +152,9 @@ class UserModel {
     'avatar_url': avatarUrl,
     'bio': bio,
     'learning_goal': learningGoal,
+    'birth_date': birthDate?.toIso8601String().split('T').first,
+    'learning_motivation': learningMotivation,
+    'prior_french_exposure': priorFrenchExposure,
     'daily_goal_minutes': dailyGoalMinutes,
     'starting_unit_no': startingUnitNo,
     'base_language_code': baseLanguageCode,
@@ -140,6 +164,7 @@ class UserModel {
       'sound_enabled': soundEnabled,
       'learning_reminder_enabled': learningReminderEnabled,
       'reminder_time': reminderTime,
+      'timezone': timezone,
       'opportunity_notifications_enabled': opportunityNotificationsEnabled,
       'phonetic_hints_enabled': phoneticHintsEnabled,
       'speaking_exercises_enabled': speakingExercisesEnabled,
@@ -167,6 +192,9 @@ class UserModel {
     String? avatarUrl,
     String? bio,
     String? learningGoal,
+    DateTime? birthDate,
+    String? learningMotivation,
+    String? priorFrenchExposure,
     int? dailyGoalMinutes,
     int? startingUnitNo,
     String? baseLanguageCode,
@@ -175,6 +203,7 @@ class UserModel {
     bool? soundEnabled,
     bool? learningReminderEnabled,
     String? reminderTime,
+    String? timezone,
     bool? opportunityNotificationsEnabled,
     bool? phoneticHintsEnabled,
     bool? speakingExercisesEnabled,
@@ -200,6 +229,9 @@ class UserModel {
     avatarUrl: avatarUrl ?? this.avatarUrl,
     bio: bio ?? this.bio,
     learningGoal: learningGoal ?? this.learningGoal,
+    birthDate: birthDate ?? this.birthDate,
+    learningMotivation: learningMotivation ?? this.learningMotivation,
+    priorFrenchExposure: priorFrenchExposure ?? this.priorFrenchExposure,
     dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
     startingUnitNo: startingUnitNo ?? this.startingUnitNo,
     baseLanguageCode: baseLanguageCode ?? this.baseLanguageCode,
@@ -209,6 +241,7 @@ class UserModel {
     learningReminderEnabled:
         learningReminderEnabled ?? this.learningReminderEnabled,
     reminderTime: reminderTime ?? this.reminderTime,
+    timezone: timezone ?? this.timezone,
     opportunityNotificationsEnabled:
         opportunityNotificationsEnabled ?? this.opportunityNotificationsEnabled,
     phoneticHintsEnabled: phoneticHintsEnabled ?? this.phoneticHintsEnabled,

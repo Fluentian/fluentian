@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
 import '../core/app_localization.dart';
+import '../core/constants.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
 import '../services/app_logger.dart';
@@ -185,6 +186,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     user.notificationsEnabled && user.learningReminderEnabled,
                 onTap: () => _pickReminderTime(context, user.reminderTime),
               ),
+              _TimezoneRow(
+                timezone: user.timezone,
+                onTap: () => _pickTimezone(context, user.timezone),
+              ),
               _SwitchRow(
                 icon: Icons.work_outline_rounded,
                 label: 'New Board opportunities',
@@ -316,6 +321,101 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final value =
         '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
     await _save(context, {'reminder_time': value});
+  }
+
+  Future<void> _pickTimezone(BuildContext context, String current) async {
+    final picked = await showModalBottomSheet<TimezoneOption>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.85,
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: FluentianColors.pageBg,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: FluentianColors.border,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: LText(
+                        'Choose your timezone',
+                        style: GoogleFonts.inter(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      itemCount: TimezoneOption.curated.length,
+                      itemBuilder: (context, index) {
+                        final option = TimezoneOption.curated[index];
+                        final selected = option.ianaName == current;
+                        return Material(
+                          color: Colors.transparent,
+                          child: ListTile(
+                            onTap: () => Navigator.pop(context, option),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            tileColor: selected
+                                ? FluentianColors.primaryTint
+                                : Colors.transparent,
+                            title: LText(
+                              option.displayName,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                                color: FluentianColors.textPrimary,
+                              ),
+                            ),
+                            subtitle: LText(
+                              option.offsetLabel,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: FluentianColors.textSecondary,
+                              ),
+                            ),
+                            trailing: selected
+                                ? const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: FluentianColors.primary,
+                                  )
+                                : null,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (picked == null || !context.mounted) return;
+    await _save(context, {'timezone': picked.ianaName});
   }
 
   Future<void> _emitTestNotification(BuildContext context) async {
@@ -870,6 +970,31 @@ class _DailyGoalRow extends StatelessWidget {
         onChanged: (value) {
           if (value != null) onChanged(value);
         },
+      ),
+    );
+  }
+}
+
+class _TimezoneRow extends StatelessWidget {
+  final String timezone;
+  final VoidCallback onTap;
+
+  const _TimezoneRow({required this.timezone, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final option = TimezoneOption.findByIana(timezone);
+    return _RowShell(
+      icon: Icons.public_rounded,
+      label: 'Timezone',
+      onTap: onTap,
+      trailing: LText(
+        option?.displayName ?? timezone,
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: FluentianColors.primary,
+        ),
       ),
     );
   }

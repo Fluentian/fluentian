@@ -3,7 +3,7 @@ import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
-import '../widgets/common_widgets.dart';
+import '../widgets/onboarding_scaffold.dart';
 import 'goal_setup_screen.dart';
 import 'placement_test_screen.dart';
 
@@ -18,112 +18,47 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FluentianColors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: FluentianColors.textPrimary,
-                    ),
-                  ),
-                  const Spacer(),
-                  LText(
-                    'Step 1 of 3',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: FluentianColors.textSecondary,
-                    ),
-                  ),
-                  const Spacer(),
-                  const SizedBox(width: 24),
-                ],
-              ),
+    return OnboardingScaffold(
+      step: 1,
+      totalSteps: 4,
+      title: "What's your French level?",
+      subtitle: "We'll create the perfect path for you.",
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...CEFRLevel.values.map(
+            (level) => _LevelCard(
+              level: level,
+              isSelected: _selected == level,
+              onTap: () => setState(() => _selected = level),
             ),
-
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    LText(
-                      "What's your French level?",
-                      style: GoogleFonts.inter(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: FluentianColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    LText(
-                      "We'll create the perfect path for you.",
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: FluentianColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Level cards
-                    ...CEFRLevel.values.map(
-                      (level) => _LevelCard(
-                        level: level,
-                        isSelected: _selected == level,
-                        onTap: () => setState(() => _selected = level),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-                    Center(
-                      child: GestureDetector(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const PlacementTestScreen(),
-                          ),
-                        ),
-                        child: LText(
-                          'Take placement test instead',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: FluentianColors.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PlacementTestScreen()),
+              ),
+              child: LText(
+                'Take placement test instead',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: FluentianColors.primary,
                 ),
               ),
             ),
-
-            // Continue button
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: FluentianButton(
-                text: 'Continue',
-                onPressed: _selected != null
-                    ? () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => GoalSetupScreen(level: _selected!),
-                        ),
-                      )
-                    : null,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+      buttonLabel: 'Continue',
+      onButtonPressed: _selected != null
+          ? () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => GoalSetupScreen(level: _selected!),
+              ),
+            )
+          : null,
     );
   }
 }
