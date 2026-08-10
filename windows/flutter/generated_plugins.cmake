@@ -13,6 +13,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   livekit_client
   permission_handler_windows
   rive_native
+  sqlite3_flutter_libs
   url_launcher_windows
 )
 
