@@ -46,16 +46,20 @@ class DownloadManager {
     UnitModel unit, {
     bool ignoreWifiSetting = false,
   }) async {
-    if (!ignoreWifiSetting) {
-      final wifiOnly = await _settings.getWifiOnly();
-      if (wifiOnly && !await _isOnWifi()) {
-        return const DownloadResult(DownloadOutcome.wifiRequired);
-      }
+    if (!ignoreWifiSetting && await _violatesWifiOnly()) {
+      return const DownloadResult(DownloadOutcome.wifiRequired);
     }
 
     var count = 0;
     try {
       for (final lesson in unit.lessons) {
+        // Re-check on every lesson, not just once up front: a multi-lesson
+        // unit download can take a while, and the device may switch from
+        // wifi to cellular partway through -- checking only once would
+        // silently keep burning mobile data for the rest of the unit.
+        if (!ignoreWifiSetting && await _violatesWifiOnly()) {
+          return DownloadResult(DownloadOutcome.wifiRequired, lessonsDownloaded: count);
+        }
         final detailJson = await _syncManager.fetchAndCacheLessonDetail(lesson.id);
         await _downloadLessonMedia(detailJson);
         count++;
@@ -66,6 +70,11 @@ class DownloadManager {
       await AppLogger.instance.error('downloadUnit(${unit.id}) failed', e);
       return DownloadResult(DownloadOutcome.failed, lessonsDownloaded: count);
     }
+  }
+
+  Future<bool> _violatesWifiOnly() async {
+    final wifiOnly = await _settings.getWifiOnly();
+    return wifiOnly && !await _isOnWifi();
   }
 
   Future<void> removeUnitDownload(String unitId) => _db.unmarkUnitDownloaded(unitId);

@@ -24,6 +24,13 @@ class MediaCacheManager {
 
   final AppDatabase _db = AppDatabase.instance;
 
+  // Concurrent calls for the same not-yet-cached URL (e.g. a lesson screen
+  // pre-warming audio while a download-for-offline pass touches the same
+  // clip) would otherwise race into duplicate downloads -- wasteful given
+  // this cache exists specifically to cut data usage. In-flight downloads
+  // are tracked here so a second caller just awaits the first one's result.
+  final Map<String, Future<String?>> _inFlightDownloads = {};
+
   /// Load [url] into [player], using a cached local file if available
   /// (downloading it first if not), falling back to direct network
   /// streaming if caching fails for any reason so playback still works.
@@ -51,7 +58,17 @@ class MediaCacheManager {
         // storage) -- drop the stale row and re-download below.
         await _db.deleteMediaCacheEntry(url);
       }
-      return await _download(url);
+
+      final inFlight = _inFlightDownloads[url];
+      if (inFlight != null) return inFlight;
+
+      final download = _download(url);
+      _inFlightDownloads[url] = download;
+      try {
+        return await download;
+      } finally {
+        _inFlightDownloads.remove(url);
+      }
     } catch (e) {
       await AppLogger.instance.error('Media cache miss for $url', e);
       return null;
