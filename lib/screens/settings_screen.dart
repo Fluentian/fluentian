@@ -9,10 +9,27 @@ import '../core/app_localization.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
 import '../services/app_logger.dart';
+import '../services/download_settings.dart';
 import '../services/local_push_service.dart';
+import 'offline_downloads_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _wifiOnlyDownloads = true;
+
+  @override
+  void initState() {
+    super.initState();
+    DownloadSettings.instance.getWifiOnly().then((value) {
+      if (mounted) setState(() => _wifiOnlyDownloads = value);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +98,35 @@ class SettingsScreen extends StatelessWidget {
                 value: user.speakingExercisesEnabled,
                 onChanged: (value) =>
                     _save(context, {'speaking_exercises_enabled': value}),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _SettingsGroup(
+            title: 'Offline downloads',
+            children: [
+              _SwitchRow(
+                icon: Icons.wifi_rounded,
+                label: 'Wi-Fi-only downloads',
+                value: _wifiOnlyDownloads,
+                onChanged: (value) async {
+                  setState(() => _wifiOnlyDownloads = value);
+                  await DownloadSettings.instance.setWifiOnly(value);
+                },
+              ),
+              _RowShell(
+                icon: Icons.download_for_offline_rounded,
+                label: 'Downloaded lessons',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const OfflineDownloadsScreen(),
+                  ),
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: FluentianColors.textSecondary,
+                  size: 20,
+                ),
               ),
             ],
           ),
