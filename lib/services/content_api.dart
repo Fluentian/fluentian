@@ -50,6 +50,13 @@ class ContentApi {
     return LessonDetailModel.fromJson(json);
   }
 
+  /// Delta sync manifest: courses/units/lessons that changed since
+  /// [since] (the device's last-synced global_content_version), plus the
+  /// server's current global version. Pass since=0 for a full snapshot.
+  Future<Map<String, dynamic>> getManifest({required int since}) async {
+    return _client.get('/content/manifest?since=$since', auth: false);
+  }
+
   /// Fetch only questions for a lesson (lighter call for quiz flow).
   Future<List<QuestionModel>> getLessonQuestions(String lessonId) async {
     final items = await _client.getList(

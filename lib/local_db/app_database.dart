@@ -39,6 +39,12 @@ class AppDatabase extends _$AppDatabase {
 
   AppDatabase.forTesting(super.connection);
 
+  static AppDatabase? _instance;
+
+  /// Process-wide singleton. Drift/sqlite3 manages its own connection pool
+  /// internally; sharing one instance avoids opening the sqlite file twice.
+  static AppDatabase get instance => _instance ??= AppDatabase();
+
   @override
   int get schemaVersion => 1;
 
