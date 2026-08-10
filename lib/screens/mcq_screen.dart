@@ -10,6 +10,7 @@ import '../models/course_model.dart';
 import '../models/progress_model.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
+import '../services/media_cache_manager.dart';
 import '../services/sound_effect_service.dart';
 import '../services/tts_service.dart';
 import '../widgets/ai_tutor_sheet.dart';
@@ -183,7 +184,7 @@ class _McqScreenState extends State<McqScreen>
             _audioLoading = true;
           });
           _loadedAudioUrl = url;
-          await _audioPlayer.setUrl(url);
+          await MediaCacheManager.instance.loadIntoPlayer(_audioPlayer, url);
         }
         await _audioPlayer.play();
       } catch (e) {

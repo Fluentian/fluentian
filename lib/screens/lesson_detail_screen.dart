@@ -7,6 +7,7 @@ import '../core/theme.dart';
 import '../models/course_model.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
+import '../services/media_cache_manager.dart';
 import '../services/tts_service.dart';
 import 'package:just_audio/just_audio.dart';
 import '../widgets/ai_tutor_sheet.dart';
@@ -1031,7 +1032,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     if (audioUrl != null && audioUrl.isNotEmpty) {
       try {
         await _ttsService.stop();
-        await _audioPlayer.setUrl(audioUrl);
+        await MediaCacheManager.instance.loadIntoPlayer(_audioPlayer, audioUrl);
         _audioPlayer.play();
         return;
       } catch (e) {
