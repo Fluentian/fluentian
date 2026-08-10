@@ -914,27 +914,31 @@ class _McqScreenState extends State<McqScreen>
                 child: Column(
                   children: [
                     const SizedBox(height: 16),
-                    LText(
-                      q.questionKind.replaceAll('_', ' ').toUpperCase(),
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: FluentianColors.primary,
-                        letterSpacing: 1.2,
+                    if (_isWordAssembly(q))
+                      _buildWordAssemblyHeader(q)
+                    else ...[
+                      LText(
+                        q.questionKind.replaceAll('_', ' ').toUpperCase(),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: FluentianColors.primary,
+                          letterSpacing: 1.2,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    LText(
-                      q.promptText.isNotEmpty
-                          ? q.promptText
-                          : 'Follow the prompt below:',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: FluentianColors.textPrimary,
+                      const SizedBox(height: 12),
+                      LText(
+                        q.promptText.isNotEmpty
+                            ? q.promptText
+                            : 'Follow the prompt below:',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: FluentianColors.textPrimary,
+                        ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 16),
                     _buildQuizHud(),
                     const SizedBox(height: 24),
@@ -962,8 +966,12 @@ class _McqScreenState extends State<McqScreen>
                       const SizedBox(height: 24),
                     ],
 
-                    // Render dynamic audio if present
-                    if (((q.audioUrl != null && q.audioUrl!.isNotEmpty) ||
+                    // Render dynamic audio if present -- word-assembly
+                    // exercises get a compact inline speaker icon next to
+                    // the sentence instead (see _buildWordAssemblyHeader),
+                    // so this full-width block is skipped for that kind.
+                    if (!_isWordAssembly(q) &&
+                        ((q.audioUrl != null && q.audioUrl!.isNotEmpty) ||
                             (q.ttsEnabled &&
                                 q.textToSpeak.trim().isNotEmpty)) &&
                         q.questionKind != 'speech_record') ...[
@@ -1349,64 +1357,123 @@ class _McqScreenState extends State<McqScreen>
     );
   }
 
+  /// Reorder/translation questions ("assemble the words into a sentence")
+  /// get a compact custom header (static "Translate this sentence" title +
+  /// inline audio icon) instead of the generic kicker+title+audio block
+  /// shared by other question kinds.
+  bool _isWordAssembly(QuestionModel q) =>
+      q.questionKind == 'reorder' || q.questionKind == 'translation';
+
+  Widget _buildWordAssemblyHeader(QuestionModel q) {
+    final hasAudio =
+        (q.audioUrl != null && q.audioUrl!.isNotEmpty) ||
+        (q.ttsEnabled && q.textToSpeak.trim().isNotEmpty);
+    return Column(
+      children: [
+        LText(
+          'Translate this sentence',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: FluentianColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (hasAudio) ...[
+              GestureDetector(
+                onTap: _toggleAudio,
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  margin: const EdgeInsets.only(top: 2),
+                  decoration: const BoxDecoration(
+                    color: FluentianColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: _audioLoading
+                      ? const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Icon(
+                          _audioPlaying ? Iconsax.pause : Iconsax.play,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                ),
+              ),
+              const SizedBox(width: 10),
+            ],
+            Flexible(
+              child: LText(
+                q.promptText.isNotEmpty
+                    ? q.promptText
+                    : 'Follow the prompt below:',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: FluentianColors.textPrimary,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildWordAssembly() {
+    // Word bank starts as a shuffle of every word the correct answer needs
+    // (see _initQuestion), so its size never changes -- assembled + bank
+    // is always the total number of word positions in the sentence. That
+    // lets the answer area render one slot per position up front (filled
+    // ones show the placed word, the rest are empty placeholders) instead
+    // of only appearing once a word lands in them.
+    final totalSlots = _assembledWords.length + _remainingScrambled.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          constraints: const BoxConstraints(minHeight: 100),
+          constraints: const BoxConstraints(minHeight: 76),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
+            color: FluentianColors.pageBg,
+            borderRadius: BorderRadius.circular(FluentianRadius.large),
+            border: Border.all(color: FluentianColors.border),
           ),
-          child: _assembledWords.isEmpty
-              ? Center(
-                  child: LText(
-                    'Tap words below to translate',
-                    style: GoogleFonts.inter(
-                      color: Colors.grey.shade400,
-                      fontSize: 14,
-                    ),
-                  ),
-                )
-              : Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: List.generate(_assembledWords.length, (idx) {
-                    final word = _assembledWords[idx];
-                    return GestureDetector(
-                      onTap: _state == _AnswerState.unanswered
-                          ? () {
-                              setState(() {
-                                _assembledWords.removeAt(idx);
-                                _remainingScrambled.add(word);
-                              });
-                            }
-                          : null,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: FluentianColors.primary,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [FluentianShadows.subtle],
-                        ),
-                        child: LText(
-                          word,
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: List.generate(totalSlots, (idx) {
+              if (idx < _assembledWords.length) {
+                final word = _assembledWords[idx];
+                return _WordTile(
+                  key: ValueKey('placed-$idx-$word'),
+                  word: word,
+                  placed: true,
+                  onTap: _state == _AnswerState.unanswered
+                      ? () {
+                          setState(() {
+                            _assembledWords.removeAt(idx);
+                            _remainingScrambled.add(word);
+                          });
+                        }
+                      : null,
+                );
+              }
+              return const _EmptyWordSlot();
+            }),
+          ),
         ),
         const SizedBox(height: 24),
         Wrap(
@@ -1415,7 +1482,10 @@ class _McqScreenState extends State<McqScreen>
           runSpacing: 10,
           children: List.generate(_remainingScrambled.length, (idx) {
             final word = _remainingScrambled[idx];
-            return GestureDetector(
+            return _WordTile(
+              key: ValueKey('bank-$idx-$word'),
+              word: word,
+              placed: false,
               onTap: _state == _AnswerState.unanswered
                   ? () {
                       setState(() {
@@ -1424,25 +1494,6 @@ class _McqScreenState extends State<McqScreen>
                       });
                     }
                   : null,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: LText(
-                  word,
-                  style: GoogleFonts.inter(
-                    color: FluentianColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
             );
           }),
         ),
@@ -1989,6 +2040,98 @@ class _MetricRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A single word-bank/answer-area tile for the word-assembly exercise.
+/// `placed` switches between the two visual states (in the answer area
+/// vs. still in the word bank); a light scale-down on press gives the
+/// tactile "liftable tile" feel the interaction calls for even though the
+/// actual move happens on tap release, not a drag gesture.
+class _WordTile extends StatefulWidget {
+  final String word;
+  final bool placed;
+  final VoidCallback? onTap;
+
+  const _WordTile({
+    super.key,
+    required this.word,
+    required this.placed,
+    required this.onTap,
+  });
+
+  @override
+  State<_WordTile> createState() => _WordTileState();
+}
+
+class _WordTileState extends State<_WordTile> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (widget.onTap == null) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _pressed ? 0.94 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+          decoration: BoxDecoration(
+            color: widget.placed
+                ? FluentianColors.primary
+                : FluentianColors.white,
+            borderRadius: BorderRadius.circular(FluentianRadius.medium),
+            border: Border.all(
+              color: widget.placed
+                  ? FluentianColors.primary
+                  : FluentianColors.border,
+              width: 1.3,
+            ),
+            boxShadow: [
+              widget.placed ? FluentianShadows.subtle : FluentianShadows.card,
+            ],
+          ),
+          child: LText(
+            widget.word,
+            style: GoogleFonts.inter(
+              color: widget.placed ? Colors.white : FluentianColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// An unfilled position in the answer-construction area -- deliberately
+/// text-less and understated so it reads as "a slot waiting for a word",
+/// not as a text input field.
+class _EmptyWordSlot extends StatelessWidget {
+  const _EmptyWordSlot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 52,
+      height: 40,
+      decoration: BoxDecoration(
+        color: FluentianColors.white,
+        borderRadius: BorderRadius.circular(FluentianRadius.medium),
+        border: Border.all(color: FluentianColors.border, width: 1.3),
       ),
     );
   }
