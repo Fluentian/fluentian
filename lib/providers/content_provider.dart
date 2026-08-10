@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import '../local_db/app_database.dart';
 import '../models/course_model.dart';
 import '../models/progress_model.dart';
 import '../services/content_api.dart';
 import '../services/progress_api.dart';
+import '../services/sync_manager.dart';
 import '../services/api_client.dart';
 
 enum ContentStatus { idle, loading, loaded, error }
@@ -26,6 +30,8 @@ class ContentProvider extends ChangeNotifier {
 
   final _contentApi = ContentApi.instance;
   final _progressApi = ProgressApi.instance;
+  final _db = AppDatabase.instance;
+  final _syncManager = SyncManager.instance;
 
   Future<void> changeContentLanguage() async {
     _lessonCache.clear();
@@ -33,18 +39,47 @@ class ContentProvider extends ChangeNotifier {
   }
 
   /// Fetch all courses + user stats in one go. Called on home screen load.
+  ///
+  /// Local-first: paints instantly from whatever's cached in the local
+  /// Drift store (if anything), then syncs the delta manifest in the
+  /// background and refreshes from the updated cache. If there's no local
+  /// cache yet (first run) and the network also fails, this surfaces the
+  /// same error state as before. If there IS a local cache and only the
+  /// network step fails, we keep showing cached data instead of erroring --
+  /// that's the whole point of caching for spotty Ethiopian mobile networks.
+  ///
+  /// Known limitation: locally cached course/lesson titles are the
+  /// canonical (French/admin) text, not the learner's explanation-language
+  /// translation -- translations aren't synced to the local store yet, so
+  /// offline users briefly see untranslated titles until back online.
   Future<void> loadHomeData({bool showLoading = true}) async {
-    if (showLoading) _status = ContentStatus.loading;
+    if (showLoading && _courses.isEmpty) _status = ContentStatus.loading;
     _error = null;
     notifyListeners();
+
+    final cached = await _loadCoursesFromLocalDb();
+    if (cached.isNotEmpty) {
+      _courses = cached;
+      _status = ContentStatus.loaded;
+      notifyListeners();
+    }
+
     try {
-      _courses = await _contentApi.getCourses();
+      await _syncManager.sync();
+      final refreshed = await _loadCoursesFromLocalDb();
+      if (refreshed.isNotEmpty) {
+        _courses = refreshed;
+      } else if (_courses.isEmpty) {
+        // No local cache at all (fresh install, or sync produced nothing
+        // usable) -- fall back to a direct network fetch like before.
+        _courses = await _contentApi.getCourses();
+      }
 
       try {
         _stats = await _progressApi.getMyStats();
       } catch (e) {
         if (kDebugMode) debugPrint('loadHomeData stats error: $e');
-        _stats = const UserStatsModel(
+        _stats ??= const UserStatsModel(
           totalXp: 0,
           streakDays: 0,
           lessonsCompleted: 0,
@@ -67,25 +102,97 @@ class ContentProvider extends ChangeNotifier {
         ..addAll(enrollments.where((e) => e.isActive).map((e) => e.courseId));
       _status = ContentStatus.loaded;
     } on ApiException catch (e) {
-      _error = e.userMessage;
-      _status = ContentStatus.error;
+      if (_courses.isEmpty) {
+        _error = e.userMessage;
+        _status = ContentStatus.error;
+      }
     } on NetworkException catch (e) {
-      _error = e.message;
-      _status = ContentStatus.error;
+      if (_courses.isEmpty) {
+        _error = e.message;
+        _status = ContentStatus.error;
+      }
     } catch (e) {
-      _error = 'Failed to load content.';
-      _status = ContentStatus.error;
+      if (_courses.isEmpty) {
+        _error = 'Failed to load content.';
+        _status = ContentStatus.error;
+      }
       if (kDebugMode) debugPrint('ContentProvider.loadHomeData error: $e');
     } finally {
       notifyListeners();
     }
   }
 
-  /// Fetch full lesson detail (cached by lessonId).
+  Future<List<CourseModel>> _loadCoursesFromLocalDb() async {
+    try {
+      final courses = await _db.getAllCourses();
+      final result = <CourseModel>[];
+      for (final course in courses) {
+        final units = await _db.getUnitsForCourse(course.id);
+        final unitModels = <UnitModel>[];
+        for (final unit in units) {
+          final lessons = await _db.getLessonsForUnit(unit.id);
+          unitModels.add(
+            UnitModel(
+              id: unit.id,
+              courseId: unit.courseId,
+              unitKind: unit.unitKind,
+              unitNo: unit.unitNo,
+              title: unit.title,
+              createdAt: DateTime.now(),
+              lessons: lessons
+                  .map(
+                    (l) => LessonModel(
+                      id: l.id,
+                      courseId: l.courseId,
+                      unitId: l.unitId,
+                      lessonKind: l.lessonKind,
+                      sequenceNo: l.sequenceNo,
+                      title: l.title,
+                      estimatedMinutes: l.estimatedMinutes,
+                      xpReward: l.xpReward,
+                      isPublished: l.isPublished,
+                    ),
+                  )
+                  .toList(),
+            ),
+          );
+        }
+        result.add(
+          CourseModel(
+            id: course.id,
+            targetLanguageId: '',
+            code: course.code,
+            levelMin: course.levelMin,
+            levelMax: course.levelMax,
+            isPublished: course.isPublished,
+            createdAt: DateTime.now(),
+            units: unitModels,
+          ),
+        );
+      }
+      return result;
+    } catch (e) {
+      if (kDebugMode) debugPrint('_loadCoursesFromLocalDb error: $e');
+      return [];
+    }
+  }
+
+  /// Fetch full lesson detail (cached in-memory by lessonId, backed by the
+  /// local Drift store, falling back to a direct network call if both
+  /// misses -- e.g. before the first sync has ever run).
   Future<LessonDetailModel?> getLessonDetail(String lessonId) async {
     if (_lessonCache.containsKey(lessonId)) return _lessonCache[lessonId];
     try {
-      final detail = await _contentApi.getLessonDetail(lessonId);
+      final cachedRow = await _db.getLesson(lessonId);
+      if (cachedRow?.detailJson != null) {
+        final json = jsonDecode(cachedRow!.detailJson!) as Map<String, dynamic>;
+        final detail = LessonDetailModel.fromJson(json);
+        _lessonCache[lessonId] = detail;
+        return detail;
+      }
+
+      final json = await _syncManager.fetchAndCacheLessonDetail(lessonId);
+      final detail = LessonDetailModel.fromJson(json);
       _lessonCache[lessonId] = detail;
       notifyListeners();
       return detail;
@@ -94,6 +201,16 @@ class ContentProvider extends ChangeNotifier {
       return null;
     } on NetworkException {
       return null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('getLessonDetail local-cache error: $e');
+      try {
+        final detail = await _contentApi.getLessonDetail(lessonId);
+        _lessonCache[lessonId] = detail;
+        notifyListeners();
+        return detail;
+      } catch (_) {
+        return null;
+      }
     }
   }
 
