@@ -119,8 +119,14 @@ class OutboxManager {
         // Still offline -- leave it queued, try again on the next flush.
         break;
       } on ApiException catch (e) {
-        // A definitive rejection (not a connectivity problem): record it
-        // and move on rather than retrying forever.
+        if (e.statusCode >= 500) {
+          // Transient server-side failure, not a rejection of the request
+          // itself -- leave it queued and retry on the next flush instead
+          // of discarding a real completion/XP write.
+          break;
+        }
+        // A definitive 4xx rejection: retrying it unchanged would just
+        // fail again, so record it and move on.
         await _db.markOutboxEntryFailed(entry.localId, e.toString());
       } catch (e) {
         await _db.markOutboxEntryFailed(entry.localId, e.toString());
