@@ -5,6 +5,7 @@ import '../local_db/app_database.dart';
 import '../models/course_model.dart';
 import '../models/progress_model.dart';
 import '../services/content_api.dart';
+import '../services/outbox_manager.dart';
 import '../services/progress_api.dart';
 import '../services/sync_manager.dart';
 import '../services/api_client.dart';
@@ -32,6 +33,7 @@ class ContentProvider extends ChangeNotifier {
   final _progressApi = ProgressApi.instance;
   final _db = AppDatabase.instance;
   final _syncManager = SyncManager.instance;
+  final _outboxManager = OutboxManager.instance;
 
   Future<void> changeContentLanguage() async {
     _lessonCache.clear();
@@ -324,6 +326,18 @@ class ContentProvider extends ChangeNotifier {
   }
 
   /// Submit lesson completion and refresh stats.
+  ///
+  /// Goes through OutboxManager: tries the network immediately, and if the
+  /// device is offline, queues the write locally instead of losing it (it's
+  /// replayed automatically on the next successful sync). Either way, the
+  /// completion is marked locally right away -- the whole point of a
+  /// local-first write path is that the learner isn't blocked on a round
+  /// trip to see their lesson marked done.
+  ///
+  /// Returns null both on a queued-offline write and on a genuine failure;
+  /// callers already treat a null result as "fall back to the lesson's
+  /// nominal XP reward for display" (see LessonCompleteScreen usage), so
+  /// there's no UX regression either way.
   Future<CompleteLessonResult?> completeLesson({
     required String lessonId,
     required double score,
@@ -333,14 +347,15 @@ class ContentProvider extends ChangeNotifier {
   }) async {
     try {
       final existingProgress = _progressByLesson[lessonId];
-      final result = await _progressApi.completeLesson(
+      final result = await _outboxManager.submitLessonCompletion(
         lessonId: lessonId,
         score: score,
         answers: answers,
         timeSeconds: timeSeconds,
         heartsSpent: heartsSpent,
       );
-      // Mark lesson as completed locally immediately
+      // Mark lesson as completed locally immediately, whether the write
+      // went through or was queued for later.
       _progressByLesson[lessonId] = LessonProgressModel(
         id: '',
         userId: '',
@@ -351,7 +366,8 @@ class ContentProvider extends ChangeNotifier {
         createdAt: DateTime.now(),
       );
       _lessonCache.remove(lessonId);
-      // Refresh global stats
+      // Refresh global stats (best-effort; skipped implicitly if offline
+      // since getMyStats will also throw and just get swallowed here).
       try {
         _stats = await _progressApi.getMyStats();
       } catch (e) {

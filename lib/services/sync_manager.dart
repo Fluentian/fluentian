@@ -5,6 +5,7 @@ import 'package:drift/drift.dart' show Value;
 import '../local_db/app_database.dart';
 import 'app_logger.dart';
 import 'content_api.dart';
+import 'outbox_manager.dart';
 
 /// Pulls the delta manifest from the backend and applies it to the local
 /// Drift store. Cheap to call often (e.g. on app resume): with nothing
@@ -27,6 +28,12 @@ class SyncManager {
     if (_isSyncing) return false;
     _isSyncing = true;
     try {
+      // Push queued offline writes before pulling content, so a lesson
+      // completion made while offline reaches the server as soon as
+      // connectivity is back rather than waiting for the next explicit
+      // sync trigger.
+      await OutboxManager.instance.flush();
+
       final since = forceFullResync ? 0 : await _db.getLastSyncedGlobalVersion();
       final manifest = await _contentApi.getManifest(since: since);
       final globalVersion = manifest['global_version'] as int? ?? since;

@@ -9,18 +9,24 @@ class ProgressApi {
   final _client = ApiClient.instance;
 
   /// Submit lesson completion. Returns XP earned, streak, hearts, etc.
+  ///
+  /// [idempotencyKey], if provided, lets a retried/outbox-replayed
+  /// submission return the original result server-side instead of
+  /// double-awarding XP (see OutboxManager).
   Future<CompleteLessonResult> completeLesson({
     required String lessonId,
     required double score,
     required List<AnswerPayload> answers,
     required int timeSeconds,
     int heartsSpent = 0,
+    String? idempotencyKey,
   }) async {
     final json = await _client.post('/progress/lessons/$lessonId/complete', {
       'score': score,
       'answers': answers.map((a) => a.toJson()).toList(),
       'time_seconds': timeSeconds,
       'hearts_spent': heartsSpent,
+      if (idempotencyKey != null) 'idempotency_key': idempotencyKey,
     });
     return CompleteLessonResult.fromJson(json);
   }
