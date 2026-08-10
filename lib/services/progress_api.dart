@@ -15,13 +15,27 @@ class ProgressApi {
     required List<AnswerPayload> answers,
     required int timeSeconds,
     int heartsSpent = 0,
+    String? mutationId,
   }) async {
-    final json = await _client.post('/progress/lessons/$lessonId/complete', {
+    final payload = {
       'score': score,
       'answers': answers.map((a) => a.toJson()).toList(),
       'time_seconds': timeSeconds,
       'hearts_spent': heartsSpent,
-    });
+    };
+    return completeLessonPayload(lessonId, payload, mutationId: mutationId);
+  }
+
+  Future<CompleteLessonResult> completeLessonPayload(
+    String lessonId,
+    Map<String, dynamic> payload, {
+    String? mutationId,
+  }) async {
+    final json = await _client.post(
+      '/progress/lessons/$lessonId/complete',
+      payload,
+      headers: mutationId == null ? null : {'Idempotency-Key': mutationId},
+    );
     return CompleteLessonResult.fromJson(json);
   }
 

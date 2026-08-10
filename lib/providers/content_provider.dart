@@ -4,6 +4,8 @@ import '../models/progress_model.dart';
 import '../services/content_api.dart';
 import '../services/progress_api.dart';
 import '../services/api_client.dart';
+import '../services/offline_content_cache.dart';
+import 'package:uuid/uuid.dart';
 
 enum ContentStatus { idle, loading, loaded, error }
 
@@ -26,6 +28,8 @@ class ContentProvider extends ChangeNotifier {
 
   final _contentApi = ContentApi.instance;
   final _progressApi = ProgressApi.instance;
+  final _offlineStore = OfflineContentCache.instance;
+  static const _uuid = Uuid();
 
   Future<void> changeContentLanguage() async {
     _lessonCache.clear();
@@ -39,6 +43,7 @@ class ContentProvider extends ChangeNotifier {
     notifyListeners();
     try {
       _courses = await _contentApi.getCourses();
+      await syncPendingProgress();
 
       try {
         _stats = await _progressApi.getMyStats();
@@ -216,13 +221,35 @@ class ContentProvider extends ChangeNotifier {
   }) async {
     try {
       final existingProgress = _progressByLesson[lessonId];
-      final result = await _progressApi.completeLesson(
-        lessonId: lessonId,
-        score: score,
-        answers: answers,
-        timeSeconds: timeSeconds,
-        heartsSpent: heartsSpent,
+      final mutationId = _uuid.v4();
+      final payload = <String, dynamic>{
+        'lesson_id': lessonId,
+        'score': score,
+        'answers': answers.map((answer) => answer.toJson()).toList(),
+        'time_seconds': timeSeconds,
+        'hearts_spent': heartsSpent,
+      };
+      await _offlineStore.enqueueMutation(
+        mutationId,
+        'complete_lesson',
+        payload,
       );
+      _progressByLesson[lessonId] = LessonProgressModel(
+        id: '',
+        userId: '',
+        lessonId: lessonId,
+        masteryScore: score,
+        completed: score >= .6,
+        completedAt: existingProgress?.completedAt ?? DateTime.now(),
+        createdAt: DateTime.now(),
+      );
+      notifyListeners();
+      final result = await _progressApi.completeLessonPayload(
+        lessonId,
+        payload,
+        mutationId: mutationId,
+      );
+      await _offlineStore.acknowledgeMutation(mutationId);
       // Mark lesson as completed locally immediately
       _progressByLesson[lessonId] = LessonProgressModel(
         id: '',
@@ -244,7 +271,57 @@ class ContentProvider extends ChangeNotifier {
       return result;
     } catch (e) {
       if (kDebugMode) debugPrint('completeLesson error: $e');
-      return null;
+      final lesson = _findLesson(lessonId);
+      final reward = lesson?.xpReward ?? 10;
+      final multiplier = score >= 1
+          ? 1.5
+          : score >= .8
+          ? 1.25
+          : score >= .6
+          ? 1.0
+          : .25;
+      final xp = (reward * multiplier).floor();
+      return CompleteLessonResult(
+        xpEarned: xp,
+        newXpTotal: (_stats?.totalXp ?? 0) + xp,
+        streakDays: _stats?.streakDays ?? 0,
+        heartsRemaining: _stats?.hearts ?? 5,
+        lessonCompleted: score >= .6,
+        unitCompleted: false,
+      );
+    }
+  }
+
+  LessonModel? _findLesson(String lessonId) {
+    for (final course in _courses) {
+      for (final unit in course.units) {
+        for (final lesson in unit.lessons) {
+          if (lesson.id == lessonId) return lesson;
+        }
+      }
+    }
+    return null;
+  }
+
+  Future<void> syncPendingProgress() async {
+    final pending = await _offlineStore.pendingMutations();
+    for (final mutation in pending) {
+      if (mutation['operation'] != 'complete_lesson') continue;
+      final payload = Map<String, dynamic>.from(mutation['payload'] as Map);
+      final lessonId = payload.remove('lesson_id')?.toString();
+      if (lessonId == null || lessonId.isEmpty) continue;
+      try {
+        await _progressApi.completeLessonPayload(
+          lessonId,
+          payload,
+          mutationId: mutation['mutation_id'] as String,
+        );
+        await _offlineStore.acknowledgeMutation(
+          mutation['mutation_id'] as String,
+        );
+      } catch (_) {
+        break;
+      }
     }
   }
 

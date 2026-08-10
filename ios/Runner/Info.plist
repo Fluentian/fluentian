@@ -55,8 +55,8 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Fluentian uses your camera for optional video speaking practice.</string>
+	<string>Fluentian uses your camera only during video speaking rooms you choose to join. Fluentian does not record calls.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Fluentian uses your microphone for speaking practice.</string>
+	<string>Fluentian uses your microphone only during speaking rooms you choose to join. Fluentian does not record calls.</string>
 </dict>
 </plist>
