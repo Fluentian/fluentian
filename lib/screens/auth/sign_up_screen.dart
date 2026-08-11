@@ -1,8 +1,10 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../legal_document_screen.dart';
 import 'auth_widgets.dart';
 import 'otp_verification_screen.dart';
 import 'sign_in_screen.dart';
@@ -674,17 +676,90 @@ class _PasswordStep extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: LText(
-                  'I agree to the Terms of Service and Privacy Policy.',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AuthColors.body,
-                  ),
+                child: _TermsAgreementText(
+                  onToggle: enabled ? onTermsTap : null,
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// "I agree to the Terms of Service and Privacy Policy." with the two
+/// document names individually tappable (opening them in-app), while
+/// tapping the rest of the sentence still toggles agreement -- previously
+/// this was a single plain Text with no way to actually read either
+/// document before agreeing to it.
+class _TermsAgreementText extends StatefulWidget {
+  final VoidCallback? onToggle;
+  const _TermsAgreementText({required this.onToggle});
+
+  @override
+  State<_TermsAgreementText> createState() => _TermsAgreementTextState();
+}
+
+class _TermsAgreementTextState extends State<_TermsAgreementText> {
+  late final TapGestureRecognizer _termsRecognizer;
+  late final TapGestureRecognizer _privacyRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _termsRecognizer = TapGestureRecognizer()
+      ..onTap = () => Navigator.of(context).push(
+        LegalDocumentScreen.route(
+          title: 'Terms and conditions',
+          url: 'https://api.fluentianapp.binovatechnologies.com/terms',
+        ),
+      );
+    _privacyRecognizer = TapGestureRecognizer()
+      ..onTap = () => Navigator.of(context).push(
+        LegalDocumentScreen.route(
+          title: 'Privacy policy',
+          url: 'https://api.fluentianapp.binovatechnologies.com/privacy',
+        ),
+      );
+  }
+
+  @override
+  void dispose() {
+    _termsRecognizer.dispose();
+    _privacyRecognizer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bodyStyle = GoogleFonts.inter(fontSize: 13, color: AuthColors.body);
+    final linkStyle = bodyStyle.copyWith(
+      color: AuthColors.primary,
+      fontWeight: FontWeight.w700,
+      decoration: TextDecoration.underline,
+    );
+    return GestureDetector(
+      onTap: widget.onToggle,
+      child: Text.rich(
+        TextSpan(
+          style: bodyStyle,
+          children: [
+            TextSpan(text: context.tr('I agree to the ')),
+            TextSpan(
+              text: context.tr('Terms of Service'),
+              style: linkStyle,
+              recognizer: _termsRecognizer,
+            ),
+            TextSpan(text: context.tr(' and ')),
+            TextSpan(
+              text: context.tr('Privacy Policy'),
+              style: linkStyle,
+              recognizer: _privacyRecognizer,
+            ),
+            TextSpan(text: context.tr('.')),
+          ],
+        ),
       ),
     );
   }

@@ -132,10 +132,29 @@ class _CallScreenState extends State<CallScreen> {
   LocalVideoTrack? _localVideoTrack;
   RemoteVideoTrack? _remoteVideoTrack;
 
+  Timer? _quoteTimer;
+  int _quoteIndex = 0;
+
+  static const _languageLearningQuotes = [
+    'A different language is a different vision of life.',
+    'To have another language is to possess a second soul.',
+    'Learning a language is learning a way of thinking.',
+    'Every conversation is a step further than a textbook can take you.',
+    'The limits of my language mean the limits of my world.',
+    'Mistakes are proof that you are trying.',
+  ];
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _joinSpeakingRoom());
+    _quoteTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted) return;
+      setState(
+        () => _quoteIndex =
+            (_quoteIndex + 1) % _languageLearningQuotes.length,
+      );
+    });
   }
 
   Future<void> _joinSpeakingRoom() async {
@@ -429,6 +448,7 @@ class _CallScreenState extends State<CallScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _quoteTimer?.cancel();
     final ticketId = _matchTicketId;
     _matchTicketId = null;
     if (ticketId != null) {
@@ -446,6 +466,9 @@ class _CallScreenState extends State<CallScreen> {
     final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
     final time = _remainingSeconds <= 0 ? 'LIVE' : '$minutes:$seconds';
 
+    final showMatchWaiting =
+        _isConnecting && _error == null && widget.liveRoomId == 'match';
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -454,23 +477,109 @@ class _CallScreenState extends State<CallScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFF101014),
         body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final wide = constraints.maxWidth >= 720;
-              return Column(
-                children: [
-                  _buildHeader(wide: wide),
-                  Expanded(
-                    child: wide
-                        ? _buildWideLayout(time)
-                        : _buildPhoneLayout(time),
-                  ),
-                  _buildControls(wide: wide),
-                ],
-              );
-            },
-          ),
+          child: showMatchWaiting
+              ? _buildMatchWaitingUi()
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    final wide = constraints.maxWidth >= 720;
+                    return Column(
+                      children: [
+                        _buildHeader(wide: wide),
+                        Expanded(
+                          child: wide
+                              ? _buildWideLayout(time)
+                              : _buildPhoneLayout(time),
+                        ),
+                        _buildControls(wide: wide),
+                      ],
+                    );
+                  },
+                ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildMatchWaitingUi() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 12, 28, 28),
+      child: Column(
+        children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: IconButton(
+              tooltip: context.tr('Close'),
+              icon: const Icon(Icons.close_rounded, color: Colors.white70),
+              onPressed: _leave,
+            ),
+          ),
+          const Spacer(),
+          const SizedBox(
+            width: 56,
+            height: 56,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              color: FluentianColors.accent,
+            ),
+          ),
+          const SizedBox(height: 28),
+          LText(
+            'Finding your partner',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          LText(
+            _status,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          LText(
+            'You can leave anytime',
+            style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+          ),
+          const SizedBox(height: 40),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            child: Padding(
+              key: ValueKey(_quoteIndex),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: LText(
+                '"${_languageLearningQuotes[_quoteIndex]}"',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton(
+              onPressed: _leave,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: LText(
+                'Cancel',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

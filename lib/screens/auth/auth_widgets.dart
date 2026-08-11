@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AuthColors {
   static const primary = Color(0xFF0A3B6A);
@@ -255,71 +256,20 @@ class AuthButton extends StatelessWidget {
   }
 }
 
-/// Renders Google's official multi-color "G" mark (not a generic Material
-/// icon glyph) so the button reads as the standard, recognizable
-/// "Sign in with Google" button rather than a plain unbranded outline button.
+/// Renders Google's actual official multi-color "G" mark from a bundled SVG
+/// (assets/google_logo.svg) so the button matches the standard "Sign in
+/// with Google" logo used across real apps and websites, not an
+/// approximation.
 class GoogleLogo extends StatelessWidget {
   final double size;
   const GoogleLogo({super.key, this.size = 20});
 
   @override
-  Widget build(BuildContext context) =>
-      CustomPaint(size: Size.square(size), painter: _GoogleLogoPainter());
-}
-
-class _GoogleLogoPainter extends CustomPainter {
-  static const _blue = Color(0xFF4285F4);
-  static const _green = Color(0xFF34A853);
-  static const _yellow = Color(0xFFFBBC05);
-  static const _red = Color(0xFFEA4335);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final strokeWidth = size.width * 0.22;
-    final radius = (size.width - strokeWidth) / 2;
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    final ringPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    // Four equal quadrants in Google's brand colors, arranged the way the
-    // real logo's arcs are positioned around the ring.
-    for (final segment in [
-      (_blue, -1.5708, 1.5708), // top-right
-      (_green, 0.0, 1.5708), // bottom-right
-      (_yellow, 1.5708, 1.5708), // bottom-left
-      (_red, 3.1416, 1.5708), // top-left
-    ]) {
-      canvas.drawArc(
-        rect,
-        segment.$2,
-        segment.$3,
-        false,
-        ringPaint..color = segment.$1,
-      );
-    }
-
-    // The horizontal crossbar that turns the ring into a "G": a blue bar
-    // from the center out to the right edge, with a thin gap above it so
-    // it doesn't read as a closed circle.
-    final barPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = _blue;
-    final barHeight = strokeWidth * 0.92;
-    canvas.drawRect(
-      Rect.fromLTWH(
-        center.dx - strokeWidth * 0.15,
-        center.dy - barHeight / 2,
-        size.width / 2 - center.dx + strokeWidth * 0.15,
-        barHeight,
-      ),
-      barPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _GoogleLogoPainter oldDelegate) => false;
+  Widget build(BuildContext context) => SvgPicture.asset(
+    'assets/google_logo.svg',
+    width: size,
+    height: size,
+  );
 }
 
 class AuthSocialButton extends StatelessWidget {

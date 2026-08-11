@@ -6,6 +6,7 @@ class Opportunity {
   final String description;
   final String type;
   final DateTime? deadline;
+  final String? imageUrl;
   final String? ctaUrl;
   final String? ctaLabel;
   final bool isActive;
@@ -16,6 +17,7 @@ class Opportunity {
     required this.description,
     required this.type,
     this.deadline,
+    this.imageUrl,
     this.ctaUrl,
     this.ctaLabel,
     required this.isActive,
@@ -30,6 +32,7 @@ class Opportunity {
       deadline: json['deadline'] != null
           ? DateTime.parse(json['deadline'])
           : null,
+      imageUrl: ApiClient.resolveMediaUrl(json['image_url'] as String?),
       ctaUrl: json['cta_url'] as String?,
       ctaLabel: json['cta_label'] as String?,
       isActive: json['is_active'],

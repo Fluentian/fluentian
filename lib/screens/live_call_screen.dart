@@ -9,6 +9,7 @@ import '../core/theme.dart';
 import '../services/api_client.dart';
 import '../services/social_api.dart';
 import 'call_screen.dart';
+import 'find_speaking_partner_screen.dart';
 
 class LiveCallScreen extends StatefulWidget {
   const LiveCallScreen({super.key});
@@ -18,17 +19,42 @@ class LiveCallScreen extends StatefulWidget {
 }
 
 class _LiveCallScreenState extends State<LiveCallScreen> {
-  late Future<List<LiveRoomModel>> _rooms;
+  // Held as plain state (not re-wrapped in a fresh Future on every refresh)
+  // so periodic background updates just patch this data in place -- feeding
+  // FutureBuilder a *new* Future identity every 25s was resetting it to
+  // ConnectionState.waiting each time, which briefly swapped the whole list
+  // for a loading spinner even though the data was already available. That
+  // was the actual "whole page refreshes" flash, not just a perception issue.
+  List<LiveRoomModel>? _rooms;
+  bool _isInitialLoading = true;
+  Object? _error;
   Timer? _presenceTimer;
 
   @override
   void initState() {
     super.initState();
-    _rooms = SocialApi.instance.getLiveRooms();
+    _loadInitial();
     _presenceTimer = Timer.periodic(
       const Duration(seconds: 25),
       (_) => _refresh(silent: true),
     );
+  }
+
+  Future<void> _loadInitial() async {
+    try {
+      final rooms = await SocialApi.instance.getLiveRooms();
+      if (!mounted) return;
+      setState(() {
+        _rooms = rooms;
+        _isInitialLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _isInitialLoading = false;
+      });
+    }
   }
 
   @override
@@ -39,20 +65,14 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
   }
 
   Future<void> _refresh({bool silent = false}) async {
-    final request = SocialApi.instance.getLiveRooms();
-    if (!silent && mounted) {
-      setState(() {
-        _rooms = request;
-      });
-    }
     try {
-      final rooms = await request;
-      if (silent && mounted) {
-        setState(() {
-          _rooms = Future.value(rooms);
-        });
-      }
-    } catch (_) {
+      final rooms = await SocialApi.instance.getLiveRooms();
+      if (!mounted) return;
+      setState(() {
+        _rooms = rooms;
+        _error = null;
+      });
+    } catch (e) {
       if (!silent) rethrow;
     }
   }
@@ -67,6 +87,15 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
           smartMatch: room.roomType == 'match',
           liveRoomId: room.id,
         ),
+      ),
+    );
+  }
+
+  void _findPartner(LiveRoomModel room) {
+    if (!room.eligible || !room.isOpen) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => FindSpeakingPartnerScreen(topic: room.title),
       ),
     );
   }
@@ -120,25 +149,25 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
               ],
             ),
             const SizedBox(height: 18),
-            FutureBuilder<List<LiveRoomModel>>(
-              future: _rooms,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+            Builder(
+              builder: (context) {
+                if (_isInitialLoading) {
                   return const Padding(
                     padding: EdgeInsets.all(60),
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
-                if (snapshot.hasError) {
-                  final detail = snapshot.error is ApiException
-                      ? (snapshot.error as ApiException).userMessage
+                if (_error != null) {
+                  final err = _error;
+                  final detail = err is ApiException
+                      ? err.userMessage
                       : 'Check your connection and try again.';
                   return _MessageCard(
                     message: 'Could not load live rooms. $detail',
                     onRetry: _refresh,
                   );
                 }
-                final rooms = snapshot.data ?? const [];
+                final rooms = _rooms ?? const [];
                 if (rooms.isEmpty) {
                   return _MessageCard(
                     message: 'No live rooms are available.',
@@ -166,7 +195,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                       _MatchCard(
                         room: matches.first,
                         onJoin: matches.first.isOpen
-                            ? () => _join(matches.first)
+                            ? () => _findPartner(matches.first)
                             : null,
                       ),
                     if (special.isNotEmpty) ...[
@@ -358,17 +387,24 @@ class _RoomCard extends StatelessWidget {
               ],
             ),
           ),
-          if (enabled) ...[
-            IconButton(
-              onPressed: onAudio,
-              icon: const Icon(Iconsax.call, color: FluentianColors.primary),
+          IconButton(
+            onPressed: enabled ? onAudio : null,
+            icon: Icon(
+              Iconsax.call,
+              color: enabled
+                  ? FluentianColors.primary
+                  : FluentianColors.textSecondary.withValues(alpha: 0.4),
             ),
-            IconButton(
-              onPressed: onVideo,
-              icon: const Icon(Iconsax.video, color: FluentianColors.primary),
+          ),
+          IconButton(
+            onPressed: enabled ? onVideo : null,
+            icon: Icon(
+              Iconsax.video,
+              color: enabled
+                  ? FluentianColors.primary
+                  : FluentianColors.textSecondary.withValues(alpha: 0.4),
             ),
-          ] else
-            const Icon(Iconsax.lock, color: FluentianColors.textSecondary),
+          ),
         ],
       ),
     );

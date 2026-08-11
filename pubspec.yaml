@@ -37,6 +37,8 @@ dependencies:
   timezone: ^0.9.4
   flutter_timezone: ^4.1.1
   flutter_markdown: ^0.7.7+1
+  flutter_svg: ^2.0.10+1
+  webview_flutter: ^4.10.0
   drift: ^2.22.1
   sqlite3_flutter_libs: ^0.5.27
   path_provider: ^2.1.5
@@ -61,4 +63,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon.jpg
+    - assets/google_logo.svg
     - assets/sounds/

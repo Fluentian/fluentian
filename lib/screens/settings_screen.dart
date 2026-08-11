@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
 import '../core/app_localization.dart';
 import '../core/constants.dart';
@@ -13,6 +12,7 @@ import '../providers/content_provider.dart';
 import '../services/app_logger.dart';
 import '../services/download_settings.dart';
 import '../services/local_push_service.dart';
+import 'legal_document_screen.dart';
 import 'offline_downloads_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -457,24 +457,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _openLegalPage(BuildContext context, String slug) async {
-    final url = Uri.parse(
-      'https://api.fluentianapp.binovatechnologies.com/$slug',
+  void _openLegalPage(BuildContext context, String slug) {
+    Navigator.of(context).push(
+      LegalDocumentScreen.route(
+        title: slug == 'privacy' ? 'Privacy policy' : 'Terms and conditions',
+        url: 'https://api.fluentianapp.binovatechnologies.com/$slug',
+      ),
     );
-    if (await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      return;
-    }
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            slug == 'privacy'
-                ? 'Could not open the privacy policy.'
-                : 'Could not open the terms and conditions.',
-          ),
-        ),
-      );
-    }
   }
 
   Future<void> _confirmAccountDeletion(BuildContext context) async {
