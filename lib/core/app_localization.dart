@@ -163,6 +163,12 @@ class AppCopy {
       'Start': 'ጀምር',
       'You’re all caught up': 'ሁሉንም አጠናቅቀዋል',
       'Continue': 'ቀጥል',
+      'Microphone access': 'የማይክሮፎን ፈቃድ',
+      'Camera and microphone access': 'የካሜራ እና ማይክሮፎን ፈቃድ',
+      'Fluentian uses your microphone only while you are in this speaking room. Live audio is sent to the other participant through LiveKit and is not recorded by Fluentian.':
+          'Fluentian ማይክሮፎንዎን የሚጠቀመው በዚህ የንግግር ክፍል ውስጥ ሲሆኑ ብቻ ነው። የቀጥታ ድምፅ በLiveKit በኩል ለሌላው ተሳታፊ ይላካል፤ Fluentian ጥሪውን አይቀዳም።',
+      'Fluentian uses your camera and microphone only while you are in this speaking room. Live audio and video are sent to the other participant through LiveKit and are not recorded by Fluentian.':
+          'Fluentian ካሜራዎንና ማይክሮፎንዎን የሚጠቀመው በዚህ የንግግር ክፍል ውስጥ ሲሆኑ ብቻ ነው። የቀጥታ ድምፅና ቪዲዮ በLiveKit በኩል ለሌላው ተሳታፊ ይላካሉ፤ Fluentian ጥሪውን አይቀዳም።',
       'Back': 'ተመለስ',
       'Next': 'ቀጣይ',
       'Skip': 'ዝለል',
@@ -306,6 +312,12 @@ class AppCopy {
       'Start': 'Jalqabi',
       'You’re all caught up': 'Hunda xumurteetta',
       'Continue': 'Itti fufi',
+      'Microphone access': 'Hayyama maayikiroofonii',
+      'Camera and microphone access': 'Hayyama kaameraa fi maayikiroofonii',
+      'Fluentian uses your microphone only while you are in this speaking room. Live audio is sent to the other participant through LiveKit and is not recorded by Fluentian.':
+          'Fluentian maayikiroofonii kee kan fayyadamu yeroo ati kutaa dubbii kana keessa jirtu qofa. Sagaleen kallattii LiveKit keessatti hirmaataa biraatti ergama; Fluentian bilbila kana hin waraabu.',
+      'Fluentian uses your camera and microphone only while you are in this speaking room. Live audio and video are sent to the other participant through LiveKit and are not recorded by Fluentian.':
+          'Fluentian kaameraa fi maayikiroofonii kee kan fayyadamu yeroo ati kutaa dubbii kana keessa jirtu qofa. Sagalee fi viidiyoon kallattii LiveKit keessatti hirmaataa biraatti ergamu; Fluentian bilbila kana hin waraabu.',
       'Back': 'Deebi’i',
       'Next': 'Itti aanu',
       'Skip': 'Darbi',

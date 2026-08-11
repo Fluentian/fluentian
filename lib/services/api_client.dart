@@ -209,7 +209,8 @@ class ApiClient {
     String path,
     Map<String, dynamic> body, {
     bool auth = true,
-  }) => _request('POST', path, body: body, auth: auth);
+    Map<String, String>? headers,
+  }) => _request('POST', path, body: body, auth: auth, extraHeaders: headers);
 
   Future<Map<String, dynamic>> put(
     String path,
@@ -263,11 +264,13 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
     bool auth = true,
+    Map<String, String>? extraHeaders,
   }) async {
     final start = DateTime.now();
     final uri = Uri.parse('$_baseUrl$path');
     try {
       final headers = await _buildHeaders(auth: auth);
+      if (extraHeaders != null) headers.addAll(extraHeaders);
 
       http.Response response;
       switch (method) {

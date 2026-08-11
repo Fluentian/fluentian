@@ -2,6 +2,7 @@ import '../models/course_model.dart';
 import '../models/culture_story_model.dart';
 import '../core/app_localization.dart';
 import 'api_client.dart';
+import 'offline_content_cache.dart';
 
 /// Calls the Fluentian backend content endpoints.
 class ContentApi {
@@ -9,6 +10,7 @@ class ContentApi {
   static final ContentApi instance = ContentApi._();
 
   final _client = ApiClient.instance;
+  final _cache = OfflineContentCache.instance;
 
   String get _languageQuery =>
       'content_language=${Uri.encodeQueryComponent(AppLocaleController.activeLanguageCode)}';
@@ -18,7 +20,16 @@ class ContentApi {
     final query = level != null
         ? '?level=${Uri.encodeQueryComponent(level)}&$_languageQuery'
         : '?$_languageQuery';
-    final items = await _client.getList('/content/courses$query');
+    final cacheKey =
+        'courses:${AppLocaleController.activeLanguageCode}:${level ?? 'all'}';
+    List<dynamic> items;
+    try {
+      items = await _client.getList('/content/courses$query');
+      await _cache.put(cacheKey, items);
+    } catch (_) {
+      items = await _cache.get<List<dynamic>>(cacheKey) ?? const [];
+      if (items.isEmpty) rethrow;
+    }
     return items
         .map((e) => CourseModel.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -44,9 +55,16 @@ class ContentApi {
 
   /// Fetch full lesson detail (blocks + questions).
   Future<LessonDetailModel> getLessonDetail(String lessonId) async {
-    final json = await _client.get(
-      '/content/lessons/$lessonId?$_languageQuery',
-    );
+    final cacheKey =
+        'lesson:${AppLocaleController.activeLanguageCode}:$lessonId';
+    Map<String, dynamic> json;
+    try {
+      json = await _client.get('/content/lessons/$lessonId?$_languageQuery');
+      await _cache.put(cacheKey, json);
+    } catch (_) {
+      json = await _cache.get<Map<String, dynamic>>(cacheKey) ?? const {};
+      if (json.isEmpty) rethrow;
+    }
     return LessonDetailModel.fromJson(json);
   }
 

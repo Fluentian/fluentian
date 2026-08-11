@@ -135,11 +135,21 @@ class _CallScreenState extends State<CallScreen> {
   @override
   void initState() {
     super.initState();
-    _joinSpeakingRoom();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _joinSpeakingRoom());
   }
 
   Future<void> _joinSpeakingRoom() async {
     try {
+      final approved = await _confirmMediaUse();
+      if (!approved) {
+        if (!mounted) return;
+        setState(() {
+          _isConnecting = false;
+          _error = 'Microphone access was not started. You can go back safely.';
+          _status = 'Call not started';
+        });
+        return;
+      }
       final mic = await Permission.microphone.request();
       if (!mic.isGranted) {
         throw Exception(
@@ -229,6 +239,45 @@ class _CallScreenState extends State<CallScreen> {
         _status = 'Could not join call';
       });
     }
+  }
+
+  Future<bool> _confirmMediaUse() async {
+    if (!mounted) return false;
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => AlertDialog(
+            icon: Icon(
+              widget.isVideo ? Icons.videocam_rounded : Icons.mic_rounded,
+              color: FluentianColors.primary,
+            ),
+            title: Text(
+              dialogContext.tr(
+                widget.isVideo
+                    ? 'Camera and microphone access'
+                    : 'Microphone access',
+              ),
+            ),
+            content: Text(
+              dialogContext.tr(
+                widget.isVideo
+                    ? 'Fluentian uses your camera and microphone only while you are in this speaking room. Live audio and video are sent to the other participant through LiveKit and are not recorded by Fluentian.'
+                    : 'Fluentian uses your microphone only while you are in this speaking room. Live audio is sent to the other participant through LiveKit and is not recorded by Fluentian.',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(dialogContext.tr('Not now')),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: Text(dialogContext.tr('Continue')),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   Future<SpeakingCallSession> _waitForMatch() async {
