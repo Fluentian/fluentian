@@ -134,7 +134,7 @@ class UnitDetailScreen extends StatelessWidget {
             child: SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () => showGuidebookDialog(context, unit),
                 icon: const Icon(Iconsax.book_1),
                 label: LText(
                   'Guidebook',

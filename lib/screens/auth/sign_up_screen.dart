@@ -347,16 +347,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const SizedBox(height: 16),
                           AuthSocialButton(
                             text: 'Continue with Google',
-                            icon: Icons.g_mobiledata,
                             onPressed: auth.isLoading
                                 ? null
                                 : _handleGoogleSignUp,
-                          ),
-                          const SizedBox(height: 12),
-                          AuthSocialButton(
-                            text: 'Continue with Apple',
-                            icon: Icons.apple,
-                            onPressed: auth.isLoading ? null : () {},
                           ),
                         ],
                       ),

@@ -760,9 +760,19 @@ class _CallScreenState extends State<CallScreen> {
                                   ),
                                 );
                               }
-                            } catch (_) {
+                            } catch (e) {
                               if (sheetContext.mounted) {
                                 setSheetState(() => submitting = false);
+                              }
+                              if (mounted) {
+                                final message = e is ApiException
+                                    ? e.userMessage
+                                    : e is NetworkException
+                                    ? e.message
+                                    : 'Could not submit the report. Please try again.';
+                                ScaffoldMessenger.of(
+                                  this.context,
+                                ).showSnackBar(SnackBar(content: Text(message)));
                               }
                             }
                           },

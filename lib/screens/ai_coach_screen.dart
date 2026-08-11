@@ -386,14 +386,6 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
               color: FluentianColors.darkPageBg,
               child: Row(
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Iconsax.translate,
-                      color: Colors.grey.shade500,
-                      size: 20,
-                    ),
-                    onPressed: () {},
-                  ),
                   Expanded(
                     child: Container(
                       height: 44,

@@ -26,6 +26,7 @@ class LessonDetailScreen extends StatefulWidget {
 class _LessonDetailScreenState extends State<LessonDetailScreen> {
   bool _isLoading = true;
   LessonDetailModel? _lesson;
+  String? _loadError;
   late final AudioPlayer _audioPlayer;
   final TtsService _ttsService = TtsService.instance;
   int _currentStep = 0;
@@ -38,12 +39,12 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Future<void> _loadLesson() async {
-    final detail = await context.read<ContentProvider>().getLessonDetail(
-      widget.lessonId,
-    );
+    final contentProvider = context.read<ContentProvider>();
+    final detail = await contentProvider.getLessonDetail(widget.lessonId);
     if (mounted) {
       setState(() {
         _lesson = detail;
+        _loadError = detail == null ? contentProvider.lastLessonLoadError : null;
         _isLoading = false;
       });
     }
@@ -73,7 +74,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const LText('Failed to load lesson.'),
+              Text(_loadError ?? context.tr('Failed to load lesson.')),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {

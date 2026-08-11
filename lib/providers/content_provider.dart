@@ -18,6 +18,8 @@ class ContentProvider extends ChangeNotifier {
   String? _error;
   List<CourseModel> _courses = [];
   final Map<String, LessonDetailModel> _lessonCache = {};
+  String? _lastLessonLoadError;
+  String? get lastLessonLoadError => _lastLessonLoadError;
   final Map<String, LessonProgressModel> _progressByLesson = {};
   final Set<String> _enrolledCourseIds = {};
   UserStatsModel? _stats;
@@ -190,27 +192,39 @@ class ContentProvider extends ChangeNotifier {
         final json = jsonDecode(cachedRow!.detailJson!) as Map<String, dynamic>;
         final detail = LessonDetailModel.fromJson(json);
         _lessonCache[lessonId] = detail;
+        _lastLessonLoadError = null;
         return detail;
       }
 
       final json = await _syncManager.fetchAndCacheLessonDetail(lessonId);
       final detail = LessonDetailModel.fromJson(json);
       _lessonCache[lessonId] = detail;
+      _lastLessonLoadError = null;
       notifyListeners();
       return detail;
     } on ApiException catch (e) {
       if (kDebugMode) debugPrint('getLessonDetail error: ${e.message}');
+      _lastLessonLoadError = e.userMessage;
       return null;
-    } on NetworkException {
+    } on NetworkException catch (e) {
+      _lastLessonLoadError = e.message;
       return null;
     } catch (e) {
       if (kDebugMode) debugPrint('getLessonDetail local-cache error: $e');
       try {
         final detail = await _contentApi.getLessonDetail(lessonId);
         _lessonCache[lessonId] = detail;
+        _lastLessonLoadError = null;
         notifyListeners();
         return detail;
+      } on ApiException catch (e) {
+        _lastLessonLoadError = e.userMessage;
+        return null;
+      } on NetworkException catch (e) {
+        _lastLessonLoadError = e.message;
+        return null;
       } catch (_) {
+        _lastLessonLoadError = null;
         return null;
       }
     }
@@ -329,15 +343,20 @@ class ContentProvider extends ChangeNotifier {
   ///
   /// Goes through OutboxManager: tries the network immediately, and if the
   /// device is offline, queues the write locally instead of losing it (it's
-  /// replayed automatically on the next successful sync). Either way, the
+  /// replayed automatically on the next successful sync). In that case the
   /// completion is marked locally right away -- the whole point of a
   /// local-first write path is that the learner isn't blocked on a round
   /// trip to see their lesson marked done.
   ///
-  /// Returns null both on a queued-offline write and on a genuine failure;
-  /// callers already treat a null result as "fall back to the lesson's
-  /// nominal XP reward for display" (see LessonCompleteScreen usage), so
-  /// there's no UX regression either way.
+  /// Returns null on a queued-offline write; callers already treat a null
+  /// result as "fall back to the lesson's nominal XP reward for display"
+  /// (see LessonCompleteScreen usage).
+  ///
+  /// A genuine rejection (ApiException -- the server actually said no, e.g.
+  /// stale question IDs after a content sync) is intentionally NOT swallowed
+  /// here: it propagates to the caller so the UI can tell the learner their
+  /// lesson was not actually completed, instead of celebrating a completion
+  /// that silently reverts the next time they open the app.
   Future<CompleteLessonResult?> completeLesson({
     required String lessonId,
     required double score,
@@ -345,40 +364,35 @@ class ContentProvider extends ChangeNotifier {
     required int timeSeconds,
     int heartsSpent = 0,
   }) async {
+    final existingProgress = _progressByLesson[lessonId];
+    final result = await _outboxManager.submitLessonCompletion(
+      lessonId: lessonId,
+      score: score,
+      answers: answers,
+      timeSeconds: timeSeconds,
+      heartsSpent: heartsSpent,
+    );
+    // Reached only on success or offline-queue -- a real rejection throws
+    // out of the call above instead of falling through to here.
+    _progressByLesson[lessonId] = LessonProgressModel(
+      id: '',
+      userId: '',
+      lessonId: lessonId,
+      masteryScore: score,
+      completed: true,
+      completedAt: existingProgress?.completedAt ?? DateTime.now(),
+      createdAt: DateTime.now(),
+    );
+    _lessonCache.remove(lessonId);
+    // Refresh global stats (best-effort; skipped implicitly if offline
+    // since getMyStats will also throw and just get swallowed here).
     try {
-      final existingProgress = _progressByLesson[lessonId];
-      final result = await _outboxManager.submitLessonCompletion(
-        lessonId: lessonId,
-        score: score,
-        answers: answers,
-        timeSeconds: timeSeconds,
-        heartsSpent: heartsSpent,
-      );
-      // Mark lesson as completed locally immediately, whether the write
-      // went through or was queued for later.
-      _progressByLesson[lessonId] = LessonProgressModel(
-        id: '',
-        userId: '',
-        lessonId: lessonId,
-        masteryScore: score,
-        completed: true,
-        completedAt: existingProgress?.completedAt ?? DateTime.now(),
-        createdAt: DateTime.now(),
-      );
-      _lessonCache.remove(lessonId);
-      // Refresh global stats (best-effort; skipped implicitly if offline
-      // since getMyStats will also throw and just get swallowed here).
-      try {
-        _stats = await _progressApi.getMyStats();
-      } catch (e) {
-        if (kDebugMode) debugPrint('refresh stats after completion error: $e');
-      }
-      notifyListeners();
-      return result;
+      _stats = await _progressApi.getMyStats();
     } catch (e) {
-      if (kDebugMode) debugPrint('completeLesson error: $e');
-      return null;
+      if (kDebugMode) debugPrint('refresh stats after completion error: $e');
     }
+    notifyListeners();
+    return result;
   }
 
   /// Refresh just the user stats (called after XP events).
@@ -400,33 +414,30 @@ class ContentProvider extends ChangeNotifier {
   }
 
   /// Submit SRS review session
+  /// A genuine rejection (ApiException) propagates to the caller rather
+  /// than being swallowed -- same reasoning as [completeLesson].
   Future<Map<String, dynamic>?> completeSrsReview({
     required List<AnswerPayload> answers,
     required int timeSeconds,
   }) async {
-    try {
-      final payload = answers
-          .map(
-            (a) => {
-              'question_id': a.questionId,
-              'answer': a.answer,
-              'is_correct': a.isCorrect,
-            },
-          )
-          .toList();
-      final result = await _contentApi.completeSrsReview(payload, timeSeconds);
+    final payload = answers
+        .map(
+          (a) => {
+            'question_id': a.questionId,
+            'answer': a.answer,
+            'is_correct': a.isCorrect,
+          },
+        )
+        .toList();
+    final result = await _contentApi.completeSrsReview(payload, timeSeconds);
 
-      // Refresh global stats after SRS
-      try {
-        _stats = await _progressApi.getMyStats();
-      } catch (e) {
-        if (kDebugMode) debugPrint('refresh stats after SRS error: $e');
-      }
-      notifyListeners();
-      return result;
+    // Refresh global stats after SRS
+    try {
+      _stats = await _progressApi.getMyStats();
     } catch (e) {
-      if (kDebugMode) debugPrint('completeSrsReview error: $e');
-      return null;
+      if (kDebugMode) debugPrint('refresh stats after SRS error: $e');
     }
+    notifyListeners();
+    return result;
   }
 }

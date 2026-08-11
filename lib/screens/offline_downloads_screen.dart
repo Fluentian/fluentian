@@ -87,6 +87,16 @@ class _OfflineDownloadsScreenState extends State<OfflineDownloadsScreen> {
     setState(() => _inProgressUnitIds.remove(unit.id));
     if (result.outcome == DownloadOutcome.downloaded) {
       await _refreshDownloadedIds();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: LText('Downloaded "${unit.title}" for offline use.'),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: LText('Could not finish the download. Try again.')),
+      );
     }
   }
 

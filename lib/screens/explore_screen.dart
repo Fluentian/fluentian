@@ -901,6 +901,54 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 82,
+                    height: 82,
+                    decoration: const BoxDecoration(
+                      color: FluentianColors.primaryTint,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Iconsax.warning_2,
+                      size: 36,
+                      color: FluentianColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  LText(
+                    "Couldn't load your word bank",
+                    style: GoogleFonts.inter(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  LText(
+                    'Check your connection and try again.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      height: 1.45,
+                      color: FluentianColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: _reload,
+                    icon: const Icon(Iconsax.refresh),
+                    label: const LText('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         final items = snapshot.data ?? const [];
         if (items.isEmpty) {
           return Center(

@@ -19,6 +19,7 @@ class UserModel {
   final DateTime? birthDate;
   final String? learningMotivation;
   final String? priorFrenchExposure;
+  final bool isFounder;
   final int dailyGoalMinutes;
   final int startingUnitNo;
   final String baseLanguageCode;
@@ -55,6 +56,7 @@ class UserModel {
     this.birthDate,
     this.learningMotivation,
     this.priorFrenchExposure,
+    this.isFounder = false,
     this.dailyGoalMinutes = 15,
     this.startingUnitNo = 1,
     this.baseLanguageCode = 'en',
@@ -110,6 +112,10 @@ class UserModel {
       priorFrenchExposure:
           profile?['prior_french_exposure']?.toString() ??
           json['prior_french_exposure']?.toString(),
+      isFounder:
+          profile?['is_founder'] as bool? ??
+          json['is_founder'] as bool? ??
+          false,
       dailyGoalMinutes: json['daily_goal_minutes'] as int? ?? 15,
       startingUnitNo: json['starting_unit_no'] as int? ?? 1,
       baseLanguageCode: json['base_language_code']?.toString() ?? 'en',
@@ -155,6 +161,7 @@ class UserModel {
     'birth_date': birthDate?.toIso8601String().split('T').first,
     'learning_motivation': learningMotivation,
     'prior_french_exposure': priorFrenchExposure,
+    'is_founder': isFounder,
     'daily_goal_minutes': dailyGoalMinutes,
     'starting_unit_no': startingUnitNo,
     'base_language_code': baseLanguageCode,
@@ -195,6 +202,7 @@ class UserModel {
     DateTime? birthDate,
     String? learningMotivation,
     String? priorFrenchExposure,
+    bool? isFounder,
     int? dailyGoalMinutes,
     int? startingUnitNo,
     String? baseLanguageCode,
@@ -232,6 +240,7 @@ class UserModel {
     birthDate: birthDate ?? this.birthDate,
     learningMotivation: learningMotivation ?? this.learningMotivation,
     priorFrenchExposure: priorFrenchExposure ?? this.priorFrenchExposure,
+    isFounder: isFounder ?? this.isFounder,
     dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
     startingUnitNo: startingUnitNo ?? this.startingUnitNo,
     baseLanguageCode: baseLanguageCode ?? this.baseLanguageCode,

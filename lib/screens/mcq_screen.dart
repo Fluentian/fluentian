@@ -13,6 +13,7 @@ import '../providers/content_provider.dart';
 import '../services/media_cache_manager.dart';
 import '../services/sound_effect_service.dart';
 import '../services/tts_service.dart';
+import '../services/api_client.dart';
 import '../widgets/ai_tutor_sheet.dart';
 import 'lesson_complete_screen.dart';
 
@@ -799,30 +800,51 @@ class _McqScreenState extends State<McqScreen>
       int? finalHeartsRemaining;
       int? finalStreakDays;
 
-      if (widget.isSrsReview) {
-        final result = await contentProvider.completeSrsReview(
-          answers: _answers,
-          timeSeconds: timeSeconds,
-        );
-        if (result != null) {
-          finalXpEarned = result['xp_earned'] as int? ?? 0;
-          finalNewXpTotal = result['new_xp_total'] as int? ?? 0;
-          finalHeartsRemaining = result['hearts_remaining'] as int?;
-          finalStreakDays = result['streak_days'] as int?;
+      try {
+        if (widget.isSrsReview) {
+          final result = await contentProvider.completeSrsReview(
+            answers: _answers,
+            timeSeconds: timeSeconds,
+          );
+          if (result != null) {
+            finalXpEarned = result['xp_earned'] as int? ?? 0;
+            finalNewXpTotal = result['new_xp_total'] as int? ?? 0;
+            finalHeartsRemaining = result['hearts_remaining'] as int?;
+            finalStreakDays = result['streak_days'] as int?;
+          }
+        } else {
+          final result = await contentProvider.completeLesson(
+            lessonId: widget.lessonId,
+            score: score,
+            answers: _answers,
+            timeSeconds: timeSeconds,
+            heartsSpent: _persistedHeartSpends,
+          );
+          if (result != null) {
+            finalXpEarned = result.xpEarned;
+            finalNewXpTotal = result.newXpTotal;
+            finalHeartsRemaining = result.heartsRemaining;
+            finalStreakDays = result.streakDays;
+          }
         }
-      } else {
-        final result = await contentProvider.completeLesson(
-          lessonId: widget.lessonId,
-          score: score,
-          answers: _answers,
-          timeSeconds: timeSeconds,
-          heartsSpent: _persistedHeartSpends,
-        );
-        if (result != null) {
-          finalXpEarned = result.xpEarned;
-          finalNewXpTotal = result.newXpTotal;
-          finalHeartsRemaining = result.heartsRemaining;
-          finalStreakDays = result.streakDays;
+      } on ApiException catch (e) {
+        // The server actually rejected the completion (not just offline) --
+        // don't celebrate a completion that didn't happen. Let the learner
+        // retry instead of silently reverting the next time they open the app.
+        if (!mounted) return;
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage)));
+        return;
+      } on NetworkException catch (e) {
+        // Lesson completion is queued offline by OutboxManager (safe to
+        // proceed to the completion screen), but SRS review has no offline
+        // queue -- a network failure there means the review truly wasn't
+        // recorded, so don't celebrate it either.
+        if (widget.isSrsReview) {
+          if (!mounted) return;
+          setState(() => _isSubmitting = false);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+          return;
         }
       }
 

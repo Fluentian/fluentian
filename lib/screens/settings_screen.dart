@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
@@ -68,10 +69,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (locale) async {
                   await context.read<AppLocaleController>().setLocale(locale);
                   if (!context.mounted) return;
-                  await context.read<AuthProvider>().updateLearningLanguage(
+                  final auth = context.read<AuthProvider>();
+                  final ok = await auth.updateLearningLanguage(
                     locale.languageCode,
                   );
                   if (!context.mounted) return;
+                  if (!ok) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          auth.errorMessage ?? 'Could not save language.',
+                        ),
+                      ),
+                    );
+                  }
                   await context.read<ContentProvider>().changeContentLanguage();
                 },
               ),
@@ -253,7 +264,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _RowShell(
                 icon: Icons.privacy_tip_outlined,
                 label: 'Privacy policy',
-                onTap: () => _openPrivacyPolicy(context),
+                onTap: () => _openLegalPage(context, 'privacy'),
+                trailing: const Icon(
+                  Icons.open_in_new_rounded,
+                  color: FluentianColors.textSecondary,
+                  size: 20,
+                ),
+              ),
+              _RowShell(
+                icon: Icons.description_outlined,
+                label: 'Terms and conditions',
+                onTap: () => _openLegalPage(context, 'terms'),
                 trailing: const Icon(
                   Icons.open_in_new_rounded,
                   color: FluentianColors.textSecondary,
@@ -299,14 +320,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _save(BuildContext context, Map<String, dynamic> data) async {
-    final ok = await context.read<AuthProvider>().updateSettings(data);
+    final auth = context.read<AuthProvider>();
+    final ok = await auth.updateSettings(data);
     if (ok && data['haptic_feedback_enabled'] == true && context.mounted) {
       HapticFeedback.selectionClick();
     }
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: LText('Could not save setting.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.errorMessage ?? 'Could not save setting.')),
+      );
     }
   }
 
@@ -435,16 +457,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _openPrivacyPolicy(BuildContext context) async {
-    final policyUrl = Uri.parse(
-      'https://api.fluentianapp.binovatechnologies.com/privacy',
+  Future<void> _openLegalPage(BuildContext context, String slug) async {
+    final url = Uri.parse(
+      'https://api.fluentianapp.binovatechnologies.com/$slug',
     );
-    if (await launchUrl(policyUrl, mode: LaunchMode.externalApplication)) {
+    if (await launchUrl(url, mode: LaunchMode.externalApplication)) {
       return;
     }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: LText('Could not open the privacy policy.')),
+        SnackBar(
+          content: Text(
+            slug == 'privacy'
+                ? 'Could not open the privacy policy.'
+                : 'Could not open the terms and conditions.',
+          ),
+        ),
       );
     }
   }
@@ -652,8 +680,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 } else {
                                   setState(() => isSaving = false);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: LText('Could not save profile.'),
+                                    SnackBar(
+                                      content: Text(
+                                        auth.errorMessage ??
+                                            'Could not save profile.',
+                                      ),
                                     ),
                                   );
                                 }
@@ -827,15 +858,71 @@ class _AccountHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                LText(
-                  user.displayName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: LText(
+                        user.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (user.isFounder)
+                      Container(
+                        margin: const EdgeInsets.only(right: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B).withValues(alpha: .22),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Iconsax.crown_15,
+                              size: 11,
+                              color: Color(0xFFF59E0B),
+                            ),
+                            const SizedBox(width: 3),
+                            LText(
+                              'Founder',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFFF59E0B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: .16),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: LText(
+                        'Free plan',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 2),
                 LText(

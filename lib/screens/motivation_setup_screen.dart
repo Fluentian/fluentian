@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../core/app_localization.dart';
 import '../core/constants.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/onboarding_scaffold.dart';
@@ -49,9 +48,9 @@ class _MotivationSetupScreenState extends State<MotivationSetupScreen> {
       if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: LText('Failed to save profile')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.errorMessage ?? 'Failed to save profile')),
+      );
     }
   }
 

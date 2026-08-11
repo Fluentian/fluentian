@@ -534,8 +534,18 @@ class AuthProvider extends ChangeNotifier {
       _user = updated;
       _hasCompletedSetup = _hasCompletedSetup || _hasFinishedSetup(updated);
       await _apiClient.saveUser(updated);
+      _errorMessage = null;
       return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.userMessage;
+      if (kDebugMode) debugPrint('Update profile error: $e');
+      return false;
+    } on NetworkException catch (e) {
+      _errorMessage = e.message;
+      if (kDebugMode) debugPrint('Update profile error: $e');
+      return false;
     } catch (e) {
+      _errorMessage = 'An unexpected error occurred.';
       if (kDebugMode) debugPrint('Update profile error: $e');
       return false;
     } finally {
@@ -555,10 +565,24 @@ class AuthProvider extends ChangeNotifier {
       });
       _user = updated;
       await _apiClient.saveUser(updated);
+      _errorMessage = null;
       notifyListeners();
       return true;
+    } on ApiException catch (e) {
+      _user = previous;
+      _errorMessage = e.userMessage;
+      notifyListeners();
+      if (kDebugMode) debugPrint('Update learning language error: $e');
+      return false;
+    } on NetworkException catch (e) {
+      _user = previous;
+      _errorMessage = e.message;
+      notifyListeners();
+      if (kDebugMode) debugPrint('Update learning language error: $e');
+      return false;
     } catch (e) {
       _user = previous;
+      _errorMessage = 'An unexpected error occurred.';
       notifyListeners();
       if (kDebugMode) debugPrint('Update learning language error: $e');
       return false;
@@ -591,10 +615,24 @@ class AuthProvider extends ChangeNotifier {
       if (updated != null) {
         await _apiClient.saveUser(updated);
       }
+      _errorMessage = null;
       notifyListeners();
       return true;
+    } on ApiException catch (e) {
+      _user = previous;
+      _errorMessage = e.userMessage;
+      notifyListeners();
+      if (kDebugMode) debugPrint('Update settings error: $e');
+      return false;
+    } on NetworkException catch (e) {
+      _user = previous;
+      _errorMessage = e.message;
+      notifyListeners();
+      if (kDebugMode) debugPrint('Update settings error: $e');
+      return false;
     } catch (e) {
       _user = previous;
+      _errorMessage = 'An unexpected error occurred.';
       notifyListeners();
       if (kDebugMode) debugPrint('Update settings error: $e');
       return false;

@@ -255,17 +255,78 @@ class AuthButton extends StatelessWidget {
   }
 }
 
+/// Renders Google's official multi-color "G" mark (not a generic Material
+/// icon glyph) so the button reads as the standard, recognizable
+/// "Sign in with Google" button rather than a plain unbranded outline button.
+class GoogleLogo extends StatelessWidget {
+  final double size;
+  const GoogleLogo({super.key, this.size = 20});
+
+  @override
+  Widget build(BuildContext context) =>
+      CustomPaint(size: Size.square(size), painter: _GoogleLogoPainter());
+}
+
+class _GoogleLogoPainter extends CustomPainter {
+  static const _blue = Color(0xFF4285F4);
+  static const _green = Color(0xFF34A853);
+  static const _yellow = Color(0xFFFBBC05);
+  static const _red = Color(0xFFEA4335);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final strokeWidth = size.width * 0.22;
+    final radius = (size.width - strokeWidth) / 2;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    // Four equal quadrants in Google's brand colors, arranged the way the
+    // real logo's arcs are positioned around the ring.
+    for (final segment in [
+      (_blue, -1.5708, 1.5708), // top-right
+      (_green, 0.0, 1.5708), // bottom-right
+      (_yellow, 1.5708, 1.5708), // bottom-left
+      (_red, 3.1416, 1.5708), // top-left
+    ]) {
+      canvas.drawArc(
+        rect,
+        segment.$2,
+        segment.$3,
+        false,
+        ringPaint..color = segment.$1,
+      );
+    }
+
+    // The horizontal crossbar that turns the ring into a "G": a blue bar
+    // from the center out to the right edge, with a thin gap above it so
+    // it doesn't read as a closed circle.
+    final barPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = _blue;
+    final barHeight = strokeWidth * 0.92;
+    canvas.drawRect(
+      Rect.fromLTWH(
+        center.dx - strokeWidth * 0.15,
+        center.dy - barHeight / 2,
+        size.width / 2 - center.dx + strokeWidth * 0.15,
+        barHeight,
+      ),
+      barPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _GoogleLogoPainter oldDelegate) => false;
+}
+
 class AuthSocialButton extends StatelessWidget {
   final String text;
-  final IconData icon; // Placeholder for logo
   final VoidCallback? onPressed;
 
-  const AuthSocialButton({
-    super.key,
-    required this.text,
-    required this.icon,
-    required this.onPressed,
-  });
+  const AuthSocialButton({super.key, required this.text, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -274,7 +335,7 @@ class AuthSocialButton extends StatelessWidget {
       height: 48,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 20, color: AuthColors.body),
+        icon: const GoogleLogo(size: 20),
         label: LText(
           text,
           style: GoogleFonts.inter(

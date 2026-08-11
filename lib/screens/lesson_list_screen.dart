@@ -7,6 +7,7 @@ import '../core/theme.dart';
 import '../models/course_model.dart';
 import '../providers/content_provider.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/common_widgets.dart';
 import 'lesson_detail_screen.dart';
 
 class LessonListScreen extends StatefulWidget {
@@ -620,7 +621,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
             Column(
               children: [
                 IconButton(
-                  onPressed: () => _showGuidebookDialog(context, unit),
+                  onPressed: () => showGuidebookDialog(context, unit),
                   tooltip: context.tr('Open guidebook'),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -1460,114 +1461,6 @@ class _LessonListScreenState extends State<LessonListScreen> {
     );
   }
 
-  void _showGuidebookDialog(BuildContext context, UnitModel unit) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              const Icon(Iconsax.book_1, color: FluentianColors.primary),
-              const SizedBox(width: 8),
-              LText(
-                'Unit ${unit.unitNo} Guidebook',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: FluentianColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              LText(
-                'Key Vocabulary & Grammar:',
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  color: FluentianColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              LText(
-                'In this unit, you will learn the fundamentals of conversation for this level. Practice daily to master pronoun conjugations, basic sentence structure, and core vocabulary lists.',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: FluentianColors.textSecondary,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 16),
-              LText(
-                'Lessons in this unit:',
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  color: FluentianColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...unit.lessons.take(4).map((l) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.circle,
-                        size: 6,
-                        color: FluentianColors.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: LText(
-                          l.title,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: FluentianColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-              if (unit.lessons.length > 4)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 14),
-                  child: LText(
-                    '+ ${unit.lessons.length - 4} more lessons',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontStyle: FontStyle.italic,
-                      color: FluentianColors.textSecondary,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: LText(
-                'Close',
-                style: GoogleFonts.inter(
-                  color: FluentianColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 
 // Data structures for path flat list
