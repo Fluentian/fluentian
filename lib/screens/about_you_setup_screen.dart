@@ -23,8 +23,16 @@ class AboutYouSetupScreen extends StatefulWidget {
 }
 
 class _AboutYouSetupScreenState extends State<AboutYouSetupScreen> {
+  static const _minimumAge = 13;
+
   DateTime? _birthDate;
   PriorFrenchExposure? _exposure;
+
+  /// Latest birth date that still satisfies the 13+ requirement.
+  DateTime get _maxBirthDate {
+    final now = DateTime.now();
+    return DateTime(now.year - _minimumAge, now.month, now.day);
+  }
 
   int? get _age {
     final birth = _birthDate;
@@ -78,9 +86,13 @@ class _AboutYouSetupScreenState extends State<AboutYouSetupScreen> {
               Expanded(
                 child: CupertinoDatePicker(
                   mode: CupertinoDatePickerMode.date,
-                  initialDateTime: tempDate,
+                  initialDateTime: tempDate.isAfter(_maxBirthDate)
+                      ? _maxBirthDate
+                      : tempDate,
                   minimumDate: DateTime(1930),
-                  maximumDate: DateTime.now(),
+                  // Fluentian requires users to be at least 13 -- don't let
+                  // the picker itself offer a date that would fail that.
+                  maximumDate: _maxBirthDate,
                   onDateTimeChanged: (value) => tempDate = value,
                 ),
               ),
