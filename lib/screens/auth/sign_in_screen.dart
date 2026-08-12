@@ -10,14 +10,18 @@ import 'forgot_password_screen.dart';
 import 'otp_verification_screen.dart';
 
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+  final String? initialEmail;
+
+  const SignInScreen({super.key, this.initialEmail});
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  final _emailController = TextEditingController();
+  late final _emailController = TextEditingController(
+    text: widget.initialEmail ?? '',
+  );
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
 

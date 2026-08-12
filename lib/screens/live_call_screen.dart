@@ -92,7 +92,13 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
   }
 
   void _findPartner(LiveRoomModel room) {
-    if (!room.eligible || !room.isOpen) return;
+    // Deliberately does not gate on room.isOpen (a snapshot of "is anyone
+    // waiting right now") -- that used to grey the button out entirely
+    // whenever nobody happened to be online, with zero feedback. The
+    // matching queue already has a proper timeout with a clear "no partner
+    // joined yet" message; let that handle the no-one-available case
+    // instead of hiding the entry point before the user can even try.
+    if (!room.eligible) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => FindSpeakingPartnerScreen(topic: room.title),
@@ -194,9 +200,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                     if (matches.isNotEmpty)
                       _MatchCard(
                         room: matches.first,
-                        onJoin: matches.first.isOpen
-                            ? () => _findPartner(matches.first)
-                            : null,
+                        onJoin: () => _findPartner(matches.first),
                       ),
                     if (special.isNotEmpty) ...[
                       const SizedBox(height: 18),
@@ -299,10 +303,8 @@ class _MatchCard extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: onJoin,
-            icon: Icon(room.isOpen ? Iconsax.call : Iconsax.clock),
-            label: LText(
-              room.isOpen ? 'Find my partner' : 'Waiting for learners',
-            ),
+            icon: const Icon(Iconsax.call),
+            label: const LText('Find my partner'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: FluentianColors.primary,

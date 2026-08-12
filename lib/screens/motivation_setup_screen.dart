@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../core/constants.dart';
 import '../providers/auth_provider.dart';
+import '../services/onboarding_draft_store.dart';
 import '../widgets/onboarding_scaffold.dart';
 
 class MotivationSetupScreen extends StatefulWidget {
@@ -44,6 +45,7 @@ class _MotivationSetupScreenState extends State<MotivationSetupScreen> {
     });
     if (!mounted) return;
     if (success) {
+      await OnboardingDraftStore.instance.clear();
       await auth.completeOnboarding(selectedLevel: widget.level);
       if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);

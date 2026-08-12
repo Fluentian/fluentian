@@ -219,13 +219,6 @@ class _HomeContentState extends State<_HomeContent> {
                                     LessonDetailScreen(lessonId: nextLesson.id),
                               ),
                             ),
-                            onViewJourney: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => LessonListScreen(
-                                  initialUnitId: nextUnit?.id,
-                                ),
-                              ),
-                            ),
                           ),
                   ),
 
@@ -445,6 +438,18 @@ class _HomeContentState extends State<_HomeContent> {
                         ),
                       ),
                     ),
+
+                    const SizedBox(height: 24),
+                    const _HomeSectionLabel(text: 'YOUR LEARNING PATH'),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 600,
+                      child: LessonListScreen(
+                        key: const ValueKey('home_roadmap'),
+                        initialUnitId: nextUnit?.id,
+                        embedded: true,
+                      ),
+                    ),
                   ],
 
                   const SizedBox(height: 28),
@@ -608,14 +613,12 @@ class _ContinueJourneyCard extends StatelessWidget {
   final String chapterTitle;
   final int? chapterNumber;
   final VoidCallback onContinue;
-  final VoidCallback onViewJourney;
 
   const _ContinueJourneyCard({
     required this.lesson,
     required this.chapterTitle,
     required this.chapterNumber,
     required this.onContinue,
-    required this.onViewJourney,
   });
 
   @override
@@ -715,28 +718,6 @@ class _ContinueJourneyCard extends StatelessWidget {
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: onViewJourney,
-                    icon: Icon(
-                      Iconsax.map_1,
-                      size: 16,
-                      color: Colors.white.withValues(alpha: .8),
-                    ),
-                    label: LText(
-                      'View all lessons',
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white.withValues(alpha: .86),
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 0),
-                    ),
-                  ),
                 ),
               ],
             ),

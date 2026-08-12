@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../core/constants.dart';
 import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../services/learning_api.dart';
+import '../services/onboarding_draft_store.dart';
 import '../widgets/common_widgets.dart';
 import 'goal_setup_screen.dart';
 
@@ -133,6 +135,14 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
         auth.updateUser(user.copyWith(currentLevel: assigned));
       }
       if (mounted) {
+        // Placement-test users never tap Continue on LevelSetupScreen, so
+        // that screen never gets a chance to save its own draft -- do it
+        // here so an app kill right after this still resumes with the
+        // assigned level pre-filled instead of losing it.
+        await OnboardingDraftStore.instance.saveLevel(
+          CEFRLevel.fromCode(assigned),
+        );
+        if (!mounted) return;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => GoalSetupScreen.fromPlacement(levelCode: assigned),

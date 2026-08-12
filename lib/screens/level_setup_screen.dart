@@ -3,6 +3,7 @@ import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
+import '../services/onboarding_draft_store.dart';
 import '../widgets/onboarding_scaffold.dart';
 import 'goal_setup_screen.dart';
 import 'placement_test_screen.dart';
@@ -15,6 +16,17 @@ class LevelSetupScreen extends StatefulWidget {
 
 class _LevelSetupScreenState extends State<LevelSetupScreen> {
   CEFRLevel? _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    // Restores a choice made before an app kill mid-onboarding -- this is
+    // always the screen the app restarts on (see main.dart), so without
+    // this the learner had to re-decide their level every time.
+    OnboardingDraftStore.instance.loadLevel().then((level) {
+      if (mounted && level != null) setState(() => _selected = level);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +65,14 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
       ),
       buttonLabel: 'Continue',
       onButtonPressed: _selected != null
-          ? () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => GoalSetupScreen(level: _selected!),
-              ),
-            )
+          ? () {
+              OnboardingDraftStore.instance.saveLevel(_selected!);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => GoalSetupScreen(level: _selected!),
+                ),
+              );
+            }
           : null,
     );
   }

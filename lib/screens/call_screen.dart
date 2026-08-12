@@ -111,6 +111,13 @@ class _CallScreenState extends State<CallScreen> {
   Room? _room;
   EventsListener<RoomEvent>? _listener;
   Timer? _timer;
+  // Bounds how long a matched user waits alone in the room if their partner
+  // never actually joins LiveKit (app killed, lost network, or lost the
+  // cancel-vs-match race in _leave/cancelMatchQueue). The pre-match queue
+  // already has a 2-minute deadline (_waitForMatch); this covers the gap
+  // right after that, before a 2nd participant is observed.
+  Timer? _abandonmentTimer;
+  static const _abandonmentTimeout = Duration(seconds: 40);
   String? _matchTicketId;
 
   bool _isConnecting = true;
@@ -151,8 +158,7 @@ class _CallScreenState extends State<CallScreen> {
     _quoteTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (!mounted) return;
       setState(
-        () => _quoteIndex =
-            (_quoteIndex + 1) % _languageLearningQuotes.length,
+        () => _quoteIndex = (_quoteIndex + 1) % _languageLearningQuotes.length,
       );
     });
   }
@@ -195,6 +201,15 @@ class _CallScreenState extends State<CallScreen> {
               callKind: widget.isVideo ? 'video' : 'audio',
               smartMatch: widget.smartMatch,
             );
+      // _waitForMatch's poll can resolve isMatched=true after this screen
+      // was already popped (e.g. user tapped Cancel right as another user's
+      // queue entry matched them -- cancelMatchQueue silently no-ops on that
+      // race). Without this guard, setState below throws even in release
+      // builds (State._element is unconditionally nulled on unmount), and
+      // worse, a Room could get connected with an open mic that nothing
+      // will ever call disconnect()/dispose() on since this State's own
+      // dispose() already ran.
+      if (!mounted) return;
       final room = Room();
       final listener = room.createListener()
         ..on<RoomConnectedEvent>((_) => _setStatus('Connected. Say bonjour!'))
@@ -245,7 +260,11 @@ class _CallScreenState extends State<CallScreen> {
       }
       await room.setSpeakerOn(_speakerOn);
       _refreshParticipants();
-      if (!_isPrivateMatch) _startTimer();
+      if (!_isPrivateMatch) {
+        _startTimer();
+      } else if (_participantCount < 2) {
+        _startAbandonmentTimer();
+      }
 
       if (mounted) {
         setState(() => _isConnecting = false);
@@ -380,7 +399,37 @@ class _CallScreenState extends State<CallScreen> {
         _status = 'Both learners are here. Your practice timer has started!';
       }
     });
-    if (_isPrivateMatch && count >= 2) _startTimer();
+    if (_isPrivateMatch && count >= 2) {
+      _abandonmentTimer?.cancel();
+      _startTimer();
+    }
+  }
+
+  void _startAbandonmentTimer() {
+    _abandonmentTimer?.cancel();
+    _abandonmentTimer = Timer(_abandonmentTimeout, () async {
+      if (!mounted || _participantCount >= 2) return;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => AlertDialog(
+          icon: const Icon(Iconsax.warning_2, color: FluentianColors.primary),
+          title: Text(dialogContext.tr("Partner didn't join")),
+          content: Text(
+            dialogContext.tr(
+              "Your matched partner didn't join in time. You'll be taken back to Live Practice.",
+            ),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(dialogContext.tr('OK')),
+            ),
+          ],
+        ),
+      );
+      if (mounted) await _leave();
+    });
   }
 
   void _setLocalVideo(LocalVideoTrack? track) {
@@ -434,9 +483,16 @@ class _CallScreenState extends State<CallScreen> {
 
   Future<void> _leave() async {
     _timer?.cancel();
+    _abandonmentTimer?.cancel();
     final ticketId = _matchTicketId;
     _matchTicketId = null;
     if (ticketId != null) {
+      // If this returns false, a partner was already matched to this ticket
+      // microseconds before the cancel landed -- nothing more to do here
+      // (this screen still leaves as requested); _joinSpeakingRoom's mounted
+      // check is what stops this screen from connecting to that room, and
+      // the matched partner's own abandonment timeout is what stops them
+      // from waiting forever for someone who left.
       await _socialApi.cancelMatchQueue(ticketId);
     }
     await _listener?.dispose();
@@ -448,6 +504,7 @@ class _CallScreenState extends State<CallScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _abandonmentTimer?.cancel();
     _quoteTimer?.cancel();
     final ticketId = _matchTicketId;
     _matchTicketId = null;
@@ -928,9 +985,9 @@ class _CallScreenState extends State<CallScreen> {
                                     : e is NetworkException
                                     ? e.message
                                     : 'Could not submit the report. Please try again.';
-                                ScaffoldMessenger.of(
-                                  this.context,
-                                ).showSnackBar(SnackBar(content: Text(message)));
+                                ScaffoldMessenger.of(this.context).showSnackBar(
+                                  SnackBar(content: Text(message)),
+                                );
                               }
                             }
                           },

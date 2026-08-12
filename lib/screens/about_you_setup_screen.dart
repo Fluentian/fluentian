@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/app_localization.dart';
 import '../core/constants.dart';
 import '../core/theme.dart';
+import '../services/onboarding_draft_store.dart';
 import '../widgets/onboarding_scaffold.dart';
 import 'motivation_setup_screen.dart';
 
@@ -27,6 +28,19 @@ class _AboutYouSetupScreenState extends State<AboutYouSetupScreen> {
 
   DateTime? _birthDate;
   PriorFrenchExposure? _exposure;
+
+  @override
+  void initState() {
+    super.initState();
+    // Restores answers given before an app kill mid-onboarding forced a
+    // restart back at the level-pick step.
+    OnboardingDraftStore.instance.loadBirthDate().then((date) {
+      if (mounted && date != null) setState(() => _birthDate = date);
+    });
+    OnboardingDraftStore.instance.loadExposure().then((exposure) {
+      if (mounted && exposure != null) setState(() => _exposure = exposure);
+    });
+  }
 
   /// Latest birth date that still satisfies the 13+ requirement.
   DateTime get _maxBirthDate {
@@ -105,8 +119,18 @@ class _AboutYouSetupScreenState extends State<AboutYouSetupScreen> {
 
   String _formatDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -215,6 +239,10 @@ class _AboutYouSetupScreenState extends State<AboutYouSetupScreen> {
       buttonLabel: 'Continue',
       onButtonPressed: _canContinue
           ? () {
+              OnboardingDraftStore.instance.saveAboutYou(
+                birthDate: _birthDate!,
+                exposure: _exposure!,
+              );
               Navigator.push(
                 context,
                 MaterialPageRoute(

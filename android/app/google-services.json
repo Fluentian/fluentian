@@ -7,12 +7,33 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:461458509107:android:399650f30b672d4e7b0246",
+        "mobilesdk_app_id": "1:461458509107:android:18436c11b6be5f287b0246",
         "android_client_info": {
-          "package_name": "com.example.fluentian"
+          "package_name": "com.binovatechnologies.fluentian"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "461458509107-p5jimi3r6ntqefsqtes2g2jobkmcuptb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.binovatechnologies.fluentian",
+            "certificate_hash": "e8eaf882b690216a915eaba24f074f2dc66b596b"
+          }
+        },
+        {
+          "client_id": "461458509107-sr3rnn1c757kghrerfrg93usb3rk7e18.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.binovatechnologies.fluentian",
+            "certificate_hash": "42a421751f4cbc960c7dfa15c28a667d063eb19b"
+          }
+        },
+        {
+          "client_id": "461458509107-nfvs0don6lm4iuivfmtvvo9mnc8kmiv5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAPSL7iDJtmh38Tvs_zfG7EQznhniHrdXc"
@@ -20,7 +41,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "461458509107-nfvs0don6lm4iuivfmtvvo9mnc8kmiv5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

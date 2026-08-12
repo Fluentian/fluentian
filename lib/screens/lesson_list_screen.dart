@@ -12,7 +12,16 @@ import 'lesson_detail_screen.dart';
 
 class LessonListScreen extends StatefulWidget {
   final String? initialUnitId;
-  const LessonListScreen({super.key, this.initialUnitId});
+
+  /// When true, renders just the progress card + path (no Scaffold/AppBar)
+  /// so it can be embedded directly on another screen (e.g. Home) instead
+  /// of being pushed as its own route.
+  final bool embedded;
+  const LessonListScreen({
+    super.key,
+    this.initialUnitId,
+    this.embedded = false,
+  });
 
   @override
   State<LessonListScreen> createState() => _LessonListScreenState();
@@ -99,89 +108,74 @@ class _LessonListScreenState extends State<LessonListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FluentianColors.pageBg,
-      appBar: AppBar(
-        title: LText(
-          'Learning Path',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: FluentianColors.textPrimary,
-          ),
-        ),
-        scrolledUnderElevation: 0,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: FluentianColors.textPrimary),
-      ),
-      body: Consumer<ContentProvider>(
-        builder: (context, content, _) {
-          if (content.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (content.courses.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Iconsax.book_1, size: 48, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  LText(
-                    'No courses loaded yet.',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      color: FluentianColors.textSecondary,
-                    ),
+    final body = Consumer<ContentProvider>(
+      builder: (context, content, _) {
+        if (content.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (content.courses.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Iconsax.book_1, size: 48, color: Colors.grey),
+                const SizedBox(height: 16),
+                LText(
+                  'No courses loaded yet.',
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: FluentianColors.textSecondary,
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final allUnits = content.courses.expand((course) => course.units);
+        final allLessons = allUnits.expand((unit) => unit.lessons).toList();
+        final totalUnits = content.courses.fold<int>(
+          0,
+          (count, course) => count + course.units.length,
+        );
+        final totalLessons = allLessons.length;
+        final completedLessons = allLessons
+            .where((lesson) => content.isLessonCompleted(lesson.id))
+            .length;
+        final progressPercent = totalLessons > 0
+            ? (completedLessons / totalLessons)
+            : 0.0;
+        final startingUnitNo =
+            context.watch<AuthProvider>().user?.startingUnitNo ?? 1;
+        final items = _buildPathItems(content.courses, content, startingUnitNo);
+        final requestedUnitId = _pendingInitialUnitId;
+        final requestedUnitExists =
+            requestedUnitId != null &&
+            content.courses.any(
+              (course) =>
+                  course.units.any((unit) => unit.id == requestedUnitId),
             );
-          }
+        if (requestedUnitExists) {
+          // An explicit route should always reveal its destination, even if
+          // this screen instance previously had that chapter collapsed.
+          _collapsedUnitIds.remove(requestedUnitId);
+          _scheduleInitialUnitFocus();
+        } else if (requestedUnitId != null) {
+          // Avoid retrying forever if a stale deep link points to content
+          // that is no longer available to this learner.
+          _pendingInitialUnitId = null;
+        }
 
-          final allUnits = content.courses.expand((course) => course.units);
-          final allLessons = allUnits.expand((unit) => unit.lessons).toList();
-          final totalUnits = content.courses.fold<int>(
-            0,
-            (count, course) => count + course.units.length,
-          );
-          final totalLessons = allLessons.length;
-          final completedLessons = allLessons
-              .where((lesson) => content.isLessonCompleted(lesson.id))
-              .length;
-          final progressPercent = totalLessons > 0
-              ? (completedLessons / totalLessons)
-              : 0.0;
-          final startingUnitNo =
-              context.watch<AuthProvider>().user?.startingUnitNo ?? 1;
-          final items = _buildPathItems(
-            content.courses,
-            content,
-            startingUnitNo,
-          );
-          final requestedUnitId = _pendingInitialUnitId;
-          final requestedUnitExists =
-              requestedUnitId != null &&
-              content.courses.any(
-                (course) =>
-                    course.units.any((unit) => unit.id == requestedUnitId),
-              );
-          if (requestedUnitExists) {
-            // An explicit route should always reveal its destination, even if
-            // this screen instance previously had that chapter collapsed.
-            _collapsedUnitIds.remove(requestedUnitId);
-            _scheduleInitialUnitFocus();
-          } else if (requestedUnitId != null) {
-            // Avoid retrying forever if a stale deep link points to content
-            // that is no longer available to this learner.
-            _pendingInitialUnitId = null;
-          }
-
-          return Column(
-            children: [
-              // Whole-journey progress keeps multiple courses from looking
-              // like unrelated lists while the route below retains a clear
-              // course boundary for each chapter set.
+        return Column(
+          children: [
+            // Whole-journey progress keeps multiple courses from looking
+            // like unrelated lists while the route below retains a clear
+            // course boundary for each chapter set. Skipped when embedded
+            // on Home: the stats header and Current Mission card up there
+            // already establish overall progress, so repeating it here
+            // read as a disconnected second screen rather than a
+            // continuation of the same page.
+            if (!widget.embedded)
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 padding: const EdgeInsets.all(18),
@@ -255,60 +249,74 @@ class _LessonListScreenState extends State<LessonListScreen> {
                   ],
                 ),
               ),
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // This intentionally builds the complete path. Apart from
-                    // being a more natural journey view, it guarantees that a
-                    // deep-linked active chapter has a mounted key for
-                    // Scrollable.ensureVisible (a lazy ListView does not).
-                    return SingleChildScrollView(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(bottom: 40),
-                      child: SizedBox(
-                        width: constraints.maxWidth,
-                        child: Column(
-                          children: [
-                            for (final item in items)
-                              if (item is _CourseHeaderItem)
-                                _buildCourseHeader(item, content)
-                              else if (item is _UnitHeaderItem)
-                                Container(
-                                  key: _unitKeys.putIfAbsent(
-                                    item.unit.id,
-                                    () => GlobalKey(),
-                                  ),
-                                  child: _buildUnitHeader(
-                                    context,
-                                    item.unit,
-                                    content,
-                                    isExpanded: _isUnitExpanded(item.unit.id),
-                                    isFocused: item.unit.id == _focusedUnitId,
-                                  ),
-                                )
-                              else if (item is _LessonNodeItem)
-                                constraints.maxWidth < 330
-                                    ? _buildLessonNode(
-                                        context,
-                                        item,
-                                        constraints,
-                                      )
-                                    : _buildJourneyNode(
-                                        context,
-                                        item,
-                                        constraints,
-                                      ),
-                          ],
-                        ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // This intentionally builds the complete path. Apart from
+                  // being a more natural journey view, it guarantees that a
+                  // deep-linked active chapter has a mounted key for
+                  // Scrollable.ensureVisible (a lazy ListView does not).
+                  return SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.only(bottom: 40),
+                    child: SizedBox(
+                      width: constraints.maxWidth,
+                      child: Column(
+                        children: [
+                          for (final item in items)
+                            if (item is _CourseHeaderItem)
+                              _buildCourseHeader(item, content)
+                            else if (item is _UnitHeaderItem)
+                              Container(
+                                key: _unitKeys.putIfAbsent(
+                                  item.unit.id,
+                                  () => GlobalKey(),
+                                ),
+                                child: _buildUnitHeader(
+                                  context,
+                                  item.unit,
+                                  content,
+                                  isExpanded: _isUnitExpanded(item.unit.id),
+                                  isFocused: item.unit.id == _focusedUnitId,
+                                ),
+                              )
+                            else if (item is _LessonNodeItem)
+                              constraints.maxWidth < 330
+                                  ? _buildLessonNode(context, item, constraints)
+                                  : _buildJourneyNode(
+                                      context,
+                                      item,
+                                      constraints,
+                                    ),
+                        ],
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
-            ],
-          );
-        },
+            ),
+          ],
+        );
+      },
+    );
+    if (widget.embedded) return body;
+    return Scaffold(
+      backgroundColor: FluentianColors.pageBg,
+      appBar: AppBar(
+        title: LText(
+          'Learning Path',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: FluentianColors.textPrimary,
+          ),
+        ),
+        scrolledUnderElevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: FluentianColors.textPrimary),
       ),
+      body: body,
     );
   }
 
@@ -1460,7 +1468,6 @@ class _LessonListScreenState extends State<LessonListScreen> {
       },
     );
   }
-
 }
 
 // Data structures for path flat list

@@ -50,6 +50,14 @@ class _McqScreenState extends State<McqScreen>
   final DateTime _startTime = DateTime.now();
   bool _isSubmitting = false;
   int _persistedHeartSpends = 0;
+  // Tracks whether the result bottom sheet is actually still on the
+  // Navigator stack. It can close itself via the Android back button even
+  // with isDismissible: false (that only blocks tap-outside), so by the
+  // time _onNext's several awaits finish, it may already be gone -- popping
+  // it unconditionally then pops something else (or nothing), corrupting
+  // the stack for the pushReplacement right after and crashing with
+  // "Navigator has no active routes to replace".
+  bool _resultSheetOpen = false;
 
   late final AudioPlayer _audioPlayer;
   final TtsService _ttsService = TtsService.instance;
@@ -624,6 +632,7 @@ class _McqScreenState extends State<McqScreen>
     String correctAnswer,
     String userAnswerText,
   ) {
+    _resultSheetOpen = true;
     showModalBottomSheet(
       context: context,
       isDismissible: false,
@@ -631,155 +640,184 @@ class _McqScreenState extends State<McqScreen>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: correct
-              ? FluentianColors.successTint
-              : FluentianColors.errorTint,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            LText(
-              correct ? 'Correct! 🎉' : 'Not quite 💪',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: correct
-                    ? FluentianColors.success
-                    : FluentianColors.error,
+      // StatefulBuilder gives this sheet its own setState so the Continue
+      // button can actually repaint when _isSubmitting flips -- the sheet's
+      // content is a separate route from _McqScreenState's build, so it
+      // doesn't repaint just because the parent State rebuilds.
+      builder: (sheetContext) {
+        var sheetSubmitting = false;
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) => Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: correct
+                  ? FluentianColors.successTint
+                  : FluentianColors.errorTint,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
             ),
-            const SizedBox(height: 8),
-            if (!correct) ...[
-              Row(
-                children: [
-                  const Icon(
-                    Iconsax.heart5,
-                    color: FluentianColors.error,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 4),
-                  LText(
-                    '-1',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: FluentianColors.error,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: FluentianColors.successTint,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: FluentianColors.success.withValues(alpha: 0.3),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LText(
+                  correct ? 'Correct! 🎉' : 'Not quite 💪',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: correct
+                        ? FluentianColors.success
+                        : FluentianColors.error,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Iconsax.tick_circle,
-                      color: FluentianColors.success,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: LText(
-                        correctAnswer,
+                const SizedBox(height: 8),
+                if (!correct) ...[
+                  Row(
+                    children: [
+                      const Icon(
+                        Iconsax.heart5,
+                        color: FluentianColors.error,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      LText(
+                        '-1',
                         style: GoogleFonts.inter(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
+                          color: FluentianColors.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: FluentianColors.successTint,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: FluentianColors.success.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Iconsax.tick_circle,
                           color: FluentianColors.success,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: LText(
+                            correctAnswer,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: FluentianColors.success,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        final q = _activeQuestions[_currentIndex];
+                        AiTutorSheet.show(
+                          context,
+                          systemContext:
+                              'Target language: French. The learner explanation language is ${AppLocaleController.activeLanguageName}. You are a helpful French tutor. The user answered a French lesson question incorrectly. Question: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Learner answer: "$userAnswerText". Correct answer: "$correctAnswer". Explain the specific difference simply in ${AppLocaleController.activeLanguageName}, using French examples when useful.',
+                          initialPrompt:
+                              'Why was my answer "$userAnswerText" incorrect? Please explain how it differs from "$correctAnswer".',
+                        );
+                      },
+                      icon: const Icon(
+                        Iconsax.message5,
+                        color: FluentianColors.primary,
+                      ),
+                      label: const LText(
+                        'Ask AI why',
+                        style: TextStyle(
+                          color: FluentianColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        backgroundColor: FluentianColors.primary.withValues(
+                          alpha: 0.1,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () {
-                    final q = _activeQuestions[_currentIndex];
-                    AiTutorSheet.show(
-                      context,
-                      systemContext:
-                          'Target language: French. The learner explanation language is ${AppLocaleController.activeLanguageName}. You are a helpful French tutor. The user answered a French lesson question incorrectly. Question: "${q.promptPayload['question'] ?? q.promptPayload['text']}". Learner answer: "$userAnswerText". Correct answer: "$correctAnswer". Explain the specific difference simply in ${AppLocaleController.activeLanguageName}, using French examples when useful.',
-                      initialPrompt:
-                          'Why was my answer "$userAnswerText" incorrect? Please explain how it differs from "$correctAnswer".',
-                    );
-                  },
-                  icon: const Icon(
-                    Iconsax.message5,
-                    color: FluentianColors.primary,
                   ),
-                  label: const LText(
-                    'Ask AI why',
-                    style: TextStyle(
-                      color: FluentianColors.primary,
-                      fontWeight: FontWeight.w600,
+                ],
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: sheetSubmitting
+                        ? null
+                        : () {
+                            // Local sheet state so the button visually disables
+                            // immediately -- this route doesn't repaint just
+                            // because _McqScreenState rebuilds. The actual
+                            // double-submit guard lives in _onNext itself.
+                            setSheetState(() => sheetSubmitting = true);
+                            _onNext(correct);
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: correct
+                          ? FluentianColors.success
+                          : Colors.grey.shade300,
+                      foregroundColor: correct
+                          ? Colors.white
+                          : FluentianColors.textPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  style: TextButton.styleFrom(
-                    backgroundColor: FluentianColors.primary.withValues(
-                      alpha: 0.1,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : () => _onNext(correct),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: correct
-                      ? FluentianColors.success
-                      : Colors.grey.shade300,
-                  foregroundColor: correct
-                      ? Colors.white
-                      : FluentianColors.textPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    child: sheetSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : LText(correct ? 'Continue' : 'Got it'),
                   ),
                 ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : LText(correct ? 'Continue' : 'Got it'),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        );
+      },
+    ).whenComplete(() => _resultSheetOpen = false);
   }
 
   Future<void> _onNext(bool correct) async {
+    // Guards the actual double-submission bug: the result sheet below is a
+    // disconnected subtree from this State's build (it's a separate
+    // ModalBottomSheetRoute), so its Continue button's disabled/spinner look
+    // doesn't reliably repaint the instant _isSubmitting flips. A fast
+    // double-tap can invoke this twice concurrently before either paints --
+    // each call would hit the backend with its own idempotency key, so the
+    // server can't dedupe it either, resulting in double XP/heart writes.
+    if (_isSubmitting) return;
     final questions = _activeQuestions;
     if (_currentIndex < questions.length - 1) {
-      Navigator.pop(context); // close sheet
+      if (_resultSheetOpen)
+        Navigator.pop(context); // close sheet, if still open
       setState(() {
         _currentIndex++;
         _state = _AnswerState.unanswered;
@@ -833,7 +871,9 @@ class _McqScreenState extends State<McqScreen>
         // retry instead of silently reverting the next time they open the app.
         if (!mounted) return;
         setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.userMessage)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.userMessage)));
         return;
       } on NetworkException catch (e) {
         // Lesson completion is queued offline by OutboxManager (safe to
@@ -843,7 +883,9 @@ class _McqScreenState extends State<McqScreen>
         if (widget.isSrsReview) {
           if (!mounted) return;
           setState(() => _isSubmitting = false);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.message)));
           return;
         }
       }
@@ -855,7 +897,7 @@ class _McqScreenState extends State<McqScreen>
         streakDays: finalStreakDays,
       );
       await authProvider.refreshHearts();
-      navigator.pop(); // close sheet
+      if (_resultSheetOpen) navigator.pop(); // close sheet, if still open
       navigator.pushReplacement(
         MaterialPageRoute(
           builder: (_) => LessonCompleteScreen(

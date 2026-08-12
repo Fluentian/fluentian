@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -19,8 +20,7 @@ class FindSpeakingPartnerScreen extends StatefulWidget {
       _FindSpeakingPartnerScreenState();
 }
 
-class _FindSpeakingPartnerScreenState
-    extends State<FindSpeakingPartnerScreen> {
+class _FindSpeakingPartnerScreenState extends State<FindSpeakingPartnerScreen> {
   bool _cameraOn = false;
 
   void _startSearch() {
@@ -83,10 +83,45 @@ class _FindSpeakingPartnerScreenState
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(color: Colors.white60, fontSize: 14),
               ),
-              const SizedBox(height: 36),
-              _CameraToggle(
-                cameraOn: _cameraOn,
-                onChanged: (value) => setState(() => _cameraOn = value),
+              const SizedBox(height: 40),
+              LText(
+                'HOW DO YOU WANT TO CONNECT?',
+                style: GoogleFonts.inter(
+                  color: Colors.white38,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ModeCard(
+                      icon: Iconsax.microphone_2,
+                      label: 'Audio',
+                      subtitle: 'Voice only',
+                      selected: !_cameraOn,
+                      onTap: () => setState(() {
+                        HapticFeedback.selectionClick();
+                        _cameraOn = false;
+                      }),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: _ModeCard(
+                      icon: Iconsax.video,
+                      label: 'Video',
+                      subtitle: 'Face to face',
+                      selected: _cameraOn,
+                      onTap: () => setState(() {
+                        HapticFeedback.selectionClick();
+                        _cameraOn = true;
+                      }),
+                    ),
+                  ),
+                ],
               ),
               const Spacer(),
               SizedBox(
@@ -118,77 +153,21 @@ class _FindSpeakingPartnerScreenState
   }
 }
 
-/// A sliding left/right toggle: left = camera off (audio only), right =
-/// camera on (video). Reads more like a single physical switch than two
-/// separate "Audio" / "Video" buttons.
-class _CameraToggle extends StatelessWidget {
-  final bool cameraOn;
-  final ValueChanged<bool> onChanged;
-
-  const _CameraToggle({required this.cameraOn, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 240,
-      height: 56,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Stack(
-        children: [
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOut,
-            alignment: cameraOn
-                ? Alignment.centerRight
-                : Alignment.centerLeft,
-            child: Container(
-              width: 116,
-              height: 48,
-              decoration: BoxDecoration(
-                color: FluentianColors.accent,
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: _ToggleOption(
-                  icon: Iconsax.microphone_2,
-                  label: 'Audio',
-                  selected: !cameraOn,
-                  onTap: () => onChanged(false),
-                ),
-              ),
-              Expanded(
-                child: _ToggleOption(
-                  icon: Iconsax.video,
-                  label: 'Video',
-                  selected: cameraOn,
-                  onTap: () => onChanged(true),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ToggleOption extends StatelessWidget {
+/// A deliberate, two-card choice between audio-only and video -- each
+/// option gets its own icon, label, and short description, with the
+/// selected card lifted (scaled up, accent border + glow, checkmark badge).
+/// Reads as "pick one" rather than a settings-style on/off switch.
+class _ModeCard extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String subtitle;
   final bool selected;
   final VoidCallback onTap;
 
-  const _ToggleOption({
+  const _ModeCard({
     required this.icon,
     required this.label,
+    required this.subtitle,
     required this.selected,
     required this.onTap,
   });
@@ -198,24 +177,99 @@ class _ToggleOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 16,
-            color: selected ? FluentianColors.darkNav : Colors.white70,
-          ),
-          const SizedBox(width: 6),
-          LText(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: selected ? FluentianColors.darkNav : Colors.white70,
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        scale: selected ? 1.0 : 0.96,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 12),
+          decoration: BoxDecoration(
+            color: selected
+                ? FluentianColors.accent.withValues(alpha: 0.14)
+                : Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected
+                  ? FluentianColors.accent
+                  : Colors.white.withValues(alpha: 0.1),
+              width: selected ? 2 : 1,
             ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: FluentianColors.accent.withValues(alpha: 0.25),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
           ),
-        ],
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Column(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: selected
+                          ? FluentianColors.accent
+                          : Colors.white.withValues(alpha: 0.08),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: selected
+                          ? FluentianColors.darkNav
+                          : Colors.white60,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  LText(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: selected ? Colors.white : Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  LText(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white38,
+                    ),
+                  ),
+                ],
+              ),
+              if (selected)
+                Positioned(
+                  top: -8,
+                  right: -4,
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: FluentianColors.accent,
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      size: 14,
+                      color: FluentianColors.darkNav,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

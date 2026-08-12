@@ -108,8 +108,19 @@ class SocialApi {
     return MatchQueueResult.fromJson(data);
   }
 
-  Future<void> cancelMatchQueue(String ticketId) async {
-    await _api.delete('/social/live-rooms/match/queue/$ticketId');
+  /// Returns true if the ticket was actually cancelled, false if it had
+  /// already been matched with a partner server-side (a real race -- the
+  /// server responds 409 in that case instead of silently no-oping like it
+  /// used to, so callers can tell "cancelled" apart from "too late, someone
+  /// already got paired with you").
+  Future<bool> cancelMatchQueue(String ticketId) async {
+    try {
+      await _api.delete('/social/live-rooms/match/queue/$ticketId');
+      return true;
+    } on ApiException catch (e) {
+      if (e.statusCode == 409) return false;
+      rethrow;
+    }
   }
 
   Future<SpeakingCallSession> joinLiveRoom({

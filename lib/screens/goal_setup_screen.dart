@@ -3,6 +3,7 @@ import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
+import '../services/onboarding_draft_store.dart';
 import '../widgets/onboarding_scaffold.dart';
 import 'about_you_setup_screen.dart';
 
@@ -20,6 +21,18 @@ class GoalSetupScreen extends StatefulWidget {
 
 class _GoalSetupScreenState extends State<GoalSetupScreen> {
   int _selectedIndex = 1; // Default: Regular
+
+  @override
+  void initState() {
+    super.initState();
+    // Restores a goal picked before an app kill mid-onboarding forced a
+    // restart back at the level-pick step.
+    OnboardingDraftStore.instance.loadGoalXp().then((xp) {
+      if (!mounted || xp == null) return;
+      final index = DailyGoal.goals.indexWhere((g) => g.xp == xp);
+      if (index != -1) setState(() => _selectedIndex = index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +116,9 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
       ),
       buttonLabel: 'Continue',
       onButtonPressed: () {
+        OnboardingDraftStore.instance.saveGoalXp(
+          DailyGoal.goals[_selectedIndex].xp,
+        );
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => AboutYouSetupScreen(

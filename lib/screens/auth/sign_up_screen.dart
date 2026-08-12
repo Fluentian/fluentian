@@ -146,7 +146,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    final success = await context.read<AuthProvider>().register(
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.register(
       username: username,
       email: email,
       password: password,
@@ -156,6 +157,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (success) {
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => OtpVerificationScreen(email: email)),
+      );
+      return;
+    }
+
+    // A previous signup attempt (e.g. one that timed out client-side but
+    // actually succeeded server-side) can leave this email already
+    // registered, with no way back to OTP verification -- the backend
+    // correctly rejects the duplicate, but without this, the only way out
+    // was silently guessing to use Sign In instead.
+    final message = authProvider.errorMessage;
+    if (message != null && message.toLowerCase().contains('already exists')) {
+      authProvider.clearError();
+      await _showAlreadyRegisteredDialog(email);
+    }
+  }
+
+  Future<void> _showAlreadyRegisteredDialog(String email) async {
+    final goToSignIn = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.tr('Account already exists')),
+        content: Text(
+          dialogContext.tr(
+            'An account with this email already exists. Sign in instead?',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(dialogContext.tr('Cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(dialogContext.tr('Sign in')),
+          ),
+        ],
+      ),
+    );
+    if (goToSignIn == true && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => SignInScreen(initialEmail: email)),
       );
     }
   }
