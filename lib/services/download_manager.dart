@@ -19,7 +19,7 @@ class DownloadResult {
 }
 
 /// Explicit "download this unit for offline use" flow: caches every
-/// lesson's full detail plus its audio, gated by the wifi-only setting.
+/// lesson's full detail plus its media, gated by the wifi-only setting.
 /// Distinct from the passive caching SyncManager/MediaCacheManager already
 /// do in the background -- this is a deliberate, user-initiated action
 /// that also marks the unit as "downloaded" for the offline UI.
@@ -39,7 +39,7 @@ class DownloadManager {
 
   Future<Set<String>> getDownloadedUnitIds() => _db.getDownloadedUnitIds();
 
-  /// Download every lesson in [unit] (full detail + audio) for offline use.
+  /// Download every lesson in [unit] (full detail + media) for offline use.
   /// Respects the wifi-only setting unless [ignoreWifiSetting] is true
   /// (used for an explicit "download anyway" confirmation from the UI).
   Future<DownloadResult> downloadUnit(
@@ -58,14 +58,22 @@ class DownloadManager {
         // wifi to cellular partway through -- checking only once would
         // silently keep burning mobile data for the rest of the unit.
         if (!ignoreWifiSetting && await _violatesWifiOnly()) {
-          return DownloadResult(DownloadOutcome.wifiRequired, lessonsDownloaded: count);
+          return DownloadResult(
+            DownloadOutcome.wifiRequired,
+            lessonsDownloaded: count,
+          );
         }
-        final detailJson = await _syncManager.fetchAndCacheLessonDetail(lesson.id);
+        final detailJson = await _syncManager.fetchAndCacheLessonDetail(
+          lesson.id,
+        );
         await _downloadLessonMedia(detailJson);
         count++;
       }
       await _db.markUnitDownloaded(unit.id);
-      return DownloadResult(DownloadOutcome.downloaded, lessonsDownloaded: count);
+      return DownloadResult(
+        DownloadOutcome.downloaded,
+        lessonsDownloaded: count,
+      );
     } catch (e) {
       await AppLogger.instance.error('downloadUnit(${unit.id}) failed', e);
       return DownloadResult(DownloadOutcome.failed, lessonsDownloaded: count);
@@ -77,36 +85,59 @@ class DownloadManager {
     return wifiOnly && !await _isOnWifi();
   }
 
-  Future<void> removeUnitDownload(String unitId) => _db.unmarkUnitDownloaded(unitId);
+  Future<void> removeUnitDownload(String unitId) =>
+      _db.unmarkUnitDownloaded(unitId);
 
   Future<void> _downloadLessonMedia(Map<String, dynamic> detailJson) async {
-    for (final url in _audioUrlsIn(detailJson)) {
+    for (final url in _mediaUrlsIn(detailJson)) {
       await _mediaCache.getCachedFilePath(url);
     }
   }
 
-  Iterable<String> _audioUrlsIn(Map<String, dynamic> detailJson) sync* {
-    final blocks = (detailJson['blocks'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+  Iterable<String> _mediaUrlsIn(Map<String, dynamic> detailJson) sync* {
+    final seen = <String>{};
+    final blocks = (detailJson['blocks'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
     for (final block in blocks) {
-      final url = _audioUrlFromPayload(block['block_payload']);
-      if (url != null) yield url;
+      for (final url in _urlsFromPayload(block['block_payload'])) {
+        if (seen.add(url)) yield url;
+      }
     }
     final questions = (detailJson['questions'] as List<dynamic>? ?? [])
         .cast<Map<String, dynamic>>();
     for (final question in questions) {
-      final url = _audioUrlFromPayload(question['prompt_payload']);
-      if (url != null) yield url;
+      for (final url in _urlsFromPayload(question['prompt_payload'])) {
+        if (seen.add(url)) yield url;
+      }
+      for (final url in _urlsFromPayload(question['grading_payload'])) {
+        if (seen.add(url)) yield url;
+      }
     }
   }
 
-  String? _audioUrlFromPayload(Object? payload) {
-    if (payload is! Map) return null;
-    final url = payload['audio_url']?.toString();
-    return (url != null && url.isNotEmpty) ? url : null;
+  Iterable<String> _urlsFromPayload(Object? payload) sync* {
+    if (payload is Map) {
+      for (final entry in payload.entries) {
+        final key = entry.key.toString().toLowerCase();
+        final value = entry.value;
+        if ((key.endsWith('_url') || key == 'url') && value is String) {
+          final uri = Uri.tryParse(value);
+          if (uri != null && (uri.scheme == 'https' || uri.scheme == 'http')) {
+            yield value;
+          }
+        } else {
+          yield* _urlsFromPayload(value);
+        }
+      }
+    } else if (payload is Iterable) {
+      for (final value in payload) {
+        yield* _urlsFromPayload(value);
+      }
+    }
   }
 
   /// Best-effort size estimate for [unit], in bytes, via HEAD requests to
-  /// every audio URL (no body downloaded). Returns null if it can't be
+  /// every media URL (no body downloaded). Returns null if it can't be
   /// determined (e.g. lesson detail isn't reachable at all).
   Future<int?> estimateUnitDownloadBytes(UnitModel unit) async {
     try {
@@ -120,7 +151,7 @@ class DownloadManager {
         } else {
           detailJson = await _syncManager.fetchAndCacheLessonDetail(lesson.id);
         }
-        for (final url in _audioUrlsIn(detailJson)) {
+        for (final url in _mediaUrlsIn(detailJson)) {
           final bytes = await _headContentLength(url);
           if (bytes != null) {
             total += bytes;
@@ -130,14 +161,19 @@ class DownloadManager {
       }
       return sawAny ? total : 0;
     } catch (e) {
-      await AppLogger.instance.error('estimateUnitDownloadBytes(${unit.id}) failed', e);
+      await AppLogger.instance.error(
+        'estimateUnitDownloadBytes(${unit.id}) failed',
+        e,
+      );
       return null;
     }
   }
 
   Future<int?> _headContentLength(String url) async {
     try {
-      final response = await http.head(Uri.parse(url)).timeout(const Duration(seconds: 10));
+      final response = await http
+          .head(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
       final header = response.headers['content-length'];
       return header != null ? int.tryParse(header) : null;
     } catch (_) {

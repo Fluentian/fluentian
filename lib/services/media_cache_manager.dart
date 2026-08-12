@@ -60,7 +60,7 @@ class MediaCacheManager {
       }
 
       final inFlight = _inFlightDownloads[url];
-      if (inFlight != null) return inFlight;
+      if (inFlight != null) return await inFlight;
 
       final download = _download(url);
       _inFlightDownloads[url] = download;
@@ -76,7 +76,9 @@ class MediaCacheManager {
   }
 
   Future<String?> _download(String url) async {
-    final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 30));
+    final response = await http
+        .get(Uri.parse(url))
+        .timeout(const Duration(seconds: 30));
     if (response.statusCode != 200) return null;
 
     final dir = await getTemporaryDirectory();

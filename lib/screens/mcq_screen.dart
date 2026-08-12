@@ -816,8 +816,9 @@ class _McqScreenState extends State<McqScreen>
     if (_isSubmitting) return;
     final questions = _activeQuestions;
     if (_currentIndex < questions.length - 1) {
-      if (_resultSheetOpen)
+      if (_resultSheetOpen) {
         Navigator.pop(context); // close sheet, if still open
+      }
       setState(() {
         _currentIndex++;
         _state = _AnswerState.unanswered;
