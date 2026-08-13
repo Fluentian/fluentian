@@ -7,10 +7,13 @@ import 'package:drift/drift.dart';
 class CachedCourses extends Table {
   TextColumn get id => text()();
   TextColumn get code => text()();
+  TextColumn get title => text().withDefault(const Constant(''))();
+  TextColumn get description => text().withDefault(const Constant(''))();
   TextColumn get levelMin => text()();
   TextColumn get levelMax => text()();
   IntColumn get contentVersion => integer().withDefault(const Constant(1))();
   BoolColumn get isPublished => boolean().withDefault(const Constant(true))();
+  TextColumn get contentLanguage => text().withDefault(const Constant('en'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -22,7 +25,9 @@ class CachedUnits extends Table {
   TextColumn get unitKind => text()();
   IntColumn get unitNo => integer()();
   TextColumn get title => text()();
+  TextColumn get description => text().withDefault(const Constant(''))();
   IntColumn get contentVersion => integer().withDefault(const Constant(1))();
+  TextColumn get contentLanguage => text().withDefault(const Constant('en'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -45,6 +50,7 @@ class CachedLessons extends Table {
   IntColumn get contentVersion => integer().withDefault(const Constant(1))();
   TextColumn get detailJson => text().nullable()();
   DateTimeColumn get detailFetchedAt => dateTime().nullable()();
+  TextColumn get contentLanguage => text().withDefault(const Constant('en'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -54,8 +60,10 @@ class CachedLessons extends Table {
 /// synced against the backend's global_content_version counter.
 class SyncState extends Table {
   IntColumn get id => integer().withDefault(const Constant(1))();
-  IntColumn get lastSyncedGlobalVersion => integer().withDefault(const Constant(0))();
+  IntColumn get lastSyncedGlobalVersion =>
+      integer().withDefault(const Constant(0))();
   DateTimeColumn get lastSyncedAt => dateTime().nullable()();
+  TextColumn get contentLanguage => text().withDefault(const Constant('en'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -67,6 +75,8 @@ class SyncState extends Table {
 /// replayed sync after a retry can't double-award XP server-side.
 class ProgressOutboxEntries extends Table {
   IntColumn get localId => integer().autoIncrement()();
+  TextColumn get operation =>
+      text().withDefault(const Constant('complete_lesson'))();
   TextColumn get lessonId => text()();
   TextColumn get idempotencyKey => text()();
   TextColumn get requestPayloadJson => text()();
@@ -82,7 +92,8 @@ class MediaCacheEntries extends Table {
   TextColumn get url => text()();
   TextColumn get localPath => text()();
   IntColumn get sizeBytes => integer().withDefault(const Constant(0))();
-  DateTimeColumn get lastAccessedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get lastAccessedAt =>
+      dateTime().withDefault(currentDateAndTime)();
   TextColumn get lessonId => text().nullable()();
 
   @override
@@ -94,8 +105,31 @@ class MediaCacheEntries extends Table {
 /// Drives the "downloaded" badge and the wifi-only bulk download screen.
 class UnitDownloads extends Table {
   TextColumn get unitId => text()();
-  DateTimeColumn get downloadedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get downloadedAt =>
+      dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {unitId};
+}
+
+class ContentTombstones extends Table {
+  TextColumn get entityId => text()();
+  TextColumn get entityType => text()();
+  IntColumn get contentVersion => integer()();
+
+  @override
+  Set<Column> get primaryKey => {entityId, entityType};
+}
+
+/// Small JSON response cache for endpoints whose payload is not represented
+/// by curriculum rows (course pages and localized lesson details). Keeping it
+/// in the same Drift database avoids the legacy second SQLite store.
+class ApiCacheEntries extends Table {
+  TextColumn get cacheKey => text()();
+  TextColumn get jsonValue => text()();
+  DateTimeColumn get cachedAt => dateTime()();
+  DateTimeColumn get lastAccessedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {cacheKey};
 }

@@ -2,7 +2,7 @@ import '../models/course_model.dart';
 import '../models/culture_story_model.dart';
 import '../core/app_localization.dart';
 import 'api_client.dart';
-import 'offline_content_cache.dart';
+import '../local_db/app_database.dart';
 
 /// Calls the Fluentian backend content endpoints.
 class ContentApi {
@@ -10,7 +10,7 @@ class ContentApi {
   static final ContentApi instance = ContentApi._();
 
   final _client = ApiClient.instance;
-  final _cache = OfflineContentCache.instance;
+  final _cache = AppDatabase.instance;
 
   String get _languageQuery =>
       'content_language=${Uri.encodeQueryComponent(AppLocaleController.activeLanguageCode)}';
@@ -25,9 +25,9 @@ class ContentApi {
     List<dynamic> items;
     try {
       items = await _client.getList('/content/courses$query');
-      await _cache.put(cacheKey, items);
+      await _cache.putApiCache(cacheKey, items);
     } catch (_) {
-      items = await _cache.get<List<dynamic>>(cacheKey) ?? const [];
+      items = await _cache.getApiCache<List<dynamic>>(cacheKey) ?? const [];
       if (items.isEmpty) rethrow;
     }
     return items
@@ -60,9 +60,10 @@ class ContentApi {
     Map<String, dynamic> json;
     try {
       json = await _client.get('/content/lessons/$lessonId?$_languageQuery');
-      await _cache.put(cacheKey, json);
+      await _cache.putApiCache(cacheKey, json);
     } catch (_) {
-      json = await _cache.get<Map<String, dynamic>>(cacheKey) ?? const {};
+      json =
+          await _cache.getApiCache<Map<String, dynamic>>(cacheKey) ?? const {};
       if (json.isEmpty) rethrow;
     }
     return LessonDetailModel.fromJson(json);
@@ -71,8 +72,15 @@ class ContentApi {
   /// Delta sync manifest: courses/units/lessons that changed since
   /// [since] (the device's last-synced global_content_version), plus the
   /// server's current global version. Pass since=0 for a full snapshot.
-  Future<Map<String, dynamic>> getManifest({required int since}) async {
-    return _client.get('/content/manifest?since=$since', auth: false);
+  Future<Map<String, dynamic>> getManifest({
+    required int since,
+    String? language,
+  }) async {
+    final code = language ?? AppLocaleController.activeLanguageCode;
+    return _client.get(
+      '/content/manifest?since=$since&content_language=${Uri.encodeQueryComponent(code)}',
+      auth: false,
+    );
   }
 
   /// Fetch only questions for a lesson (lighter call for quiz flow).
@@ -108,9 +116,14 @@ class ContentApi {
   /// Submit SRS review session
   Future<Map<String, dynamic>> completeSrsReview(
     List<Map<String, dynamic>> answers,
-    int timeSeconds,
-  ) async {
-    final payload = {'answers': answers, 'time_seconds': timeSeconds};
+    int timeSeconds, {
+    String? idempotencyKey,
+  }) async {
+    final payload = {
+      'answers': answers,
+      'time_seconds': timeSeconds,
+      if (idempotencyKey != null) 'idempotency_key': idempotencyKey,
+    };
     final response = await _client.post('/content/review/complete', payload);
     return response;
   }

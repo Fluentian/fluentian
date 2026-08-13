@@ -7,7 +7,11 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-/// Drift-backed offline store for curriculum JSON and retry-safe mutations.
+/// Legacy compatibility store.
+///
+/// Production content and media paths now use [AppDatabase]. This class is
+/// retained temporarily for older tests/consumers and should not receive new
+/// application call sites.
 class OfflineContentCache {
   OfflineContentCache._([this._database]);
   factory OfflineContentCache.forTesting() =>

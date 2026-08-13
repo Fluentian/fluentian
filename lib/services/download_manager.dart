@@ -66,7 +66,7 @@ class DownloadManager {
         final detailJson = await _syncManager.fetchAndCacheLessonDetail(
           lesson.id,
         );
-        await _downloadLessonMedia(detailJson);
+        await _downloadLessonMedia(detailJson, lesson.id);
         count++;
       }
       await _db.markUnitDownloaded(unit.id);
@@ -88,9 +88,12 @@ class DownloadManager {
   Future<void> removeUnitDownload(String unitId) =>
       _db.unmarkUnitDownloaded(unitId);
 
-  Future<void> _downloadLessonMedia(Map<String, dynamic> detailJson) async {
+  Future<void> _downloadLessonMedia(
+    Map<String, dynamic> detailJson,
+    String lessonId,
+  ) async {
     for (final url in _mediaUrlsIn(detailJson)) {
-      await _mediaCache.getCachedFilePath(url);
+      await _mediaCache.getCachedFilePath(url, lessonId: lessonId);
     }
   }
 

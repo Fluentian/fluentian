@@ -9,6 +9,7 @@ import '../services/outbox_manager.dart';
 import '../services/progress_api.dart';
 import '../services/sync_manager.dart';
 import '../services/api_client.dart';
+import '../services/starter_curriculum_loader.dart';
 
 enum ContentStatus { idle, loading, loaded, error }
 
@@ -52,15 +53,13 @@ class ContentProvider extends ChangeNotifier {
   /// network step fails, we keep showing cached data instead of erroring --
   /// that's the whole point of caching for spotty Ethiopian mobile networks.
   ///
-  /// Known limitation: locally cached course/lesson titles are the
-  /// canonical (French/admin) text, not the learner's explanation-language
-  /// translation -- translations aren't synced to the local store yet, so
-  /// offline users briefly see untranslated titles until back online.
   Future<void> loadHomeData({bool showLoading = true}) async {
     if (showLoading && _courses.isEmpty) _status = ContentStatus.loading;
     _error = null;
     notifyListeners();
 
+    await _db.migrateLegacyApiCacheIfPresent();
+    await StarterCurriculumLoader.instance.seedIfEmpty();
     final cached = await _loadCoursesFromLocalDb();
     if (cached.isNotEmpty) {
       _courses = cached;
@@ -142,6 +141,7 @@ class ContentProvider extends ChangeNotifier {
               unitKind: unit.unitKind,
               unitNo: unit.unitNo,
               title: unit.title,
+              description: unit.description,
               createdAt: DateTime.now(),
               lessons: lessons
                   .map(
@@ -152,6 +152,8 @@ class ContentProvider extends ChangeNotifier {
                       lessonKind: l.lessonKind,
                       sequenceNo: l.sequenceNo,
                       title: l.title,
+                      description: l.description,
+                      contentLanguage: l.contentLanguage,
                       estimatedMinutes: l.estimatedMinutes,
                       xpReward: l.xpReward,
                       isPublished: l.isPublished,
@@ -166,6 +168,8 @@ class ContentProvider extends ChangeNotifier {
             id: course.id,
             targetLanguageId: '',
             code: course.code,
+            title: course.title,
+            description: course.description,
             levelMin: course.levelMin,
             levelMax: course.levelMax,
             isPublished: course.isPublished,
@@ -420,16 +424,10 @@ class ContentProvider extends ChangeNotifier {
     required List<AnswerPayload> answers,
     required int timeSeconds,
   }) async {
-    final payload = answers
-        .map(
-          (a) => {
-            'question_id': a.questionId,
-            'answer': a.answer,
-            'is_correct': a.isCorrect,
-          },
-        )
-        .toList();
-    final result = await _contentApi.completeSrsReview(payload, timeSeconds);
+    final result = await _outboxManager.submitSrsReview(
+      answers: answers,
+      timeSeconds: timeSeconds,
+    );
 
     // Refresh global stats after SRS
     try {
