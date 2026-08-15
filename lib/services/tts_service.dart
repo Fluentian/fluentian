@@ -25,12 +25,12 @@ class LocalTtsCacheManager {
   static const Map<String, String> voiceUuidMap = {
     'maya': 'a249eaff-1e96-4d2c-b23b-12efa4f66f41',
     'sofia': '8832a0b5-47b2-4751-bb22-6a8e2149303d',
-    'sami': 'ce74c4da-4aee-435d-bc6d-81d1a9367e12',
-    'daniel': '0418348a-0ca2-4e90-9986-800fb8b3bbc0',
+    'sami': '65209f8e-6140-4a20-b819-3cc2e21da19b',   // Nolan - warm young male
+    'daniel': '93c98a2b-7d15-4f7b-8236-294b1e02b1c0', // Mathieu - assured French male
     'claire': 'a249eaff-1e96-4d2c-b23b-12efa4f66f41',
     'elodie': '8832a0b5-47b2-4751-bb22-6a8e2149303d',
-    'antoine': 'ce74c4da-4aee-435d-bc6d-81d1a9367e12',
-    'lucas': '0418348a-0ca2-4e90-9986-800fb8b3bbc0',
+    'antoine': '65209f8e-6140-4a20-b819-3cc2e21da19b',
+    'lucas': '93c98a2b-7d15-4f7b-8236-294b1e02b1c0',
   };
 
   static Future<File> getCacheFile(String voiceId, double speed, String text) async {
