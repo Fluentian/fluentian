@@ -1938,11 +1938,12 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
   };
 
   void _previewVoice(String key, [StateSetter? setSheetState]) async {
-    setState(() => _playingVoiceKey = key);
+    final activeKey = UserModel.normalizeVoiceId(key);
+    setState(() => _playingVoiceKey = activeKey);
     if (setSheetState != null) setSheetState(() {});
-    final info = _voices[key];
+    final info = _voices[activeKey];
     if (info != null) {
-      await TtsService.instance.speak(info.sampleText, voiceId: key);
+      await TtsService.instance.speak(info.sampleText, voiceId: activeKey);
     }
     if (mounted) {
       setState(() => _playingVoiceKey = null);
