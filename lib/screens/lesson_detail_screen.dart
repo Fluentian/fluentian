@@ -993,26 +993,44 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      LText(
-                        'EXAMPLE',
-                        style: GoogleFonts.inter(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.grey.shade500,
-                          letterSpacing: 0.5,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            LText(
+                              'EXAMPLE',
+                              style: GoogleFonts.inter(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.grey.shade500,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            LText(
+                              example,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontStyle: FontStyle.italic,
+                                color: FluentianColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      LText(
-                        example,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic,
-                          color: FluentianColors.textSecondary,
+                      IconButton(
+                        tooltip: context.tr('Listen'),
+                        icon: const Icon(
+                          Iconsax.volume_high,
+                          size: 18,
+                          color: FluentianColors.primary,
                         ),
+                        onPressed: () {
+                          final frenchPart = example.split('\n').first;
+                          _speakText(frenchPart);
+                        },
                       ),
                     ],
                   ),
@@ -1045,12 +1063,17 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   }
 
   Future<void> _speakBlock(BlockModel block) async {
+    await _speakText(block.textToSpeak, language: block.ttsLanguage);
+  }
+
+  Future<void> _speakText(String text, {String language = 'fr-FR'}) async {
+    if (text.trim().isEmpty) return;
     try {
       final ttsSpeed = context.read<AuthProvider>().user?.ttsSpeed ?? 1.0;
       await _audioPlayer.stop();
       await _ttsService.speak(
-        block.textToSpeak,
-        language: block.ttsLanguage,
+        text,
+        language: language,
         speed: ttsSpeed,
       );
     } catch (_) {
