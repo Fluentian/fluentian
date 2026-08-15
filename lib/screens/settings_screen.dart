@@ -64,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _AccountHeader(onEdit: () => _showProfileEditor(context)),
           const SizedBox(height: 16),
           _SettingsGroup(
-            title: 'Learning language',
+            title: 'App language',
             children: [
               _LanguageRow(
                 locale: context.watch<AppLocaleController>().locale,
@@ -990,11 +990,15 @@ class _LanguageRow extends StatelessWidget {
       (Locale('am'), 'አማርኛ'),
       (Locale('om'), 'Afaan Oromoo'),
     ];
+    const validCodes = {'en', 'am', 'om'};
+    final safeCode = validCodes.contains(locale.languageCode)
+        ? locale.languageCode
+        : 'en';
     return _RowShell(
       icon: Icons.language_rounded,
-      label: 'Learning language',
+      label: 'App language',
       trailing: DropdownButton<String>(
-        value: locale.languageCode,
+        value: safeCode,
         underline: const SizedBox.shrink(),
         items: options
             .map(

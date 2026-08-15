@@ -682,6 +682,7 @@ class AuthProvider extends ChangeNotifier {
       hapticFeedbackEnabled: data['haptic_feedback_enabled'] as bool?,
       ttsSpeed: data['tts_speed'] as double?,
       fontScale: data['font_scale'] as int?,
+      preferredVoiceId: data['preferred_voice_id'] as String?,
     );
     notifyListeners();
     try {

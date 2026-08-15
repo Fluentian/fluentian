@@ -244,6 +244,7 @@ class UserModel {
     bool? hapticFeedbackEnabled,
     double? ttsSpeed,
     int? fontScale,
+    String? preferredVoiceId,
   }) => UserModel(
     id: id ?? this.id,
     username: username ?? this.username,
@@ -286,6 +287,9 @@ class UserModel {
     hapticFeedbackEnabled: hapticFeedbackEnabled ?? this.hapticFeedbackEnabled,
     ttsSpeed: ttsSpeed ?? this.ttsSpeed,
     fontScale: fontScale ?? this.fontScale,
+    preferredVoiceId: preferredVoiceId != null
+        ? UserModel.normalizeVoiceId(preferredVoiceId)
+        : this.preferredVoiceId,
   );
 
   /// Greeting based on time of day.
