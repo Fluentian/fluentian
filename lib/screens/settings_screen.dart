@@ -12,6 +12,7 @@ import '../providers/content_provider.dart';
 import '../services/app_logger.dart';
 import '../services/download_settings.dart';
 import '../services/local_push_service.dart';
+import '../services/tts_service.dart';
 import 'legal_document_screen.dart';
 import 'offline_downloads_screen.dart';
 
@@ -1219,6 +1220,22 @@ class _SliderRow extends StatelessWidget {
                   ),
                 ),
               ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(
+                  Icons.volume_up_rounded,
+                  color: FluentianColors.primary,
+                  size: 20,
+                ),
+                onPressed: () {
+                  TtsService.instance.speak(
+                    "Bonjour ! Bienvenue sur Fluentian.",
+                    speed: double.parse(value.toStringAsFixed(1)),
+                  );
+                },
+              ),
+              const SizedBox(width: 6),
               LText(
                 displayValue,
                 style: GoogleFonts.inter(
@@ -1235,6 +1252,12 @@ class _SliderRow extends StatelessWidget {
             max: max,
             divisions: ((max - min) * 10).round(),
             onChanged: onChanged,
+            onChangeEnd: (val) {
+              TtsService.instance.speak(
+                "Bonjour ! Bienvenue sur Fluentian.",
+                speed: double.parse(val.toStringAsFixed(1)),
+              );
+            },
           ),
         ],
       ),
@@ -1866,6 +1889,19 @@ class _VoiceSelectorRow extends StatelessWidget {
     'lucas': '🇫🇷 Lucas (Clear Speaker)',
   };
 
+  static const Map<String, String> _selfIntroductions = {
+    'claire': "Bonjour ! Je m'appelle Claire, votre tutrice Fluentian.",
+    'antoine': "Bonjour ! Je m'appelle Antoine, votre tuteur Fluentian.",
+    'elodie': "Bonjour ! Je m'appelle Élodie, votre tutrice Fluentian.",
+    'lucas': "Bonjour ! Je m'appelle Lucas, votre tuteur Fluentian.",
+  };
+
+  void _previewVoice(String key) {
+    final introText =
+        _selfIntroductions[key] ?? "Bonjour ! Je m'appelle Claire, votre tutrice Fluentian.";
+    TtsService.instance.speak(introText, voiceId: key);
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentLabel = _voiceNames[voiceId] ?? '🇫🇷 Claire (Native Standard)';
@@ -1892,10 +1928,13 @@ class _VoiceSelectorRow extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
-      trailing: const Icon(
-        Icons.chevron_right_rounded,
-        color: FluentianColors.textSecondary,
-        size: 20,
+      trailing: IconButton(
+        icon: const Icon(
+          Icons.volume_up_rounded,
+          color: FluentianColors.primary,
+          size: 22,
+        ),
+        onPressed: () => _previewVoice(voiceId),
       ),
       onTap: () {
         showModalBottomSheet<void>(
@@ -1944,8 +1983,17 @@ class _VoiceSelectorRow extends StatelessWidget {
                                 : FluentianColors.textPrimary,
                           ),
                         ),
+                        trailing: IconButton(
+                          icon: const Icon(
+                            Icons.volume_up_rounded,
+                            color: FluentianColors.primary,
+                            size: 22,
+                          ),
+                          onPressed: () => _previewVoice(entry.key),
+                        ),
                         onTap: () {
                           onChanged(entry.key);
+                          _previewVoice(entry.key);
                           Navigator.of(sheetContext).pop();
                         },
                       );
