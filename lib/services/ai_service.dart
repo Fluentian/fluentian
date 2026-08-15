@@ -84,8 +84,6 @@ class AiService {
     required String contentId,
     required String contextText,
   }) async {
-    final startTime = DateTime.now();
-    const minDelayMs = 2200; // 2.2s artificial natural thinking delay
     final languageCode = AppLocaleController.activeLanguageCode;
 
     try {
@@ -112,11 +110,6 @@ class AiService {
           languageCode: languageCode,
           payload: responseData,
         );
-      }
-
-      final elapsedMs = DateTime.now().difference(startTime).inMilliseconds;
-      if (elapsedMs < minDelayMs) {
-        await Future.delayed(Duration(milliseconds: minDelayMs - elapsedMs));
       }
 
       final activityJson = responseData['activity'];
