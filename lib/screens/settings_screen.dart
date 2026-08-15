@@ -1959,252 +1959,258 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (sheetContext, setSheetState) {
-            final sheetHeight = MediaQuery.sizeOf(sheetContext).height * 0.78;
-            return Container(
-              height: sheetHeight,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 12),
-                  Container(
-                    width: 42,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(99),
-                    ),
+            return DraggableScrollableSheet(
+              initialChildSize: 0.75,
+              minChildSize: 0.4,
+              maxChildSize: 0.9,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: FluentianColors.primary.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(
-                            Icons.record_voice_over_rounded,
-                            color: FluentianColors.primary,
-                            size: 22,
-                          ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      Container(
+                        width: 42,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(99),
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Cartesia AI Voice Engine',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: const Color(0xFF0F172A),
-                                ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: FluentianColors.primary.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Audition voice samples before picking your tutor.',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color: const Color(0xFF64748B),
-                                ),
+                              child: const Icon(
+                                Icons.record_voice_over_rounded,
+                                color: FluentianColors.primary,
+                                size: 22,
                               ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(20),
-                      itemCount: _voices.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final entry = _voices.entries.elementAt(index);
-                        final key = entry.key;
-                        final info = entry.value;
-                        final activeKey = UserModel.normalizeVoiceId(widget.voiceId);
-                        final isSelected = activeKey == key;
-                        final isPlaying = _playingVoiceKey == key;
-
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? FluentianColors.primary.withOpacity(0.04)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isSelected
-                                  ? FluentianColors.primary.withOpacity(0.5)
-                                  : const Color(0xFFE2E8F0),
-                              width: isSelected ? 1.8 : 1.0,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.02),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    info.accent.split(' ')[0],
-                                    style: const TextStyle(fontSize: 22),
+                                    'Cartesia AI Voice Engine',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: const Color(0xFF0F172A),
+                                    ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Audition voice samples before picking your tutor.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      Expanded(
+                        child: ListView.separated(
+                          controller: scrollController,
+                          padding: const EdgeInsets.all(20),
+                          itemCount: _voices.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final entry = _voices.entries.elementAt(index);
+                            final key = entry.key;
+                            final info = entry.value;
+                            final activeKey = UserModel.normalizeVoiceId(widget.voiceId);
+                            final isSelected = activeKey == key;
+                            final isPlaying = _playingVoiceKey == key;
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? FluentianColors.primary.withOpacity(0.04)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? FluentianColors.primary.withOpacity(0.5)
+                                      : const Color(0xFFE2E8F0),
+                                  width: isSelected ? 1.8 : 1.0,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.02),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        info.accent.split(' ')[0],
+                                        style: const TextStyle(fontSize: 22),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              info.name,
-                                              style: GoogleFonts.plusJakartaSans(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w700,
-                                                color: const Color(0xFF0F172A),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8, vertical: 3),
-                                              decoration: BoxDecoration(
-                                                color: isSelected
-                                                    ? FluentianColors.primary
-                                                    : const Color(0xFFF1F5F9),
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: Text(
-                                                info.tag,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: isSelected
-                                                      ? Colors.white
-                                                      : const Color(0xFF475569),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  info.name,
+                                                  style: GoogleFonts.plusJakartaSans(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: const Color(0xFF0F172A),
+                                                  ),
                                                 ),
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                      horizontal: 8, vertical: 3),
+                                                  decoration: BoxDecoration(
+                                                    color: isSelected
+                                                        ? FluentianColors.primary
+                                                        : const Color(0xFFF1F5F9),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Text(
+                                                    info.tag,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: isSelected
+                                                          ? Colors.white
+                                                          : const Color(0xFF475569),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              info.description,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                color: const Color(0xFF64748B),
                                               ),
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          info.description,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            color: const Color(0xFF64748B),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    children: [
+                                      // Audition Button (Does NOT select or close modal)
+                                      OutlinedButton.icon(
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: isPlaying
+                                              ? FluentianColors.primary
+                                              : const Color(0xFF334155),
+                                          side: BorderSide(
+                                            color: isPlaying
+                                                ? FluentianColors.primary
+                                                : const Color(0xFFCBD5E1),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14, vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 14),
-                              Row(
-                                children: [
-                                  // Audition Button (Does NOT select or close modal)
-                                  OutlinedButton.icon(
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: isPlaying
-                                          ? FluentianColors.primary
-                                          : const Color(0xFF334155),
-                                      side: BorderSide(
-                                        color: isPlaying
-                                            ? FluentianColors.primary
-                                            : const Color(0xFFCBD5E1),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 14, vertical: 10),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    onPressed: () => _previewVoice(key, setSheetState),
-                                    icon: Icon(
-                                      isPlaying
-                                          ? Icons.graphic_eq_rounded
-                                          : Icons.play_arrow_rounded,
-                                      size: 18,
-                                      color: isPlaying
-                                          ? FluentianColors.primary
-                                          : const Color(0xFF334155),
-                                    ),
-                                    label: Text(
-                                      isPlaying ? 'Auditioning...' : 'Listen sample',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  // Select Voice Button
-                                  FilledButton(
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: isSelected
-                                          ? const Color(0xFF22C55E)
-                                          : FluentianColors.primary,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 10),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      widget.onChanged(key);
-                                      Navigator.of(sheetContext).pop();
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Tutor voice set to ${info.name}.'),
-                                          duration: const Duration(seconds: 2),
+                                        onPressed: () => _previewVoice(key, setSheetState),
+                                        icon: Icon(
+                                          isPlaying
+                                              ? Icons.graphic_eq_rounded
+                                              : Icons.play_arrow_rounded,
+                                          size: 18,
+                                          color: isPlaying
+                                              ? FluentianColors.primary
+                                              : const Color(0xFF334155),
                                         ),
-                                      );
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (isSelected) ...[
-                                          const Icon(Icons.check_rounded,
-                                              size: 16, color: Colors.white),
-                                          const SizedBox(width: 4),
-                                        ],
-                                        Text(
-                                          isSelected ? 'Active' : 'Select voice',
+                                        label: Text(
+                                          isPlaying ? 'Auditioning...' : 'Listen sample',
                                           style: GoogleFonts.plusJakartaSans(
                                             fontSize: 13,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      const Spacer(),
+                                      // Select Voice Button
+                                      FilledButton(
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: isSelected
+                                              ? const Color(0xFF22C55E)
+                                              : FluentianColors.primary,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          widget.onChanged(key);
+                                          Navigator.of(sheetContext).pop();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Tutor voice set to ${info.name}.'),
+                                              duration: const Duration(seconds: 2),
+                                            ),
+                                          );
+                                        },
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (isSelected) ...[
+                                              const Icon(Icons.check_rounded,
+                                                  size: 16, color: Colors.white),
+                                              const SizedBox(width: 4),
+                                            ],
+                                            Text(
+                                              isSelected ? 'Active' : 'Select voice',
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             );
           },
         );
