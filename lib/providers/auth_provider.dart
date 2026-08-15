@@ -50,7 +50,6 @@ class AuthProvider extends ChangeNotifier {
 
   /// Called once at app startup to restore auth state from stored tokens.
   Future<void> initialize() async {
-    final startTime = DateTime.now();
     await AppLogger.instance.info('Auth initialize started');
 
     // Register a global 401 handler so any background API call that gets
@@ -393,7 +392,7 @@ class AuthProvider extends ChangeNotifier {
     _apiClient.clearUser();
     _apiClient.clearSetupComplete();
     _firebaseAuth.signOut().catchError((_) {});
-    _googleSignIn.signOut().catchError((_) {});
+    _googleSignIn.signOut().then((_) {}).catchError((_) => null);
     _user = null;
     _unverifiedEmail = null;
     _nextHeartRefillAt = null;
