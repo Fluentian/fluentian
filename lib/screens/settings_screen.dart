@@ -1873,7 +1873,23 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
   }
 }
 
-class _VoiceSelectorRow extends StatelessWidget {
+class _VoiceInfo {
+  final String name;
+  final String tag;
+  final String accent;
+  final String description;
+  final String sampleText;
+
+  const _VoiceInfo({
+    required this.name,
+    required this.tag,
+    required this.accent,
+    required this.description,
+    required this.sampleText,
+  });
+}
+
+class _VoiceSelectorRow extends StatefulWidget {
   final String voiceId;
   final ValueChanged<String> onChanged;
 
@@ -1882,129 +1898,400 @@ class _VoiceSelectorRow extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const Map<String, String> _voiceNames = {
-    'claire': '🇫🇷 Claire (Native Standard)',
-    'antoine': '🇫🇷 Antoine (Expressive Male)',
-    'elodie': '🇫🇷 Élodie (Fluent Female)',
-    'lucas': '🇫🇷 Lucas (Clear Speaker)',
+  @override
+  State<_VoiceSelectorRow> createState() => _VoiceSelectorRowState();
+}
+
+class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
+  String? _playingVoiceKey;
+
+  static const Map<String, _VoiceInfo> _voices = {
+    'maya': _VoiceInfo(
+      name: 'Maya',
+      tag: 'Young Female',
+      accent: '🇫🇷 French (Female)',
+      description: 'Upbeat, bright and encouraging cadence for everyday French.',
+      sampleText: "Bonjour ! Je m'appelle Maya, votre tutrice Fluentian.",
+    ),
+    'sofia': _VoiceInfo(
+      name: 'Sofia',
+      tag: 'Polished Female',
+      accent: '🇫🇷 French (Female)',
+      description: 'Serene, articulate Parisian tone ideal for clear lessons.',
+      sampleText: "Bonjour ! Je m'appelle Sofia, votre tutrice Fluentian.",
+    ),
+    'sami': _VoiceInfo(
+      name: 'Sami',
+      tag: 'Young Male',
+      accent: '🇫🇷 French (Male)',
+      description: 'Friendly, energetic male voice for casual conversations.',
+      sampleText: "Bonjour ! Je m'appelle Sami, votre tuteur Fluentian.",
+    ),
+    'daniel': _VoiceInfo(
+      name: 'Daniel',
+      tag: 'Polished Male',
+      accent: '🇫🇷 French (Male)',
+      description: 'Clear, reassuring male host style for structured learning.',
+      sampleText: "Bonjour ! Je m'appelle Daniel, votre tuteur Fluentian.",
+    ),
   };
 
-  static const Map<String, String> _selfIntroductions = {
-    'claire': "Bonjour ! Je m'appelle Claire, votre tutrice Fluentian.",
-    'antoine': "Bonjour ! Je m'appelle Antoine, votre tuteur Fluentian.",
-    'elodie': "Bonjour ! Je m'appelle Élodie, votre tutrice Fluentian.",
-    'lucas': "Bonjour ! Je m'appelle Lucas, votre tuteur Fluentian.",
-  };
-
-  void _previewVoice(String key) {
-    final introText =
-        _selfIntroductions[key] ?? "Bonjour ! Je m'appelle Claire, votre tutrice Fluentian.";
-    TtsService.instance.speak(introText, voiceId: key);
+  void _previewVoice(String key) async {
+    setState(() => _playingVoiceKey = key);
+    final info = _voices[key];
+    if (info != null) {
+      await TtsService.instance.speak(info.sampleText, voiceId: key);
+    }
+    if (mounted) {
+      setState(() => _playingVoiceKey = null);
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final currentLabel = _voiceNames[voiceId] ?? '🇫🇷 Claire (Native Standard)';
-
-    return ListTile(
-      leading: const Icon(
-        Icons.record_voice_over_rounded,
-        color: FluentianColors.textPrimary,
-        size: 22,
-      ),
-      title: Text(
-        'French Speaker Voice',
-        style: GoogleFonts.inter(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: FluentianColors.textPrimary,
-        ),
-      ),
-      subtitle: Text(
-        currentLabel,
-        style: GoogleFonts.inter(
-          fontSize: 13,
-          color: FluentianColors.primary,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      trailing: IconButton(
-        icon: const Icon(
-          Icons.volume_up_rounded,
-          color: FluentianColors.primary,
-          size: 22,
-        ),
-        onPressed: () => _previewVoice(voiceId),
-      ),
-      onTap: () {
-        showModalBottomSheet<void>(
-          context: context,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          builder: (sheetContext) {
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      child: Text(
-                        'Select Cartesia French Voice',
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: FluentianColors.textPrimary,
-                        ),
-                      ),
+  void _openVoicePicker(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+              ),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 42,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(99),
                     ),
-                    const Divider(),
-                    ..._voiceNames.entries.map((entry) {
-                      final selected = voiceId == entry.key;
-                      return ListTile(
-                        leading: Icon(
-                          selected
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                          color: selected
-                              ? FluentianColors.primary
-                              : FluentianColors.textSecondary,
-                        ),
-                        title: Text(
-                          entry.value,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight:
-                                selected ? FontWeight.w800 : FontWeight.w500,
-                            color: selected
-                                ? FluentianColors.primary
-                                : FluentianColors.textPrimary,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: FluentianColors.primary.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(
-                            Icons.volume_up_rounded,
+                          child: const Icon(
+                            Icons.record_voice_over_rounded,
                             color: FluentianColors.primary,
                             size: 22,
                           ),
-                          onPressed: () => _previewVoice(entry.key),
                         ),
-                        onTap: () {
-                          onChanged(entry.key);
-                          _previewVoice(entry.key);
-                          Navigator.of(sheetContext).pop();
-                        },
-                      );
-                    }),
-                  ],
-                ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Cartesia AI Voice Engine',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Audition voice samples before picking your tutor.',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(20),
+                      itemCount: _voices.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final entry = _voices.entries.elementAt(index);
+                        final key = entry.key;
+                        final info = entry.value;
+                        final isSelected = widget.voiceId == key;
+                        final isPlaying = _playingVoiceKey == key;
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? FluentianColors.primary.withOpacity(0.04)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSelected
+                                  ? FluentianColors.primary.withOpacity(0.5)
+                                  : const Color(0xFFE2E8F0),
+                              width: isSelected ? 1.8 : 1.0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    info.accent.split(' ')[0],
+                                    style: const TextStyle(fontSize: 22),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              info.name,
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                                color: const Color(0xFF0F172A),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: isSelected
+                                                    ? FluentianColors.primary
+                                                    : const Color(0xFFF1F5F9),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                info.tag,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isSelected
+                                                      ? Colors.white
+                                                      : const Color(0xFF475569),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          info.description,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: const Color(0xFF64748B),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              Row(
+                                children: [
+                                  // Audition Button (Does NOT select or close modal)
+                                  OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: isPlaying
+                                          ? FluentianColors.primary
+                                          : const Color(0xFF334155),
+                                      side: BorderSide(
+                                        color: isPlaying
+                                            ? FluentianColors.primary
+                                            : const Color(0xFFCBD5E1),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 10),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      _previewVoice(key);
+                                      setSheetState(() {});
+                                    },
+                                    icon: Icon(
+                                      isPlaying
+                                          ? Icons.graphic_eq_rounded
+                                          : Icons.play_arrow_rounded,
+                                      size: 18,
+                                      color: isPlaying
+                                          ? FluentianColors.primary
+                                          : const Color(0xFF334155),
+                                    ),
+                                    label: Text(
+                                      isPlaying ? 'Auditioning...' : 'Listen sample',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  // Select Voice Button
+                                  FilledButton(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: isSelected
+                                          ? const Color(0xFF22C55E)
+                                          : FluentianColors.primary,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 10),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      widget.onChanged(key);
+                                      Navigator.of(sheetContext).pop();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Tutor voice set to ${info.name}.'),
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                    },
+                                    child: Row(
+                                      children: [
+                                        if (isSelected) ...[
+                                          const Icon(Icons.check_rounded,
+                                              size: 16, color: Colors.white),
+                                          const SizedBox(width: 4),
+                                        ],
+                                        Text(
+                                          isSelected ? 'Active' : 'Select voice',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             );
           },
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final info = _voices[widget.voiceId] ?? _voices['maya'] ?? _voices.values.first;
+    final isPlayingCurrent = _playingVoiceKey == widget.voiceId;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => _openVoicePicker(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: FluentianColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.record_voice_over_rounded,
+                    color: FluentianColors.primary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'French Speaker Voice',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${info.name} • ${info.tag}',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: FluentianColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Direct Audition Button on Settings Screen
+                IconButton.filledTonal(
+                  style: IconButton.styleFrom(
+                    backgroundColor: isPlayingCurrent
+                        ? FluentianColors.primary
+                        : FluentianColors.primary.withOpacity(0.1),
+                  ),
+                  icon: Icon(
+                    isPlayingCurrent
+                        ? Icons.graphic_eq_rounded
+                        : Icons.volume_up_rounded,
+                    color: isPlayingCurrent ? Colors.white : FluentianColors.primary,
+                    size: 20,
+                  ),
+                  tooltip: 'Audition voice sample',
+                  onPressed: () => _previewVoice(widget.voiceId),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xFF94A3B8),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

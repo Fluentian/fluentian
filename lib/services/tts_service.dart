@@ -1,8 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'api_client.dart';
-import 'media_cache_manager.dart';
 
 /// Modular Interface for Audio & Text-To-Speech Providers.
 abstract class BaseTtsProvider {
@@ -16,8 +19,35 @@ abstract class BaseTtsProvider {
   bool get isSpeaking;
 }
 
-/// Cartesia.ai Cloud TTS Provider with Server Deduplication, Smart Slow Replay,
-/// and 7-day Device Local File Caching.
+/// Device Local File Cache Manager for Instant 0ms TTS Playback
+class LocalTtsCacheManager {
+  static const Map<String, String> voiceUuidMap = {
+    'maya': '2f8e82c4-cb94-4e6d-8b6a-29bf58ceb60a',
+    'sofia': '63fdecc2-4e1d-4aa3-a442-27204e3cd3b5',
+    'sami': 'ce74c4da-4aee-435d-bc6d-81d1a9367e12',
+    'daniel': 'd9f4af15-c402-4f50-bbda-d8823d028d6a',
+    'claire': '2f8e82c4-cb94-4e6d-8b6a-29bf58ceb60a',
+    'elodie': '63fdecc2-4e1d-4aa3-a442-27204e3cd3b5',
+    'antoine': 'ce74c4da-4aee-435d-bc6d-81d1a9367e12',
+    'lucas': 'd9f4af15-c402-4f50-bbda-d8823d028d6a',
+  };
+
+  static Future<File> getCacheFile(String voiceId, double speed, String text) async {
+    final tempDir = await getTemporaryDirectory();
+    final cacheDir = Directory('${tempDir.path}/tts_cache');
+    if (!cacheDir.existsSync()) {
+      await cacheDir.create(recursive: true);
+    }
+    final keyStr = voiceId.toLowerCase().trim();
+    final uuid = voiceUuidMap[keyStr] ?? keyStr;
+    final rawKey = '${uuid}_${speed.toStringAsFixed(2)}_${text.trim()}';
+    final hash = sha256.convert(utf8.encode(rawKey)).toString();
+    return File('${cacheDir.path}/$hash.mp3');
+  }
+}
+
+/// Cartesia.ai Cloud TTS Provider with Zero-Latency Local Audio Disk Caching,
+/// Smart Slow Replay, and Gender-Differentiated Fallback.
 class CartesiaCloudTtsProvider implements BaseTtsProvider {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final BaseTtsProvider _fallback = NativeDeviceTtsProvider();
@@ -42,7 +72,6 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
     await stop();
 
     // Smart Slow Replay Logic:
-    // If the learner taps the exact same phrase again, toggle to Slow Turtle Speed (0.75x)
     double effectiveSpeed = speed;
     if (_lastText == cleanText) {
       _isSlowMode = !_isSlowMode;
@@ -54,9 +83,24 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
       _isSlowMode = false;
     }
 
+    // 1. FAST PATH: Check Device Local Audio File Disk Cache (0ms latency, 0 network requests)
+    try {
+      final cacheFile = await LocalTtsCacheManager.getCacheFile(voiceId, effectiveSpeed, cleanText);
+      if (await cacheFile.exists() && (await cacheFile.length()) > 0) {
+        _speaking = true;
+        await _audioPlayer.setFilePath(cacheFile.path);
+        await _audioPlayer.setSpeed(effectiveSpeed);
+        await _audioPlayer.play();
+        _speaking = false;
+        return;
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('Local TTS disk cache check error: $e');
+    }
+
+    // 2. NETWORK PATH: Synthesize from Server / Cloud Engine
     try {
       _speaking = true;
-      // 1. Call Backend Cartesia Synthesis (Server Object Storage Cached)
       final res = await ApiClient.instance.post(
         '/content/tts/synthesize',
         {
@@ -69,21 +113,36 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
       final relUrl = res['audio_url'] as String? ?? '';
       if (relUrl.isEmpty) {
         _speaking = false;
-        await _fallback.speak(cleanText, language: language, speed: effectiveSpeed);
+        await _fallback.speak(cleanText, language: language, speed: effectiveSpeed, voiceId: voiceId);
         return;
       }
 
       final fullUrl = ApiClient.resolveMediaUrl(relUrl) ?? relUrl;
 
-      // 2. Play using Device Media Cache Manager (7-day local disk deadline)
-      await MediaCacheManager.instance.loadIntoPlayer(_audioPlayer, fullUrl);
+      // Download bytes and save into local cache file for zero-latency future plays
+      final cacheFile = await LocalTtsCacheManager.getCacheFile(voiceId, effectiveSpeed, cleanText);
+      try {
+        final client = HttpClient();
+        final request = await client.getUrl(Uri.parse(fullUrl));
+        final response = await request.close();
+        if (response.statusCode == 200) {
+          final bytes = await response.fold<List<int>>([], (acc, chunk) => acc..addAll(chunk));
+          await cacheFile.writeAsBytes(bytes);
+          await _audioPlayer.setFilePath(cacheFile.path);
+        } else {
+          await _audioPlayer.setUrl(fullUrl);
+        }
+      } catch (_) {
+        await _audioPlayer.setUrl(fullUrl);
+      }
+
       await _audioPlayer.setSpeed(effectiveSpeed);
       await _audioPlayer.play();
       _speaking = false;
     } catch (e) {
       _speaking = false;
-      if (kDebugMode) debugPrint('Cartesia TTS error, using native fallback: $e');
-      await _fallback.speak(cleanText, language: language, speed: effectiveSpeed);
+      if (kDebugMode) debugPrint('Cartesia TTS error, using voice-differentiated native fallback: $e');
+      await _fallback.speak(cleanText, language: language, speed: effectiveSpeed, voiceId: voiceId);
     }
   }
 
@@ -95,7 +154,7 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
   }
 }
 
-/// System Native TTS Implementation using flutter_tts
+/// System Native TTS Implementation using flutter_tts with Gender & Voice Identity Tuning
 class NativeDeviceTtsProvider implements BaseTtsProvider {
   final FlutterTts _tts = FlutterTts();
   bool _initialized = false;
@@ -108,7 +167,6 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
     if (_initialized) return;
     await _tts.awaitSpeakCompletion(true);
     await _tts.setVolume(1.0);
-    await _tts.setPitch(1.0);
     _tts.setStartHandler(() => _speaking = true);
     _tts.setCompletionHandler(() => _speaking = false);
     _tts.setCancelHandler(() => _speaking = false);
@@ -147,6 +205,45 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
       await _tts.setLanguage(locale);
     }
 
+    // Voice Pitch Differentiation based on Voice Identity:
+    // Antoine & Lucas -> Male voices (Pitch 0.78 - 0.86)
+    // Claire & Élodie -> Female voices (Pitch 1.12 - 1.28)
+    final vId = voiceId.toLowerCase().trim();
+    double pitch = 1.0;
+    if (vId == 'sami' || vId == 'antoine') {
+      pitch = 0.76;
+    } else if (vId == 'daniel' || vId == 'lucas') {
+      pitch = 0.85;
+    } else if (vId == 'sofia' || vId == 'elodie') {
+      pitch = 1.28;
+    } else {
+      pitch = 1.12; // maya / claire standard female
+    }
+    await _tts.setPitch(pitch);
+
+    // Scan available voices on device to pick male vs female engine voice
+    try {
+      final voices = await _tts.getVoices;
+      if (voices is List) {
+        for (final v in voices) {
+          if (v is Map) {
+            final name = (v['name'] ?? '').toString().toLowerCase();
+            final loc = (v['locale'] ?? '').toString().toLowerCase();
+            if (loc.startsWith('fr')) {
+              final isMale = vId == 'sami' || vId == 'daniel' || vId == 'antoine' || vId == 'lucas';
+              if (isMale && (name.contains('male') || name.contains('man') || name.contains('c-local') || name.contains('d-local'))) {
+                await _tts.setVoice({"name": v['name'], "locale": v['locale']});
+                break;
+              } else if (!isMale && (name.contains('female') || name.contains('woman') || name.contains('a-local') || name.contains('b-local'))) {
+                await _tts.setVoice({"name": v['name'], "locale": v['locale']});
+                break;
+              }
+            }
+          }
+        }
+      }
+    } catch (_) {}
+
     final normalizedRate = (0.42 + ((speed.clamp(0.6, 1.6) - 0.6) * 0.23))
         .clamp(0.35, 0.72);
     await _tts.setSpeechRate(normalizedRate);
@@ -169,7 +266,6 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
 /// Shared central access point for TTS playback across the app.
 class TtsService {
   TtsService._() {
-    // Default to Cartesia Cloud TTS Engine with Native fallback
     _provider = CartesiaCloudTtsProvider();
   }
 
@@ -177,7 +273,6 @@ class TtsService {
 
   late BaseTtsProvider _provider;
 
-  /// Register a custom cloud audio / TTS provider.
   void setProvider(BaseTtsProvider customProvider) {
     _provider = customProvider;
   }

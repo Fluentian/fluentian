@@ -155,8 +155,8 @@ class _HomeContentState extends State<_HomeContent> {
     return SafeArea(
       child: Consumer2<AuthProvider, ContentProvider>(
         builder: (context, auth, content, _) {
-          if (content.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+          if (content.isLoading && content.courses.isEmpty) {
+            return const _HomeSkeletonView();
           }
           if (content.status == ContentStatus.error) {
             return Center(
@@ -1136,6 +1136,112 @@ class _NotificationButtonState extends State<_NotificationButton> {
           ],
         );
       },
+    );
+  }
+}
+
+class ShimmerBox extends StatefulWidget {
+  final double width;
+  final double height;
+  final double borderRadius;
+
+  const ShimmerBox({
+    super.key,
+    required this.width,
+    required this.height,
+    this.borderRadius = 12,
+  });
+
+  @override
+  State<ShimmerBox> createState() => _ShimmerBoxState();
+}
+
+class _ShimmerBoxState extends State<ShimmerBox>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, child) {
+        final opacity = 0.25 + (_ctrl.value * 0.35);
+        return Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            color: const Color(0xFFCBD5E1).withOpacity(opacity),
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HomeSkeletonView extends StatelessWidget {
+  const _HomeSkeletonView();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Skeleton Row
+          Row(
+            children: [
+              const ShimmerBox(width: 48, height: 48, borderRadius: 24),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  ShimmerBox(width: 110, height: 16, borderRadius: 8),
+                  SizedBox(height: 6),
+                  ShimmerBox(width: 70, height: 12, borderRadius: 6),
+                ],
+              ),
+              const Spacer(),
+              const ShimmerBox(width: 60, height: 32, borderRadius: 16),
+              const SizedBox(width: 8),
+              const ShimmerBox(width: 60, height: 32, borderRadius: 16),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // Course Banner Card Skeleton
+          const ShimmerBox(width: double.infinity, height: 140, borderRadius: 24),
+          const SizedBox(height: 32),
+          // Path Nodes Skeleton
+          Center(
+            child: Column(
+              children: const [
+                ShimmerBox(width: 76, height: 76, borderRadius: 38),
+                SizedBox(height: 28),
+                ShimmerBox(width: 76, height: 76, borderRadius: 38),
+                SizedBox(height: 28),
+                ShimmerBox(width: 76, height: 76, borderRadius: 38),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

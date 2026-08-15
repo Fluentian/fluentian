@@ -113,11 +113,6 @@ class AuthProvider extends ChangeNotifier {
       await AppLogger.instance.info('No stored auth token found');
     }
 
-    final elapsed = DateTime.now().difference(startTime).inMilliseconds;
-    final remaining = 2500 - elapsed;
-    if (remaining > 0) {
-      await Future.delayed(Duration(milliseconds: remaining));
-    }
     notifyListeners();
   }
 
@@ -262,6 +257,9 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> signInWithGoogle() async {
     _setLoading(true);
     try {
+      try {
+        await _googleSignIn.signOut();
+      } catch (_) {}
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         _errorMessage = null;
@@ -294,39 +292,36 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.userMessage;
+      debugPrint('Google Sign-In ApiException: ${e.message} (${e.statusCode})');
       await _firebaseAuth.signOut();
       await _googleSignIn.signOut();
       return false;
     } on NetworkException catch (e) {
       _errorMessage = e.message;
+      debugPrint('Google Sign-In NetworkException: ${e.message}');
       await _firebaseAuth.signOut();
       await _googleSignIn.signOut();
       return false;
     } on firebase_auth.FirebaseAuthException catch (e) {
       _errorMessage = e.message ?? 'Google sign-in failed.';
-      if (kDebugMode) {
-        debugPrint('Firebase Google sign-in error [${e.code}]: ${e.message}');
-      }
+      debugPrint('Firebase Google sign-in error [${e.code}]: ${e.message}');
       await _firebaseAuth.signOut();
       await _googleSignIn.signOut();
       return false;
     } on PlatformException catch (e) {
-      final raw = '${e.message ?? ''} ${e.details ?? ''}';
-      if (raw.contains('ApiException: 10')) {
+      final raw = '${e.code} ${e.message ?? ''} ${e.details ?? ''}';
+      debugPrint('Google platform sign-in error: $raw');
+      if (raw.contains('ApiException: 10') || raw.contains('10')) {
         _errorMessage =
-            'Google Sign-In is not configured for this Android app. Add the debug SHA-1/SHA-256 fingerprints in Firebase, then replace google-services.json.';
+            'Google Sign-In developer configuration error. Please ensure SHA-1 fingerprint is registered in Google Cloud Console.';
       } else {
         _errorMessage = e.message ?? 'Google sign-in failed.';
-      }
-      if (kDebugMode) {
-        debugPrint(
-          'Google platform sign-in error [${e.code}]: ${e.message} ${e.details}',
-        );
       }
       await _firebaseAuth.signOut();
       await _googleSignIn.signOut();
       return false;
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Google sign-in unexpected error: $e\n$stack');
       _errorMessage = 'Google sign-in failed. Please try again.';
       if (kDebugMode) debugPrint('Google sign-in error: $e');
       return false;
