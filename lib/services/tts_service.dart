@@ -213,15 +213,17 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
     }
 
     final vId = voiceId.toLowerCase().trim();
+    final isFemale = vId == 'maya' || vId == 'sofia' || vId == 'claire' || vId == 'elodie';
+
     double pitch = 1.0;
-    if (vId == 'sami' || vId == 'antoine') {
-      pitch = 0.76;
-    } else if (vId == 'daniel' || vId == 'lucas') {
-      pitch = 0.85;
+    if (vId == 'maya' || vId == 'claire') {
+      pitch = 1.30;
     } else if (vId == 'sofia' || vId == 'elodie') {
-      pitch = 1.28;
-    } else {
-      pitch = 1.12;
+      pitch = 1.45;
+    } else if (vId == 'sami' || vId == 'antoine') {
+      pitch = 0.74;
+    } else if (vId == 'daniel' || vId == 'lucas') {
+      pitch = 0.82;
     }
     await _tts.setPitch(pitch);
 
@@ -230,21 +232,43 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
       final voices = _cachedVoices ?? await _tts.getVoices;
       _cachedVoices = voices as List<dynamic>?;
       if (voices is List) {
-        for (final v in voices) {
+        final frVoices = voices.where((v) {
+          if (v is! Map) return false;
+          final loc = (v['locale'] ?? '').toString().toLowerCase();
+          return loc.startsWith('fr');
+        }).toList();
+
+        Map? selectedVoice;
+        for (final v in frVoices) {
           if (v is Map) {
             final name = (v['name'] ?? '').toString().toLowerCase();
-            final loc = (v['locale'] ?? '').toString().toLowerCase();
-            if (loc.startsWith('fr')) {
-              final isMale = vId == 'sami' || vId == 'daniel' || vId == 'antoine' || vId == 'lucas';
-              if (isMale && (name.contains('male') || name.contains('man') || name.contains('c-local') || name.contains('d-local'))) {
-                await _tts.setVoice({"name": v['name'], "locale": v['locale']});
+            if (isFemale) {
+              if (name.contains('female') || name.contains('femme') || name.contains('woman') ||
+                  name.contains('-a-') || name.contains('-c-') || name.contains('vbf') || name.contains('vif') || name.contains('a-local') || name.contains('c-local')) {
+                selectedVoice = v;
                 break;
-              } else if (!isMale && (name.contains('female') || name.contains('woman') || name.contains('a-local') || name.contains('b-local'))) {
-                await _tts.setVoice({"name": v['name'], "locale": v['locale']});
+              }
+            } else {
+              if (name.contains('male') || name.contains('homme') || name.contains('man') ||
+                  name.contains('-b-') || name.contains('-d-') || name.contains('vbm') || name.contains('vim') || name.contains('b-local') || name.contains('d-local')) {
+                selectedVoice = v;
                 break;
               }
             }
           }
+        }
+
+        // Fallback: If no explicit gender keyword match, pick first French voice for female, second for male
+        if (selectedVoice == null && frVoices.isNotEmpty) {
+          if (isFemale) {
+            selectedVoice = frVoices.first as Map;
+          } else if (frVoices.length > 1) {
+            selectedVoice = frVoices[1] as Map;
+          }
+        }
+
+        if (selectedVoice != null) {
+          await _tts.setVoice({"name": selectedVoice['name'], "locale": selectedVoice['locale']});
         }
       }
     } catch (_) {}
