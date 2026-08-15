@@ -5,6 +5,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'in_app_notification_service.dart';
 import 'notifications_api.dart';
 
@@ -109,15 +110,37 @@ class LocalPushService {
     _plugin.cancel(_dailyReminderId);
   }
 
+  Future<void> _loadNotifiedIds() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList('fluentian_notified_ids') ?? [];
+      _notifiedIds.addAll(list);
+    } catch (_) {}
+  }
+
+  Future<void> _saveNotifiedId(String id) async {
+    _notifiedIds.add(id);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('fluentian_notified_ids', _notifiedIds.toList());
+    } catch (_) {}
+  }
+
   Future<void> _checkNotifications() async {
     if (!_notificationsEnabled) return;
     try {
+      if (_notifiedIds.isEmpty) {
+        await _loadNotifiedIds();
+      }
       final unread = await NotificationsApi.instance.getNotifications(
         isRead: false,
       );
       for (final notification in unread) {
         if (!_notifiedIds.contains(notification.id)) {
-          _notifiedIds.add(notification.id);
+          await _saveNotifiedId(notification.id);
+          try {
+            await NotificationsApi.instance.markAsRead(notification.id);
+          } catch (_) {}
           await _showNotification(
             id: notification.id.hashCode,
             title: notification.title,

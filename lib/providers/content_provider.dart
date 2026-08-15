@@ -289,12 +289,13 @@ class ContentProvider extends ChangeNotifier {
 
   /// Fetch and cache lesson progress for a given list of lesson IDs.
   Future<void> loadLessonProgress() async {
+    await _loadLocalProgress();
     try {
       final progress = await _progressApi.getMyLessonProgress();
-      _progressByLesson.clear();
       for (final p in progress) {
         _progressByLesson[p.lessonId] = p;
       }
+      await _saveLocalProgress();
       notifyListeners();
     } catch (_) {
       // Non-fatal: progress can be stale

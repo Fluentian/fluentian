@@ -74,9 +74,17 @@ class AuthProvider extends ChangeNotifier {
       if (kDebugMode) debugPrint('Setup flag read error: $e');
     }
     final cachedUser = await _apiClient.getUser();
-
     final hasToken = await _apiClient.hasValidToken();
     if (hasToken) {
+      // 1. Immediately hydrate cached user session for instant navigation (< 10ms)
+      if (cachedUser != null) {
+        _user = cachedUser;
+        _nextHeartRefillAt = cachedUser.nextHeartRefillAt;
+        _hasCompletedSetup =
+            _hasCompletedSetup || _hasFinishedSetup(cachedUser);
+        _status = AuthStatus.authenticated;
+        notifyListeners();
+      }
       try {
         final res = await _authApi.refreshTokens();
         _user = res.user;
@@ -93,7 +101,7 @@ class AuthProvider extends ChangeNotifier {
           _status = AuthStatus.unauthenticated;
           await AppLogger.instance.warning('Stored auth token was rejected');
         } else {
-          // Network or server error, use cached session if present
+          // Network or server error, keep cached session if present
           if (cachedUser != null) {
             _user = cachedUser;
             _nextHeartRefillAt = cachedUser.nextHeartRefillAt;
