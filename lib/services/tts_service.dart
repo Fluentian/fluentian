@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:crypto/crypto.dart';
@@ -119,24 +120,26 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
 
       final fullUrl = ApiClient.resolveMediaUrl(relUrl) ?? relUrl;
 
-      // Download bytes and save into local cache file for zero-latency future plays
-      final cacheFile = await LocalTtsCacheManager.getCacheFile(voiceId, effectiveSpeed, cleanText);
-      try {
-        final client = HttpClient();
-        final request = await client.getUrl(Uri.parse(fullUrl));
-        final response = await request.close();
-        if (response.statusCode == 200) {
-          final bytes = await response.fold<List<int>>([], (acc, chunk) => acc..addAll(chunk));
-          await cacheFile.writeAsBytes(bytes);
-          await _audioPlayer.setFilePath(cacheFile.path);
-        } else {
-          await _audioPlayer.setUrl(fullUrl);
-        }
-      } catch (_) {
-        await _audioPlayer.setUrl(fullUrl);
-      }
-
+      // 1. Immediately stream and play audio (< 1s latency)
+      await _audioPlayer.setUrl(fullUrl);
       await _audioPlayer.setSpeed(effectiveSpeed);
+      
+      // 2. Cache file to local disk asynchronously in background (non-blocking)
+      unawaited(() async {
+        try {
+          final cacheFile = await LocalTtsCacheManager.getCacheFile(voiceId, effectiveSpeed, cleanText);
+          if (!await cacheFile.exists()) {
+            final client = HttpClient();
+            final request = await client.getUrl(Uri.parse(fullUrl));
+            final response = await request.close();
+            if (response.statusCode == 200) {
+              final bytes = await response.fold<List<int>>([], (acc, chunk) => acc..addAll(chunk));
+              await cacheFile.writeAsBytes(bytes);
+            }
+          }
+        } catch (_) {}
+      }());
+
       await _audioPlayer.play();
       _speaking = false;
     } catch (e) {
@@ -159,6 +162,7 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
   final FlutterTts _tts = FlutterTts();
   bool _initialized = false;
   bool _speaking = false;
+  List<dynamic>? _cachedVoices;
 
   @override
   bool get isSpeaking => _speaking;
@@ -174,6 +178,9 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
       _speaking = false;
       if (kDebugMode) debugPrint('TTS engine error: $message');
     });
+    try {
+      _cachedVoices = await _tts.getVoices;
+    } catch (_) {}
     _initialized = true;
   }
 
@@ -205,9 +212,6 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
       await _tts.setLanguage(locale);
     }
 
-    // Voice Pitch Differentiation based on Voice Identity:
-    // Antoine & Lucas -> Male voices (Pitch 0.78 - 0.86)
-    // Claire & Élodie -> Female voices (Pitch 1.12 - 1.28)
     final vId = voiceId.toLowerCase().trim();
     double pitch = 1.0;
     if (vId == 'sami' || vId == 'antoine') {
@@ -217,13 +221,14 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
     } else if (vId == 'sofia' || vId == 'elodie') {
       pitch = 1.28;
     } else {
-      pitch = 1.12; // maya / claire standard female
+      pitch = 1.12;
     }
     await _tts.setPitch(pitch);
 
-    // Scan available voices on device to pick male vs female engine voice
+    // Use cached voices list for fast lookup
     try {
-      final voices = await _tts.getVoices;
+      final voices = _cachedVoices ?? await _tts.getVoices;
+      _cachedVoices = voices as List<dynamic>?;
       if (voices is List) {
         for (final v in voices) {
           if (v is Map) {
