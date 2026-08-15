@@ -158,6 +158,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: user.soundEnabled,
                 onChanged: (value) => _save(context, {'sound_enabled': value}),
               ),
+              _VoiceSelectorRow(
+                voiceId: user.preferredVoiceId,
+                onChanged: (value) => _save(context, {'preferred_voice_id': value}),
+              ),
               _SliderRow(
                 icon: Icons.speed_rounded,
                 label: 'TTS speed',
@@ -1842,6 +1846,117 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _VoiceSelectorRow extends StatelessWidget {
+  final String voiceId;
+  final ValueChanged<String> onChanged;
+
+  const _VoiceSelectorRow({
+    required this.voiceId,
+    required this.onChanged,
+  });
+
+  static const Map<String, String> _voiceNames = {
+    'claire': '🇫🇷 Claire (Native Standard)',
+    'antoine': '🇫🇷 Antoine (Expressive Male)',
+    'elodie': '🇫🇷 Élodie (Fluent Female)',
+    'lucas': '🇫🇷 Lucas (Clear Speaker)',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final currentLabel = _voiceNames[voiceId] ?? '🇫🇷 Claire (Native Standard)';
+
+    return ListTile(
+      leading: const Icon(
+        Icons.record_voice_over_rounded,
+        color: FluentianColors.textPrimary,
+        size: 22,
+      ),
+      title: Text(
+        'French Speaker Voice',
+        style: GoogleFonts.inter(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: FluentianColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        currentLabel,
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          color: FluentianColors.primary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: FluentianColors.textSecondary,
+        size: 20,
+      ),
+      onTap: () {
+        showModalBottomSheet<void>(
+          context: context,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (sheetContext) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: Text(
+                        'Select Cartesia French Voice',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: FluentianColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const Divider(),
+                    ..._voiceNames.entries.map((entry) {
+                      final selected = voiceId == entry.key;
+                      return ListTile(
+                        leading: Icon(
+                          selected
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_unchecked,
+                          color: selected
+                              ? FluentianColors.primary
+                              : FluentianColors.textSecondary,
+                        ),
+                        title: Text(
+                          entry.value,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight:
+                                selected ? FontWeight.w800 : FontWeight.w500,
+                            color: selected
+                                ? FluentianColors.primary
+                                : FluentianColors.textPrimary,
+                          ),
+                        ),
+                        onTap: () {
+                          onChanged(entry.key);
+                          Navigator.of(sheetContext).pop();
+                        },
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -37,6 +37,7 @@ class UserModel {
   final bool hapticFeedbackEnabled;
   final double ttsSpeed;
   final int fontScale;
+  final String preferredVoiceId;
 
   const UserModel({
     required this.id,
@@ -74,6 +75,7 @@ class UserModel {
     this.hapticFeedbackEnabled = true,
     this.ttsSpeed = 1.0,
     this.fontScale = 1,
+    this.preferredVoiceId = 'claire',
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -140,6 +142,7 @@ class UserModel {
           settings?['haptic_feedback_enabled'] as bool? ?? true,
       ttsSpeed: (settings?['tts_speed'] as num?)?.toDouble() ?? 1.0,
       fontScale: settings?['font_scale'] as int? ?? 1,
+      preferredVoiceId: profile?['preferred_voice_id']?.toString() ?? 'claire',
     );
   }
 
