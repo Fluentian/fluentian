@@ -40,12 +40,28 @@ class AuthProvider extends ChangeNotifier {
   final _authApi = AuthApi.instance;
   final _apiClient = ApiClient.instance;
   final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
-  final _googleSignIn = GoogleSignIn();
+  final _googleSignIn = GoogleSignIn(
+    // The web OAuth 2.0 client ID (client_type 3) from google-services.json.
+    // Required by google_sign_in v6+ to request an idToken from Google,
+    // which is then passed to Firebase and the Fluentian backend.
+    serverClientId:
+        '461458509107-nfvs0don6lm4iuivfmtvvo9mnc8kmiv5.apps.googleusercontent.com',
+  );
 
   /// Called once at app startup to restore auth state from stored tokens.
   Future<void> initialize() async {
     final startTime = DateTime.now();
     await AppLogger.instance.info('Auth initialize started');
+
+    // Register a global 401 handler so any background API call that gets
+    // "Not authenticated" (e.g. after token expiry or account deletion)
+    // immediately forces a logout instead of leaving the app stuck loading.
+    _apiClient.onUnauthenticated = () {
+      if (_status == AuthStatus.authenticated) {
+        if (kDebugMode) debugPrint('Global 401 received — forcing logout');
+        _forceLogout();
+      }
+    };
     try {
       _hasSeenIntro = await _apiClient.hasSeenIntro();
     } catch (e) {
@@ -374,6 +390,26 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Log out and clear all state.
+  /// Immediately clears local auth state and notifies listeners.
+  /// Used by the global 401 handler — no network calls, instant redirect.
+  void _forceLogout() {
+    if (_status == AuthStatus.unauthenticated) return;
+    _apiClient.clearTokens();
+    _apiClient.clearUser();
+    _apiClient.clearSetupComplete();
+    _firebaseAuth.signOut().catchError((_) {});
+    _googleSignIn.signOut().catchError((_) {});
+    _user = null;
+    _unverifiedEmail = null;
+    _nextHeartRefillAt = null;
+    _maxHearts = 5;
+    _hasCompletedSetup = false;
+    _status = AuthStatus.unauthenticated;
+    _errorMessage = 'Your session has expired. Please sign in again.';
+    _setLoading(false);
+    notifyListeners();
+  }
+
   Future<void> logout() async {
     _setLoading(true);
     final email = _user?.email ?? 'unknown user';
@@ -408,21 +444,15 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Permanently delete the account, then clear every local session artifact.
-  Future<bool> deleteAccount() async {
-    _setLoading(true);
+  /// Step 1: Send a deletion OTP to the user's email.
+  Future<bool> requestAccountDeletionOtp() async {
     try {
-      await _authApi.deleteAccount();
-      await _firebaseAuth.signOut();
-      await _googleSignIn.signOut();
-      await _apiClient.clearTokens();
-      await _apiClient.clearUser();
-      await _apiClient.clearSetupComplete();
-      _user = null;
-      _unverifiedEmail = null;
-      _nextHeartRefillAt = null;
-      _hasCompletedSetup = false;
-      _status = AuthStatus.unauthenticated;
+      final email = _user?.email;
+      if (email == null) {
+        _errorMessage = 'No account found.';
+        return false;
+      }
+      await _authApi.requestDeletionOtp(email: email);
       _errorMessage = null;
       return true;
     } on ApiException catch (e) {
@@ -431,11 +461,54 @@ class AuthProvider extends ChangeNotifier {
     } on NetworkException catch (e) {
       _errorMessage = e.message;
       return false;
-    } catch (_) {
+    } catch (e) {
+      _errorMessage = 'Could not send verification code. Please try again.';
+      return false;
+    }
+  }
+
+  /// Step 2: Confirm the OTP and soft-delete the account.
+  Future<bool> confirmAccountDeletion({
+    required String code,
+    String? reasonCode,
+    String? reasonDetails,
+  }) async {
+    try {
+      final email = _user?.email;
+      if (email == null) {
+        _errorMessage = 'No account found.';
+        return false;
+      }
+      await _authApi.confirmDeletionOtp(
+        email: email,
+        code: code,
+        reasonCode: reasonCode,
+        reasonDetails: reasonDetails,
+      );
+      await _firebaseAuth.signOut();
+      await _googleSignIn.signOut();
+      await _apiClient.clearTokens();
+      await _apiClient.clearUser();
+      await _apiClient.clearSetupComplete();
+      _user = null;
+      _unverifiedEmail = null;
+      _nextHeartRefillAt = null;
+      _maxHearts = 5;
+      _hasCompletedSetup = false;
+      _isLoading = false;
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.userMessage;
+      return false;
+    } on NetworkException catch (e) {
+      _errorMessage = e.message;
+      return false;
+    } catch (e) {
       _errorMessage = 'Could not delete your account. Please try again.';
       return false;
-    } finally {
-      _setLoading(false);
     }
   }
 

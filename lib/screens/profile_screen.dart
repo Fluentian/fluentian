@@ -283,6 +283,138 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          _SectionLabel(text: 'WEEKLY STREAK HEATMAP'),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: _panelDecoration(radius: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: FluentianColors.warningTint,
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                          child: const Icon(
+                            Iconsax.flash_15,
+                            color: FluentianColors.warning,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        LText(
+                          'Weekly Activity',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: FluentianColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: FluentianColors.warningTint,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Iconsax.flash_15, color: FluentianColors.warning, size: 14),
+                          const SizedBox(width: 4),
+                          LText(
+                            '$streak Days',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: FluentianColors.warning,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Consumer<ContentProvider>(
+                  builder: (context, contentProvider, _) {
+                    final daysActive = contentProvider.weeklyActiveDays;
+                    final dayLabels = const ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                    final todayIndex = DateTime.now().weekday - 1;
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(7, (index) {
+                        final isActive = daysActive[index];
+                        final isToday = index == todayIndex;
+
+                        return Column(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isActive
+                                    ? FluentianColors.warning
+                                    : (isToday ? FluentianColors.warningTint : FluentianColors.pageBg),
+                                border: isToday
+                                    ? Border.all(color: FluentianColors.warning, width: 2)
+                                    : Border.all(color: FluentianColors.border),
+                                boxShadow: isActive
+                                    ? [
+                                        BoxShadow(
+                                          color: FluentianColors.warning.withValues(alpha: 0.35),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Center(
+                                child: isActive
+                                    ? const Icon(Iconsax.flash_15, color: Colors.white, size: 20)
+                                    : LText(
+                                        dayLabels[index],
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
+                                          color: isToday
+                                              ? FluentianColors.warning
+                                              : FluentianColors.textSecondary,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            LText(
+                              dayLabels[index],
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
+                                color: isToday
+                                    ? FluentianColors.warning
+                                    : FluentianColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           _SectionLabel(text: 'LEARNING RHYTHM'),
           const SizedBox(height: 8),
           Container(

@@ -47,6 +47,16 @@ class LessonProgressModel {
             : null,
         createdAt: DateTime.parse(json['created_at'] as String),
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'user_id': userId,
+        'lesson_id': lessonId,
+        'mastery_score': masteryScore,
+        'completed': completed,
+        'completed_at': completedAt?.toIso8601String(),
+        'created_at': createdAt.toIso8601String(),
+      };
 }
 
 class UserStatsModel {
@@ -108,6 +118,8 @@ class CompleteLessonResult {
   final int xpEarned;
   final int newXpTotal;
   final int streakDays;
+  final int streakFreezes;
+  final bool streakFreezeEarned;
   final int heartsRemaining;
   final bool lessonCompleted;
   final bool unitCompleted;
@@ -116,6 +128,8 @@ class CompleteLessonResult {
     required this.xpEarned,
     required this.newXpTotal,
     required this.streakDays,
+    this.streakFreezes = 0,
+    this.streakFreezeEarned = false,
     required this.heartsRemaining,
     required this.lessonCompleted,
     required this.unitCompleted,
@@ -126,6 +140,8 @@ class CompleteLessonResult {
         xpEarned: json['xp_earned'] as int? ?? 0,
         newXpTotal: json['new_xp_total'] as int? ?? 0,
         streakDays: json['streak_days'] as int? ?? 0,
+        streakFreezes: json['streak_freezes'] as int? ?? 0,
+        streakFreezeEarned: json['streak_freeze_earned'] as bool? ?? false,
         heartsRemaining: json['hearts_remaining'] as int? ?? 5,
         lessonCompleted: json['lesson_completed'] as bool? ?? false,
         unitCompleted: json['unit_completed'] as bool? ?? false,

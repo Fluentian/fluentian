@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../local_db/app_database.dart';
 import '../models/course_model.dart';
 import '../models/progress_model.dart';
@@ -56,10 +57,56 @@ class ContentProvider extends ChangeNotifier {
   /// canonical (French/admin) text, not the learner's explanation-language
   /// translation -- translations aren't synced to the local store yet, so
   /// offline users briefly see untranslated titles until back online.
+  Future<void> _loadLocalProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('cached_user_lesson_progress');
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as Map<String, dynamic>;
+        decoded.forEach((lessonId, val) {
+          if (val is Map) {
+            _progressByLesson[lessonId] =
+                LessonProgressModel.fromJson(Map<String, dynamic>.from(val));
+          }
+        });
+      }
+
+      // Also hydrate pending outbox completions so queued completions are recognized locally
+      final pendingEntries =
+          await AppDatabase.instance.getPendingOutboxEntries();
+      for (final entry in pendingEntries) {
+        _progressByLesson[entry.lessonId] = LessonProgressModel(
+          id: entry.idempotencyKey,
+          userId: '',
+          lessonId: entry.lessonId,
+          masteryScore: 1.0,
+          completed: true,
+          completedAt: DateTime.now(),
+          createdAt: DateTime.now(),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('_loadLocalProgress error: $e');
+    }
+  }
+
+  Future<void> _saveLocalProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final mapToSave =
+          _progressByLesson.map((k, v) => MapEntry(k, v.toJson()));
+      await prefs.setString('cached_user_lesson_progress', jsonEncode(mapToSave));
+    } catch (e) {
+      if (kDebugMode) debugPrint('_saveLocalProgress error: $e');
+    }
+  }
+
   Future<void> loadHomeData({bool showLoading = true}) async {
     if (showLoading && _courses.isEmpty) _status = ContentStatus.loading;
     _error = null;
     notifyListeners();
+
+    await _loadLocalProgress();
 
     final cached = await _loadCoursesFromLocalDb();
     if (cached.isNotEmpty) {
@@ -77,6 +124,16 @@ class ContentProvider extends ChangeNotifier {
         // No local cache at all (fresh install, or sync produced nothing
         // usable) -- fall back to a direct network fetch like before.
         _courses = await _contentApi.getCourses();
+      }
+
+      try {
+        final progressList = await _progressApi.getMyLessonProgress();
+        for (final p in progressList) {
+          _progressByLesson[p.lessonId] = p;
+        }
+        await _saveLocalProgress();
+      } catch (e) {
+        if (kDebugMode) debugPrint('loadHomeData lesson progress error: $e');
       }
 
       try {
@@ -253,6 +310,20 @@ class ContentProvider extends ChangeNotifier {
     return countCompletedLessonsOnDay(_progressByLesson.values, DateTime.now());
   }
 
+  /// Returns a 7-element bool list [Mon..Sun] indicating which days of the current week had active practice.
+  List<bool> get weeklyActiveDays {
+    final now = DateTime.now();
+    final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+    final days = <bool>[];
+
+    for (int i = 0; i < 7; i++) {
+      final day = DateTime(monday.year, monday.month, monday.day + i);
+      final count = countCompletedLessonsOnDay(_progressByLesson.values, day);
+      days.add(count > 0);
+    }
+    return days;
+  }
+
   bool isCourseEnrolled(String courseId) =>
       _enrolledCourseIds.contains(courseId);
 
@@ -383,6 +454,7 @@ class ContentProvider extends ChangeNotifier {
       completedAt: existingProgress?.completedAt ?? DateTime.now(),
       createdAt: DateTime.now(),
     );
+    await _saveLocalProgress();
     _lessonCache.remove(lessonId);
     // Refresh global stats (best-effort; skipped implicitly if offline
     // since getMyStats will also throw and just get swallowed here).

@@ -159,6 +159,7 @@ class _AppRootState extends State<_AppRoot> {
             }
             break;
           case AuthStatus.unauthenticated:
+            _hasLoadedData = false;
             if (auth.hasSeenIntro) {
               child = const SignInScreen(key: ValueKey('sign_in'));
             } else {

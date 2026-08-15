@@ -1,16 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-/// Shared native text-to-speech service used by lessons, quizzes, and Word Bank.
-class TtsService {
-  TtsService._();
+/// Modular Interface for Audio & Text-To-Speech Providers.
+/// Easily swap native device TTS, Google Cloud TTS, ElevenLabs, or OpenAI Audio.
+abstract class BaseTtsProvider {
+  Future<void> speak(String text, {String language = 'fr-FR', double speed = 1.0});
+  Future<void> stop();
+  bool get isSpeaking;
+}
 
-  static final TtsService instance = TtsService._();
-
+/// System Native TTS Implementation using flutter_tts
+class NativeDeviceTtsProvider implements BaseTtsProvider {
   final FlutterTts _tts = FlutterTts();
   bool _initialized = false;
   bool _speaking = false;
 
+  @override
   bool get isSpeaking => _speaking;
 
   Future<void> _initialize() async {
@@ -28,6 +33,7 @@ class TtsService {
     _initialized = true;
   }
 
+  @override
   Future<void> speak(
     String text, {
     String language = 'fr-FR',
@@ -54,8 +60,6 @@ class TtsService {
       await _tts.setLanguage(locale);
     }
 
-    // flutter_tts uses a platform-relative 0.0–1.0 rate. Map Fluentian's
-    // user-facing 0.6x–1.6x control to a natural native range.
     final normalizedRate = (0.42 + ((speed.clamp(0.6, 1.6) - 0.6) * 0.23))
         .clamp(0.35, 0.72);
     await _tts.setSpeechRate(normalizedRate);
@@ -67,9 +71,36 @@ class TtsService {
     }
   }
 
+  @override
   Future<void> stop() async {
     if (!_initialized) return;
     await _tts.stop();
     _speaking = false;
   }
+}
+
+/// Shared central access point for TTS playback across the app.
+class TtsService {
+  TtsService._();
+
+  static final TtsService instance = TtsService._();
+
+  // Active provider (can be swapped for ElevenLabs / OpenAI / Google Cloud)
+  BaseTtsProvider _provider = NativeDeviceTtsProvider();
+
+  /// Register a custom cloud audio / TTS provider.
+  void setProvider(BaseTtsProvider customProvider) {
+    _provider = customProvider;
+  }
+
+  bool get isSpeaking => _provider.isSpeaking;
+
+  Future<void> speak(
+    String text, {
+    String language = 'fr-FR',
+    double speed = 1.0,
+  }) =>
+      _provider.speak(text, language: language, speed: speed);
+
+  Future<void> stop() => _provider.stop();
 }

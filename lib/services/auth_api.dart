@@ -123,9 +123,24 @@ class AuthApi {
     await _client.patch('/users/me/settings', data);
   }
 
-  /// Permanently remove the signed-in account and Fluentian account data.
-  Future<void> deleteAccount() async {
-    await _client.delete('/users/me', body: {'confirmation': 'DELETE'});
+  /// Request an email OTP before account deletion.
+  Future<void> requestDeletionOtp({required String email}) async {
+    await _client.post('/users/request-deletion-otp', {'email': email});
+  }
+
+  /// Confirm deletion OTP and soft-delete the account.
+  Future<void> confirmDeletionOtp({
+    required String email,
+    required String code,
+    String? reasonCode,
+    String? reasonDetails,
+  }) async {
+    await _client.post('/users/confirm-deletion-otp', {
+      'email': email,
+      'code': code,
+      if (reasonCode != null) 'reason_code': reasonCode,
+      if (reasonDetails != null) 'reason_details': reasonDetails,
+    });
   }
 
   /// Fetch the persisted heart count for the current user.

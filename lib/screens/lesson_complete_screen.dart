@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../services/learning_api.dart';
 import '../services/sound_effect_service.dart';
 import '../widgets/common_widgets.dart';
+import 'streak_celebration_screen.dart';
 
 class LessonCompleteScreen extends StatefulWidget {
   final String lessonId;
@@ -17,6 +18,8 @@ class LessonCompleteScreen extends StatefulWidget {
   final int timeSeconds;
   final int correctCount;
   final int totalQuestions;
+  final int? streakDays;
+  final bool streakFreezeEarned;
 
   const LessonCompleteScreen({
     super.key,
@@ -27,6 +30,8 @@ class LessonCompleteScreen extends StatefulWidget {
     required this.timeSeconds,
     required this.correctCount,
     required this.totalQuestions,
+    this.streakDays,
+    this.streakFreezeEarned = false,
   });
 
   @override
@@ -146,6 +151,99 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    Builder(
+                      builder: (context) {
+                        final streak = widget.streakDays ?? user?.streakDays ?? 1;
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Iconsax.flash_15, color: Colors.white, size: 24),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  LText(
+                                    'STREAK INCREASED! 🔥',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                    ),
+                                  ),
+                                  LText(
+                                    '$streak Day Streak Active',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    if (widget.streakFreezeEarned) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: FluentianColors.infoTint,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: FluentianColors.info.withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Iconsax.shield_tick, color: FluentianColors.info, size: 22),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                LText(
+                                  'PERFECT TRIAL BONUS! 🛡️',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                    color: FluentianColors.info,
+                                  ),
+                                ),
+                                LText(
+                                  '+1 Streak Freeze Earned (Max 3)',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: FluentianColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -174,7 +272,21 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                     FluentianButton(
                       text: 'Continue',
                       icon: Iconsax.arrow_right_3,
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        final streak = widget.streakDays ?? user?.streakDays ?? 1;
+                        if (streak > 0) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (_) => StreakCelebrationScreen(
+                                streakDays: streak,
+                                streakFreezeEarned: widget.streakFreezeEarned,
+                              ),
+                            ),
+                          );
+                        } else {
+                          Navigator.of(context).pop();
+                        }
+                      },
                     ),
                     const SizedBox(height: 12),
                   ],

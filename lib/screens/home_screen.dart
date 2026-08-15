@@ -32,30 +32,72 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _navIndex = 0;
+  final Set<int> _activatedTabs = {0}; // Only Home is active initially
+  late final List<Widget?> _tabWidgets = List.filled(6, null);
+
+  @override
+  void initState() {
+    super.initState();
+    _tabWidgets[0] = _HomeContent(key: const ValueKey('tab_home'));
+  }
+
+  Widget _getTabWidget(int index) {
+    if (_tabWidgets[index] != null) return _tabWidgets[index]!;
+
+    switch (index) {
+      case 0:
+        _tabWidgets[0] = _HomeContent(key: const ValueKey('tab_home'));
+        break;
+      case 1:
+        _tabWidgets[1] = const ExploreScreen(key: ValueKey('tab_explore'));
+        break;
+      case 2:
+        _tabWidgets[2] = const LiveCallScreen(key: ValueKey('tab_live'));
+        break;
+      case 3:
+        _tabWidgets[3] = const OpportunityScreen(key: ValueKey('tab_board'));
+        break;
+      case 4:
+        _tabWidgets[4] = const SocialScreen(key: ValueKey('tab_social'));
+        break;
+      case 5:
+        _tabWidgets[5] = const ProfileScreen(key: ValueKey('tab_profile'));
+        break;
+    }
+    return _tabWidgets[index]!;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final screens = [
-      _HomeContent(),
-      const ExploreScreen(),
-      const LiveCallScreen(),
-      const OpportunityScreen(),
-      const SocialScreen(),
-      const ProfileScreen(),
-    ];
-
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
-      body: IndexedStack(index: _navIndex, children: screens),
+      body: IndexedStack(
+        index: _navIndex,
+        children: List.generate(6, (index) {
+          if (!_activatedTabs.contains(index)) {
+            return const SizedBox.shrink();
+          }
+          return _getTabWidget(index);
+        }),
+      ),
       bottomNavigationBar: FluentianBottomNav(
         currentIndex: _navIndex,
-        onTap: (i) => setState(() => _navIndex = i),
+        onTap: (i) {
+          if (_navIndex != i) {
+            setState(() {
+              _activatedTabs.add(i);
+              _navIndex = i;
+            });
+          }
+        },
       ),
     );
   }
 }
 
 class _HomeContent extends StatefulWidget {
+  const _HomeContent({super.key});
+
   @override
   State<_HomeContent> createState() => _HomeContentState();
 }

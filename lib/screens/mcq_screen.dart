@@ -517,6 +517,27 @@ class _McqScreenState extends State<McqScreen>
     );
   }
 
+  String _cleanTextForGrading(String s) {
+    final noAccents = s
+        .replaceAll(RegExp(r'[éèêë]'), 'e')
+        .replaceAll(RegExp(r'[àâä]'), 'a')
+        .replaceAll(RegExp(r'[ôö]'), 'o')
+        .replaceAll(RegExp(r'[îï]'), 'i')
+        .replaceAll(RegExp(r'[ùûü]'), 'u')
+        .replaceAll(RegExp(r'[ç]'), 'c')
+        .replaceAll(RegExp(r'[ÉÈÊË]'), 'e')
+        .replaceAll(RegExp(r'[ÀÂÄ]'), 'a')
+        .replaceAll(RegExp(r'[ÔÖ]'), 'o')
+        .replaceAll(RegExp(r'[ÎÏ]'), 'i')
+        .replaceAll(RegExp(r'[ÙÛÜ]'), 'u')
+        .replaceAll(RegExp(r'[Ç]'), 'c');
+    return noAccents
+        .toLowerCase()
+        .replaceAll(RegExp(r"[.,!?;:'\x22\-’«»]"), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
   void _check() {
     final q = _currentQ;
     bool isCorrect = false;
@@ -554,9 +575,8 @@ class _McqScreenState extends State<McqScreen>
       final typed = _textController.text.trim();
       final correct = q.mcqCorrectAnswer.trim();
 
-      String clean(String s) =>
-          s.toLowerCase().replaceAll(RegExp(r'[.,!?]'), '').trim();
-      isCorrect = clean(typed) == clean(correct);
+      isCorrect = q.acceptedAnswers.any((accepted) =>
+          _cleanTextForGrading(typed) == _cleanTextForGrading(accepted));
       correctAnswerText = correct;
       userAnswerText = typed;
       submittedAnswer = typed;
@@ -565,9 +585,8 @@ class _McqScreenState extends State<McqScreen>
       final assembled = _assembledWords.join(' ').trim();
       final correct = q.mcqCorrectAnswer.trim();
 
-      String clean(String s) =>
-          s.toLowerCase().replaceAll(RegExp(r'[.,!?]'), '').trim();
-      isCorrect = clean(assembled) == clean(correct);
+      isCorrect = q.acceptedAnswers.any((accepted) =>
+          _cleanTextForGrading(assembled) == _cleanTextForGrading(accepted));
       correctAnswerText = correct;
       userAnswerText = assembled;
       submittedAnswer = assembled;
@@ -633,6 +652,14 @@ class _McqScreenState extends State<McqScreen>
     String userAnswerText,
   ) {
     _resultSheetOpen = true;
+
+    final String cleanUser = _cleanTextForGrading(userAnswerText);
+    final String cleanCorrect = _cleanTextForGrading(correctAnswer);
+    final bool exactMatch =
+        userAnswerText.trim().toLowerCase() == correctAnswer.trim().toLowerCase();
+    final bool hasMissingAccents =
+        correct && !exactMatch && cleanUser == cleanCorrect && userAnswerText.trim().isNotEmpty;
+
     showModalBottomSheet(
       context: context,
       isDismissible: false,
@@ -640,10 +667,6 @@ class _McqScreenState extends State<McqScreen>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      // StatefulBuilder gives this sheet its own setState so the Continue
-      // button can actually repaint when _isSubmitting flips -- the sheet's
-      // content is a separate route from _McqScreenState's build, so it
-      // doesn't repaint just because the parent State rebuilds.
       builder: (sheetContext) {
         var sheetSubmitting = false;
         return StatefulBuilder(
@@ -672,6 +695,40 @@ class _McqScreenState extends State<McqScreen>
                   ),
                 ),
                 const SizedBox(height: 8),
+                if (correct && hasMissingAccents) ...[
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Iconsax.info_circle5,
+                          color: Color(0xFFD97706),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: LText(
+                            'Pay attention to the accents:\n$correctAnswer',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF92400E),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (!correct) ...[
                   Row(
                     children: [
@@ -837,6 +894,7 @@ class _McqScreenState extends State<McqScreen>
       int? finalNewXpTotal;
       int? finalHeartsRemaining;
       int? finalStreakDays;
+      bool streakFreezeEarned = false;
 
       try {
         if (widget.isSrsReview) {
@@ -863,6 +921,7 @@ class _McqScreenState extends State<McqScreen>
             finalNewXpTotal = result.newXpTotal;
             finalHeartsRemaining = result.heartsRemaining;
             finalStreakDays = result.streakDays;
+            streakFreezeEarned = result.streakFreezeEarned;
           }
         }
       } on ApiException catch (e) {
@@ -908,6 +967,8 @@ class _McqScreenState extends State<McqScreen>
             timeSeconds: timeSeconds,
             correctCount: _correctCount,
             totalQuestions: questions.length,
+            streakDays: finalStreakDays,
+            streakFreezeEarned: streakFreezeEarned,
           ),
         ),
       );

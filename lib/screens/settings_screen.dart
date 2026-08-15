@@ -466,45 +466,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // ── Delete-account reasons ───────────────────────────────────────────────
+  static const List<String> _deletionReasons = [
+    "I'm not making progress",
+    'The app is too difficult',
+    'I found a better alternative',
+    "I don't have enough time",
+    'Technical issues / bugs',
+    'Privacy concerns',
+    'I just want a break',
+    'Other',
+  ];
+
   Future<void> _confirmAccountDeletion(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        icon: const Icon(
-          Icons.warning_amber_rounded,
-          color: FluentianColors.error,
-        ),
-        title: const LText('Delete your account?'),
-        content: const LText(
-          'This permanently removes your profile, learning progress, messages, social data, notifications, and device tokens. This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const LText('Keep account'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: FluentianColors.error,
-            ),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const LText('Delete permanently'),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => const _DeleteAccountBottomSheet(),
     );
+
     if (confirmed != true || !context.mounted) return;
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.deleteAccount();
-    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: LText(
-          ok
-              ? 'Your account was deleted.'
-              : auth.errorMessage ?? 'Could not delete your account.',
-        ),
-      ),
+      const SnackBar(content: LText('Account deleted successfully.')),
     );
   }
 
@@ -1357,4 +1341,507 @@ class _SettingIcon extends StatelessWidget {
       color: enabled ? FluentianColors.primary : FluentianColors.textSecondary,
     ),
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dedicated StatefulWidget to guarantee state persistence across keyboard popups
+// ─────────────────────────────────────────────────────────────────────────────
+class _DeleteAccountBottomSheet extends StatefulWidget {
+  const _DeleteAccountBottomSheet();
+
+  @override
+  State<_DeleteAccountBottomSheet> createState() => _DeleteAccountBottomSheetState();
+}
+
+class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
+  int _step = 0; // 0 = Reason, 1 = OTP
+  String? _selectedReason;
+  bool _isProcessing = false;
+  String? _errorMessage;
+  late final TextEditingController _otpController;
+
+  @override
+  void initState() {
+    super.initState();
+    _otpController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userEmail = context.read<AuthProvider>().user?.email ?? 'your email';
+    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomPadding),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              // Progress Steps bar
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: FluentianColors.error,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: _step >= 1
+                            ? FluentianColors.error
+                            : Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    _step == 0 ? 'Step 1 of 2' : 'Step 2 of 2',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                        ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              if (_errorMessage != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: FluentianColors.error.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: FluentianColors.error.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: FluentianColors.error, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: FluentianColors.error,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              if (_step == 0) ...[
+                // ── Step 0: Reason Selection ──────────────────────────────
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: FluentianColors.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.help_outline_rounded,
+                        color: FluentianColors.error,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Before you go…',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          Text(
+                            'Please select why you are closing your account',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+
+                ..._SettingsScreenState._deletionReasons.map((reason) {
+                  final isSelected = _selectedReason == reason;
+                  return GestureDetector(
+                    onTap: () => setState(() {
+                      _selectedReason = reason;
+                      _errorMessage = null;
+                    }),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? FluentianColors.error.withOpacity(0.08)
+                            : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? FluentianColors.error
+                              : Colors.transparent,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              reason,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    color: isSelected ? FluentianColors.error : null,
+                                  ),
+                            ),
+                          ),
+                          if (isSelected)
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: FluentianColors.error,
+                              size: 18,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _selectedReason != null && !_isProcessing
+                          ? FluentianColors.error
+                          : FluentianColors.error.withOpacity(0.4),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: _selectedReason != null && !_isProcessing
+                        ? () async {
+                            setState(() {
+                              _isProcessing = true;
+                              _errorMessage = null;
+                            });
+                            final auth = context.read<AuthProvider>();
+                            final sent = await auth.requestAccountDeletionOtp();
+                            if (!mounted) return;
+                            if (sent) {
+                              setState(() {
+                                _step = 1;
+                                _isProcessing = false;
+                              });
+                            } else {
+                              setState(() {
+                                _isProcessing = false;
+                                _errorMessage = auth.errorMessage ?? 'Could not send verification code.';
+                              });
+                            }
+                          }
+                        : null,
+                    child: _isProcessing
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Continue to Verification',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: TextButton(
+                    onPressed: _isProcessing ? null : () => Navigator.pop(context, false),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ] else ...[
+                // ── Step 1: Email Code Entry ──────────────────────────────
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: FluentianColors.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.mark_email_unread_outlined,
+                        color: FluentianColors.error,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Check your inbox',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          Text(
+                            'We sent a 6-digit code to verify your request.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Email badge chip
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.alternate_email, size: 16, color: FluentianColors.error),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          userEmail,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                TextField(
+                  controller: _otpController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  autofocus: true,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 18,
+                  ),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    hintText: '······',
+                    hintStyle: TextStyle(
+                      letterSpacing: 14,
+                      color: Colors.grey.shade400,
+                      fontSize: 22,
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: FluentianColors.error.withOpacity(0.6),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  onChanged: (_) => setState(() {
+                    _errorMessage = null;
+                  }),
+                ),
+                const SizedBox(height: 12),
+
+                Center(
+                  child: TextButton(
+                    onPressed: _isProcessing
+                        ? null
+                        : () async {
+                            setState(() {
+                              _isProcessing = true;
+                              _errorMessage = null;
+                            });
+                            final auth = context.read<AuthProvider>();
+                            final ok = await auth.requestAccountDeletionOtp();
+                            if (mounted) {
+                              setState(() {
+                                _isProcessing = false;
+                                if (ok) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('New code sent to your email.')),
+                                  );
+                                } else {
+                                  _errorMessage = auth.errorMessage ?? 'Could not resend code.';
+                                }
+                              });
+                            }
+                          },
+                    child: Text(
+                      'Didn\'t receive code? Resend',
+                      style: TextStyle(
+                        color: FluentianColors.error.withOpacity(0.9),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _otpController,
+                    builder: (context, value, _) {
+                      final canSubmit = value.text.trim().length == 6 && !_isProcessing;
+                      return FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: canSubmit
+                              ? FluentianColors.error
+                              : FluentianColors.error.withOpacity(0.4),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: canSubmit
+                            ? () async {
+                                setState(() {
+                                  _isProcessing = true;
+                                  _errorMessage = null;
+                                });
+                                final auth = context.read<AuthProvider>();
+                                final ok = await auth.confirmAccountDeletion(
+                                  code: _otpController.text.trim(),
+                                  reasonCode: _selectedReason,
+                                );
+                                if (!ok && mounted) {
+                                  setState(() {
+                                    _isProcessing = false;
+                                    _errorMessage = auth.errorMessage ?? 'Invalid or expired code.';
+                                  });
+                                }
+                              }
+                            : null,
+                        child: _isProcessing
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Confirm & Delete Account',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                Center(
+                  child: TextButton(
+                    onPressed: _isProcessing
+                        ? null
+                        : () => setState(() {
+                              _step = 0;
+                              _otpController.clear();
+                              _errorMessage = null;
+                            }),
+                    child: Text(
+                      'Back to reasons',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

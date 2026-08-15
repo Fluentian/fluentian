@@ -36,7 +36,8 @@ class ProgressApi {
   Future<List<LessonProgressModel>> getMyLessonProgress({
     bool? completed,
   }) async {
-    final query = completed != null ? '?completed=$completed' : '';
+    final query =
+        completed != null ? '?completed=$completed&size=500' : '?size=500';
     final items = await _client.getList('/progress/me/lessons$query');
     return items
         .map((e) => LessonProgressModel.fromJson(e as Map<String, dynamic>))

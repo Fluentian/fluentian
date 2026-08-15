@@ -256,41 +256,39 @@ class _LessonListScreenState extends State<LessonListScreen> {
                   // being a more natural journey view, it guarantees that a
                   // deep-linked active chapter has a mounted key for
                   // Scrollable.ensureVisible (a lazy ListView does not).
-                  return SingleChildScrollView(
+                  return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.only(bottom: 40),
-                    child: SizedBox(
-                      width: constraints.maxWidth,
-                      child: Column(
-                        children: [
-                          for (final item in items)
-                            if (item is _CourseHeaderItem)
-                              _buildCourseHeader(item, content)
-                            else if (item is _UnitHeaderItem)
-                              Container(
-                                key: _unitKeys.putIfAbsent(
-                                  item.unit.id,
-                                  () => GlobalKey(),
-                                ),
-                                child: _buildUnitHeader(
-                                  context,
-                                  item.unit,
-                                  content,
-                                  isExpanded: _isUnitExpanded(item.unit.id),
-                                  isFocused: item.unit.id == _focusedUnitId,
-                                ),
-                              )
-                            else if (item is _LessonNodeItem)
-                              constraints.maxWidth < 330
-                                  ? _buildLessonNode(context, item, constraints)
-                                  : _buildJourneyNode(
-                                      context,
-                                      item,
-                                      constraints,
-                                    ),
-                        ],
-                      ),
-                    ),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      if (item is _CourseHeaderItem) {
+                        return _buildCourseHeader(item, content);
+                      } else if (item is _UnitHeaderItem) {
+                        return Container(
+                          key: _unitKeys.putIfAbsent(
+                            item.unit.id,
+                            () => GlobalKey(),
+                          ),
+                          child: _buildUnitHeader(
+                            context,
+                            item.unit,
+                            content,
+                            isExpanded: _isUnitExpanded(item.unit.id),
+                            isFocused: item.unit.id == _focusedUnitId,
+                          ),
+                        );
+                      } else if (item is _LessonNodeItem) {
+                        return constraints.maxWidth < 330
+                            ? _buildLessonNode(context, item, constraints)
+                            : _buildJourneyNode(
+                                context,
+                                item,
+                                constraints,
+                              );
+                      }
+                      return const SizedBox.shrink();
+                    },
                   );
                 },
               ),

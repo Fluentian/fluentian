@@ -28,6 +28,9 @@ class ApiException implements Exception {
             lower.contains('credential') ||
             lower.contains('invalid') ||
             lower.contains('user') ||
+            lower.contains('account') ||
+            lower.contains('deactivated') ||
+            lower.contains('deleted') ||
             lower.contains('incorrect') ||
             lower.contains('no active account') ||
             lower.contains('verified')) {
@@ -69,18 +72,19 @@ class ApiClient {
   ApiClient._();
   static final ApiClient instance = ApiClient._();
 
-  // ── Configuration ────────────────────────────────────
+  // ── Global 401 handler ───────────────────────────────
+  /// Registered by AuthProvider. Called when any non-login request gets a 401
+  /// so the app can force-logout and return the user to the sign-in screen.
+  void Function()? onUnauthenticated;
+
   static const String _configuredBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: '',
   );
-  static final String _baseUrl = _configuredBaseUrl.isNotEmpty
-      ? _configuredBaseUrl
-      : kReleaseMode
-      ? 'https://api.fluentianapp.binovatechnologies.com/api/v1'
-      : Platform.isAndroid
-      ? 'http://10.0.2.2:8000/api/v1'
-      : 'http://127.0.0.1:8000/api/v1';
+  static const String defaultBaseUrl =
+      'https://api.fluentianapp.binovatechnologies.com/api/v1';
+  static final String _baseUrl =
+      _configuredBaseUrl.isNotEmpty ? _configuredBaseUrl : defaultBaseUrl;
   static final Uri _baseUri = Uri.parse(_baseUrl);
 
   static String? resolveMediaUrl(String? value) {
@@ -365,6 +369,11 @@ class ApiClient {
       if (body.isNotEmpty) {
         debugPrint('API Error body: $body');
       }
+    }
+    // Fire global sign-out on unexpected 401s (e.g. token expired, account
+    // deleted) so the app never gets stuck in an infinite-loading loop.
+    if (response.statusCode == 401) {
+      onUnauthenticated?.call();
     }
     throw ApiException(response.statusCode, message, responseBody);
   }
