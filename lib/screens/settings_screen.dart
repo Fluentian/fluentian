@@ -397,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       itemCount: TimezoneOption.curated.length,
                       itemBuilder: (context, index) {
-                        final option = TimezoneOption.curated[index];
+                        final entry = _voices.entries.elementAt(index);
                         final selected = option.ianaName == current;
                         return Material(
                           color: Colors.transparent,
@@ -2028,7 +2028,8 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                         final entry = _voices.entries.elementAt(index);
                         final key = entry.key;
                         final info = entry.value;
-                        final isSelected = widget.voiceId == key;
+                        final activeKey = UserModel.normalizeVoiceId(widget.voiceId);
+                        final isSelected = activeKey == key;
                         final isPlaying = _playingVoiceKey == key;
 
                         return Container(
@@ -2210,8 +2211,9 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
 
   @override
   Widget build(BuildContext context) {
-    final info = _voices[widget.voiceId] ?? _voices['maya'] ?? _voices.values.first;
-    final isPlayingCurrent = _playingVoiceKey == widget.voiceId;
+    final activeKey = UserModel.normalizeVoiceId(widget.voiceId);
+    final info = _voices[activeKey] ?? _voices['maya']!;
+    final isPlayingCurrent = _playingVoiceKey == activeKey;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),

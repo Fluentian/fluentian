@@ -142,8 +142,29 @@ class UserModel {
           settings?['haptic_feedback_enabled'] as bool? ?? true,
       ttsSpeed: (settings?['tts_speed'] as num?)?.toDouble() ?? 1.0,
       fontScale: settings?['font_scale'] as int? ?? 1,
-      preferredVoiceId: profile?['preferred_voice_id']?.toString() ?? 'claire',
+      preferredVoiceId: normalizeVoiceId(profile?['preferred_voice_id']?.toString()),
     );
+  }
+
+  static String normalizeVoiceId(String? raw) {
+    final v = (raw ?? '').toLowerCase().trim();
+    switch (v) {
+      case 'claire':
+        return 'maya';
+      case 'elodie':
+        return 'sofia';
+      case 'antoine':
+        return 'sami';
+      case 'lucas':
+        return 'daniel';
+      case 'maya':
+      case 'sofia':
+      case 'sami':
+      case 'daniel':
+        return v;
+      default:
+        return 'maya';
+    }
   }
 
   Map<String, dynamic> toJson() => {
