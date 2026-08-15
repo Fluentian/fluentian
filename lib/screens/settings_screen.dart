@@ -1936,14 +1936,16 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
     ),
   };
 
-  void _previewVoice(String key) async {
+  void _previewVoice(String key, [StateSetter? setSheetState]) async {
     setState(() => _playingVoiceKey = key);
+    if (setSheetState != null) setSheetState(() {});
     final info = _voices[key];
     if (info != null) {
       await TtsService.instance.speak(info.sampleText, voiceId: key);
     }
     if (mounted) {
       setState(() => _playingVoiceKey = null);
+      if (setSheetState != null) setSheetState(() {});
     }
   }
 
@@ -1954,17 +1956,15 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return StatefulBuilder(
-          builder: (context, setSheetState) {
+          builder: (sheetContext, setSheetState) {
+            final sheetHeight = MediaQuery.sizeOf(sheetContext).height * 0.78;
             return Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.sizeOf(context).height * 0.85,
-              ),
+              height: sheetHeight,
               decoration: const BoxDecoration(
                 color: Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 12),
                   Container(
@@ -2132,10 +2132,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
-                                    onPressed: () {
-                                      _previewVoice(key);
-                                      setSheetState(() {});
-                                    },
+                                    onPressed: () => _previewVoice(key, setSheetState),
                                     icon: Icon(
                                       isPlaying
                                           ? Icons.graphic_eq_rounded
