@@ -2177,6 +2177,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                       );
                                     },
                                     child: Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         if (isSelected) ...[
                                           const Icon(Icons.check_rounded,
