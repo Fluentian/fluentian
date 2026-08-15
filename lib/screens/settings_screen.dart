@@ -15,6 +15,7 @@ import '../services/local_push_service.dart';
 import '../services/tts_service.dart';
 import 'legal_document_screen.dart';
 import 'offline_downloads_screen.dart';
+import '../models/user_model.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -397,7 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       itemCount: TimezoneOption.curated.length,
                       itemBuilder: (context, index) {
-                        final entry = _voices.entries.elementAt(index);
+                        final option = TimezoneOption.curated[index];
                         final selected = option.ianaName == current;
                         return Material(
                           color: Colors.transparent,
