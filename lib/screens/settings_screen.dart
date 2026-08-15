@@ -2126,42 +2126,47 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                   const SizedBox(height: 14),
                                   Row(
                                     children: [
-                                      // Audition Button (Does NOT select or close modal)
-                                      OutlinedButton.icon(
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: isPlaying
-                                              ? FluentianColors.primary
-                                              : const Color(0xFF334155),
-                                          side: BorderSide(
+                                      // Audition Button — wrapped in Flexible to prevent
+                                      // unconstrained-width crash (OutlinedButton.icon
+                                      // uses an internal Row that needs bounded width)
+                                      Flexible(
+                                        fit: FlexFit.loose,
+                                        child: OutlinedButton.icon(
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: isPlaying
+                                                ? FluentianColors.primary
+                                                : const Color(0xFF334155),
+                                            side: BorderSide(
+                                              color: isPlaying
+                                                  ? FluentianColors.primary
+                                                  : const Color(0xFFCBD5E1),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 10),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          onPressed: () => _previewVoice(key, setSheetState),
+                                          icon: Icon(
+                                            isPlaying
+                                                ? Icons.graphic_eq_rounded
+                                                : Icons.play_arrow_rounded,
+                                            size: 18,
                                             color: isPlaying
                                                 ? FluentianColors.primary
-                                                : const Color(0xFFCBD5E1),
+                                                : const Color(0xFF334155),
                                           ),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 14, vertical: 10),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                        ),
-                                        onPressed: () => _previewVoice(key, setSheetState),
-                                        icon: Icon(
-                                          isPlaying
-                                              ? Icons.graphic_eq_rounded
-                                              : Icons.play_arrow_rounded,
-                                          size: 18,
-                                          color: isPlaying
-                                              ? FluentianColors.primary
-                                              : const Color(0xFF334155),
-                                        ),
-                                        label: Text(
-                                          isPlaying ? 'Auditioning...' : 'Listen sample',
-                                          style: GoogleFonts.plusJakartaSans(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
+                                          label: Text(
+                                            isPlaying ? 'Auditioning...' : 'Listen sample',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                      const Spacer(),
+                                      const SizedBox(width: 10),
                                       // Select Voice Button
                                       FilledButton(
                                         style: FilledButton.styleFrom(
