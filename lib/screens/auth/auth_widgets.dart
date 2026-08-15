@@ -4,11 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AuthColors {
-  static const primary = Color(0xFF0D47A1);
-  static const primaryLight = Color(0xFF1976D2);
-  static const primaryDark = Color(0xFF0A2540);
-  static const accent = Color(0xFF00D4B6);
-  static const pageBg = Color(0xFFF8FAFC);
+  static const primary = Color(0xFF0F172A); // Deep slate midnight
+  static const primaryBlue = Color(0xFF1D4ED8); // Royal French Blue accent
+  static const pageBg = Color(0xFFFFFFFF); // Clean pure white canvas
   static const cardBg = Color(0xFFFFFFFF);
   static const heading = Color(0xFF0F172A);
   static const body = Color(0xFF334155);
@@ -18,7 +16,7 @@ class AuthColors {
   static const errorText = Color(0xFFE11D48);
   static const errorBg = Color(0xFFFFF1F2);
   static const success = Color(0xFF10B981);
-  static const disabledBtn = Color(0xFFCBD5E1);
+  static const disabledBtn = Color(0xFF94A3B8);
 }
 
 class AuthLogo extends StatelessWidget {
@@ -26,61 +24,25 @@ class AuthLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AuthColors.primaryLight, AuthColors.primaryDark],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: AuthColors.primary.withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: LText(
-                  'F',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            LText(
-              'fluentian',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                color: AuthColors.heading,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Container(
-              width: 7,
-              height: 7,
-              decoration: const BoxDecoration(
-                color: Color(0xFFED2939), // French flag accent dot
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
+        LText(
+          'fluentian',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: AuthColors.heading,
+            letterSpacing: -1.0,
+          ),
+        ),
+        LText(
+          '.',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: AuthColors.primaryBlue,
+          ),
         ),
       ],
     );
@@ -89,7 +51,7 @@ class AuthLogo extends StatelessWidget {
 
 class AuthInputField extends StatefulWidget {
   final String label;
-  final IconData leftIcon;
+  final IconData? leftIcon;
   final bool isPassword;
   final String? errorText;
   final TextInputType keyboardType;
@@ -103,7 +65,7 @@ class AuthInputField extends StatefulWidget {
   const AuthInputField({
     super.key,
     required this.label,
-    required this.leftIcon,
+    this.leftIcon,
     this.isPassword = false,
     this.errorText,
     this.keyboardType = TextInputType.text,
@@ -148,11 +110,8 @@ class _AuthInputFieldState extends State<AuthInputField> {
     final hasError = widget.errorText != null;
     final borderColor = hasError
         ? AuthColors.errorText
-        : (_isFocused ? AuthColors.primary : AuthColors.border);
-    final borderWidth = (_isFocused || hasError) ? 1.8 : 1.0;
-    final iconColor = hasError
-        ? AuthColors.errorText
-        : (_isFocused ? AuthColors.primary : AuthColors.placeholder);
+        : (_isFocused ? AuthColors.primaryBlue : AuthColors.border);
+    final borderWidth = (_isFocused || hasError) ? 1.5 : 1.0;
     final bgColor = hasError ? AuthColors.errorBg : AuthColors.inputBg;
 
     return Column(
@@ -163,33 +122,31 @@ class _AuthInputFieldState extends State<AuthInputField> {
           style: GoogleFonts.plusJakartaSans(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: AuthColors.body,
+            color: AuthColors.heading,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: 54,
+          duration: const Duration(milliseconds: 180),
+          height: 52,
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: borderColor, width: borderWidth),
-            boxShadow: _isFocused && !hasError
-                ? [
-                    BoxShadow(
-                      color: AuthColors.primary.withValues(alpha: 0.10),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : null,
           ),
           child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Icon(widget.leftIcon, color: iconColor, size: 20),
-              ),
+              if (widget.leftIcon != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 12),
+                  child: Icon(
+                    widget.leftIcon,
+                    color: _isFocused ? AuthColors.primaryBlue : AuthColors.placeholder,
+                    size: 18,
+                  ),
+                )
+              else
+                const SizedBox(width: 16),
               Expanded(
                 child: TextFormField(
                   focusNode: _focusNode,
@@ -222,7 +179,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
                     color: AuthColors.placeholder,
-                    size: 20,
+                    size: 18,
                   ),
                   onPressed: () => setState(() => _obscureText = !_obscureText),
                 )
@@ -234,23 +191,13 @@ class _AuthInputFieldState extends State<AuthInputField> {
         if (hasError)
           Padding(
             padding: const EdgeInsets.only(top: 6, left: 4),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.error_outline_rounded,
-                  color: AuthColors.errorText,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                LText(
-                  widget.errorText!,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AuthColors.errorText,
-                  ),
-                ),
-              ],
+            child: LText(
+              widget.errorText!,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AuthColors.errorText,
+              ),
             ),
           ),
       ],
