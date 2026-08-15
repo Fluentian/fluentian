@@ -139,7 +139,7 @@ class LocalPushService {
         if (!_notifiedIds.contains(notification.id)) {
           await _saveNotifiedId(notification.id);
           try {
-            await NotificationsApi.instance.markAsRead(notification.id);
+            await NotificationsApi.instance.markRead(notification.id);
           } catch (_) {}
           await _showNotification(
             id: notification.id.hashCode,
