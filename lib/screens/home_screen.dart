@@ -195,8 +195,8 @@ class _HomeContentState extends State<_HomeContent> {
 
           final user = auth.user;
           final stats = content.stats;
-          final xp = stats?.totalXp ?? 0;
-          final streak = stats?.streakDays ?? 0;
+          final xp = stats?.totalXp ?? user?.totalXp ?? 0;
+          final streak = stats?.streakDays ?? user?.streakDays ?? 0;
           final hearts = auth.user?.hearts ?? stats?.hearts ?? 5;
 
           final xpForNextLevel = 500; // Simplified for MVP
