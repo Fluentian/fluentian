@@ -199,6 +199,9 @@ class ContentProvider extends ChangeNotifier {
       }
       if (kDebugMode) debugPrint('ContentProvider.loadHomeData error: $e');
     } finally {
+      if (_courses.isNotEmpty && _status == ContentStatus.loading) {
+        _status = ContentStatus.loaded;
+      }
       notifyListeners();
     }
   }

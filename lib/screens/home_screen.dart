@@ -111,10 +111,13 @@ class _HomeContentState extends State<_HomeContent> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<AuthProvider>().refreshHearts();
+      final content = context.read<ContentProvider>();
+      if (content.courses.isEmpty || content.status == ContentStatus.idle) {
+        content.loadHomeData();
+      }
+      content.loadLessonProgress();
       setState(() {
-        _dueQuestionsFuture = context
-            .read<ContentProvider>()
-            .getDueSrsQuestions();
+        _dueQuestionsFuture = content.getDueSrsQuestions();
       });
     });
   }
