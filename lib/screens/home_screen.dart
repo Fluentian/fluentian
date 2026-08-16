@@ -487,13 +487,10 @@ class _HomeContentState extends State<_HomeContent> {
                     const SizedBox(height: 24),
                     const _HomeSectionLabel(text: 'YOUR LEARNING PATH'),
                     const SizedBox(height: 10),
-                    SizedBox(
-                      height: 600,
-                      child: LessonListScreen(
-                        key: const ValueKey('home_roadmap'),
-                        initialUnitId: nextUnit?.id,
-                        embedded: true,
-                      ),
+                    LessonListScreen(
+                      key: const ValueKey('home_roadmap'),
+                      initialUnitId: nextUnit?.id,
+                      embedded: true,
                     ),
                   ],
 
