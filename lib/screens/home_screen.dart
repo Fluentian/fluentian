@@ -123,10 +123,9 @@ class _HomeContentState extends State<_HomeContent> {
   }
 
   void _refreshDueQuestions() {
+    final future = context.read<ContentProvider>().getDueSrsQuestions();
     setState(() {
-      _dueQuestionsFuture = context
-          .read<ContentProvider>()
-          .getDueSrsQuestions();
+      _dueQuestionsFuture = future;
     });
   }
 
@@ -141,7 +140,9 @@ class _HomeContentState extends State<_HomeContent> {
       dueQuestions,
     ]);
     if (!mounted) return;
-    setState(() => _dueQuestionsFuture = dueQuestions);
+    setState(() {
+      _dueQuestionsFuture = dueQuestions;
+    });
   }
 
   UnitModel? _unitForLesson(ContentProvider content, String lessonId) {
