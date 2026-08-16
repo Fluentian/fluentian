@@ -8,6 +8,7 @@ import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 import '../services/api_client.dart';
 import '../services/social_api.dart';
+import '../widgets/common_widgets.dart';
 
 class SocialScreen extends StatefulWidget {
   const SocialScreen({super.key});
@@ -2097,17 +2098,35 @@ class _SocialLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: List.generate(
-        4,
-        (index) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Container(
-            height: index == 0 ? 120 : 78,
+    return FluentianShimmer(
+      child: Column(
+        children: List.generate(
+          4,
+          (index) => Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            ),
+            child: Row(
+              children: [
+                const SkeletonBox(width: 48, height: 48, borderRadius: 24),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      SkeletonBox(width: 130, height: 16, borderRadius: 6),
+                      SizedBox(height: 6),
+                      SkeletonBox(width: 180, height: 12, borderRadius: 4),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const SkeletonBox(width: 32, height: 32, borderRadius: 10),
+              ],
             ),
           ),
         ),

@@ -111,7 +111,15 @@ class _LessonListScreenState extends State<LessonListScreen> {
     final body = Consumer<ContentProvider>(
       builder: (context, content, _) {
         if (content.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const FluentianShimmer(
+            child: SingleChildScrollView(
+              physics: NeverScrollableScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: SkeletonRoadmap(),
+              ),
+            ),
+          );
         }
         if (content.courses.isEmpty) {
           return Center(
@@ -486,15 +494,22 @@ class _LessonListScreenState extends State<LessonListScreen> {
   }
 
   String _courseTitle(CourseModel course) {
-    if (course.code == 'FR_A1_BASICS') return 'French A1 Basics';
+    final normalized = course.code.trim().toLowerCase();
+    if (normalized == 'fr-full' || normalized == 'fr_full' || normalized == 'frfull') {
+      return 'French: Complete (${course.levelMin}–${course.levelMax})';
+    }
+    if (normalized == 'fr_a1_basics' || normalized == 'fr-a1-basics') {
+      return 'French A1 Basics';
+    }
 
-    return course.code
+    final cleaned = course.code.replaceAll('-', '_');
+    return cleaned
         .split('_')
         .where((segment) => segment.isNotEmpty)
-        .map(
-          (segment) =>
-              '${segment[0].toUpperCase()}${segment.substring(1).toLowerCase()}',
-        )
+        .map((segment) {
+          if (segment.toLowerCase() == 'fr') return 'French';
+          return '${segment[0].toUpperCase()}${segment.substring(1).toLowerCase()}';
+        })
         .join(' ');
   }
 

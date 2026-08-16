@@ -10,6 +10,7 @@ import '../services/api_client.dart';
 import '../services/social_api.dart';
 import 'call_screen.dart';
 import 'find_speaking_partner_screen.dart';
+import '../widgets/common_widgets.dart';
 
 class LiveCallScreen extends StatefulWidget {
   const LiveCallScreen({super.key});
@@ -158,9 +159,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
             Builder(
               builder: (context) {
                 if (_isInitialLoading) {
-                  return const Padding(
-                    padding: EdgeInsets.all(60),
-                    child: Center(child: CircularProgressIndicator()),
+                  return const FluentianShimmer(
+                    child: SkeletonLiveRoom(),
                   );
                 }
                 if (_error != null) {

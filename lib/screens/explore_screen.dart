@@ -11,6 +11,7 @@ import '../services/content_api.dart';
 import '../services/social_api.dart';
 import '../services/tts_service.dart';
 import '../widgets/translatable_text.dart';
+import '../widgets/common_widgets.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -444,10 +445,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 future: _storiesFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: FluentianColors.primary,
-                      ),
+                    return const FluentianShimmer(
+                      child: SkeletonCultureStory(),
                     );
                   }
 

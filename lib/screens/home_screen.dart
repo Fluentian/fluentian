@@ -709,7 +709,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                 const SizedBox(height: 7),
                 LText(
                   lesson.title,
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     fontSize: 21,
@@ -721,7 +721,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 LText(
                   chapterTitle,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     fontSize: 13,
@@ -928,7 +928,7 @@ class _HomeHero extends StatelessWidget {
                     children: [
                       _HeroPill(
                         icon: Iconsax.flash_15,
-                        text: '$streak day streak',
+                        text: streak > 0 ? '$streak day streak' : 'Start streak',
                       ),
                       HeartStatusChip(
                         hearts: hearts,
@@ -1199,48 +1199,24 @@ class _HomeSkeletonView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Skeleton Row
-          Row(
-            children: [
-              const ShimmerBox(width: 48, height: 48, borderRadius: 24),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  ShimmerBox(width: 110, height: 16, borderRadius: 8),
-                  SizedBox(height: 6),
-                  ShimmerBox(width: 70, height: 12, borderRadius: 6),
-                ],
-              ),
-              const Spacer(),
-              const ShimmerBox(width: 60, height: 32, borderRadius: 16),
-              const SizedBox(width: 8),
-              const ShimmerBox(width: 60, height: 32, borderRadius: 16),
-            ],
-          ),
-          const SizedBox(height: 24),
-          // Course Banner Card Skeleton
-          const ShimmerBox(width: double.infinity, height: 140, borderRadius: 24),
-          const SizedBox(height: 32),
-          // Path Nodes Skeleton
-          Center(
-            child: Column(
-              children: const [
-                ShimmerBox(width: 76, height: 76, borderRadius: 38),
-                SizedBox(height: 28),
-                ShimmerBox(width: 76, height: 76, borderRadius: 38),
-                SizedBox(height: 28),
-                ShimmerBox(width: 76, height: 76, borderRadius: 38),
-              ],
-            ),
-          ),
-        ],
+    return const FluentianShimmer(
+      child: SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SkeletonHeroCard(),
+            SizedBox(height: 20),
+            SkeletonMissionCard(),
+            SizedBox(height: 16),
+            SkeletonChallengeCard(),
+            SizedBox(height: 24),
+            _HomeSectionLabel(text: 'YOUR LEARNING PATH'),
+            SizedBox(height: 10),
+            SkeletonRoadmap(),
+            SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }

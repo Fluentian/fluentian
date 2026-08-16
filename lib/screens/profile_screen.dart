@@ -7,6 +7,7 @@ import '../core/app_localization.dart';
 import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
+import '../widgets/common_widgets.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -22,7 +23,11 @@ class ProfileScreen extends StatelessWidget {
     if (user == null) {
       return const Scaffold(
         backgroundColor: FluentianColors.pageBg,
-        body: Center(child: CircularProgressIndicator()),
+        body: SafeArea(
+          child: FluentianShimmer(
+            child: SkeletonProfile(),
+          ),
+        ),
       );
     }
 
