@@ -126,6 +126,14 @@ class _McqScreenState extends State<McqScreen>
     _hearts = statsHearts ?? cachedHearts ?? _hearts;
     _initQuestion();
     _loadPersistentHearts();
+
+    // Warm up the upcoming questions audio in background for instant 0ms playback
+    final textsToWarm = widget.questions
+        .take(5)
+        .map((q) => q.textToSpeak.trim())
+        .where((t) => t.isNotEmpty)
+        .toList();
+    _ttsService.prefetch(textsToWarm);
   }
 
   @override

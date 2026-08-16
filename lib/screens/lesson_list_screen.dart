@@ -39,11 +39,16 @@ class _LessonListScreenState extends State<LessonListScreen> {
   void initState() {
     super.initState();
     _pendingInitialUnitId = widget.initialUnitId;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<ContentProvider>().loadLessonProgress();
-      }
-    });
+    // When embedded on Home, the parent screen already triggers
+    // loadLessonProgress() on init -- calling it again here would just
+    // duplicate that network round-trip.
+    if (!widget.embedded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<ContentProvider>().loadLessonProgress();
+        }
+      });
+    }
   }
 
   @override

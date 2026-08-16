@@ -119,12 +119,41 @@ class ContentProvider extends ChangeNotifier {
     }
   }
 
+  /// Paint stats instantly from whatever was cached last session, so the
+  /// streak/XP/hearts UI isn't blank/zeroed while the network call is in
+  /// flight -- same stale-while-revalidate idea as course/progress caching.
+  Future<void> _loadLocalStats() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('cached_user_stats');
+      if (raw != null && raw.isNotEmpty) {
+        _stats = UserStatsModel.fromJson(
+          Map<String, dynamic>.from(jsonDecode(raw)),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('_loadLocalStats error: $e');
+    }
+  }
+
+  Future<void> _saveLocalStats() async {
+    final stats = _stats;
+    if (stats == null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cached_user_stats', jsonEncode(stats.toJson()));
+    } catch (e) {
+      if (kDebugMode) debugPrint('_saveLocalStats error: $e');
+    }
+  }
+
   Future<void> loadHomeData({bool showLoading = true}) async {
     if (showLoading && _courses.isEmpty) _status = ContentStatus.loading;
     _error = null;
     notifyListeners();
 
     await _loadLocalProgress();
+    await _loadLocalStats();
 
     final cached = await _loadCoursesFromLocalDb();
     if (cached.isNotEmpty) {
@@ -144,39 +173,32 @@ class ContentProvider extends ChangeNotifier {
         _courses = await _contentApi.getCourses();
       }
 
-      try {
-        final progressList = await _progressApi.getMyLessonProgress();
-        for (final p in progressList) {
-          if (p.lessonId.isNotEmpty) {
-            _progressByLesson[p.lessonId] = p;
-          }
-        }
-        await _saveLocalProgress();
-      } catch (e) {
-        if (kDebugMode) debugPrint('loadHomeData lesson progress error: $e');
-      }
-
-      try {
-        _stats = await _progressApi.getMyStats();
-      } catch (e) {
-        if (kDebugMode) debugPrint('loadHomeData stats error: $e');
-        _stats ??= const UserStatsModel(
-          totalXp: 0,
-          streakDays: 0,
-          lessonsCompleted: 0,
-          unitsCompleted: 0,
-          hearts: 5,
-          currentLevel: 'A0',
-          weeklyXp: 0,
-        );
-      }
-
-      List<EnrollmentModel> enrollments = const [];
-      try {
-        enrollments = await _progressApi.getMyEnrollments();
-      } catch (e) {
-        if (kDebugMode) debugPrint('loadHomeData enrollments error: $e');
-      }
+      // Lesson progress is intentionally not re-fetched here: every call
+      // site that invokes loadHomeData() also calls loadLessonProgress()
+      // alongside it, so fetching it here too was a duplicate network
+      // round-trip on every load.
+      final results = await Future.wait([
+        _progressApi.getMyStats().catchError((e) {
+          if (kDebugMode) debugPrint('loadHomeData stats error: $e');
+          return _stats ??
+              const UserStatsModel(
+                totalXp: 0,
+                streakDays: 0,
+                lessonsCompleted: 0,
+                unitsCompleted: 0,
+                hearts: 5,
+                currentLevel: 'A0',
+                weeklyXp: 0,
+              );
+        }),
+        _progressApi.getMyEnrollments().catchError((e) {
+          if (kDebugMode) debugPrint('loadHomeData enrollments error: $e');
+          return <EnrollmentModel>[];
+        }),
+      ]);
+      _stats = results[0] as UserStatsModel;
+      await _saveLocalStats();
+      final enrollments = results[1] as List<EnrollmentModel>;
 
       _enrolledCourseIds
         ..clear()

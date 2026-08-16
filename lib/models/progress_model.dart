@@ -100,6 +100,16 @@ class UserStatsModel {
     currentLevel: json['current_level'] as String? ?? 'A0',
     weeklyXp: json['weekly_xp'] as int? ?? 0,
   );
+
+  Map<String, dynamic> toJson() => {
+    'total_xp': totalXp,
+    'streak_days': streakDays,
+    'lessons_completed': lessonsCompleted,
+    'units_completed': unitsCompleted,
+    'hearts': hearts,
+    'current_level': currentLevel,
+    'weekly_xp': weeklyXp,
+  };
 }
 
 class EnrollmentModel {

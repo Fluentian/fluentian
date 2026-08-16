@@ -47,6 +47,15 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         _loadError = detail == null ? contentProvider.lastLessonLoadError : null;
         _isLoading = false;
       });
+
+      if (detail != null && detail.blocks.isNotEmpty) {
+        final textsToWarm = detail.blocks
+            .take(5)
+            .map((b) => b.textToSpeak.trim())
+            .where((t) => t.isNotEmpty)
+            .toList();
+        _ttsService.prefetch(textsToWarm);
+      }
     }
   }
 
