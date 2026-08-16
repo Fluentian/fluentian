@@ -342,13 +342,25 @@ class ContentProvider extends ChangeNotifier {
   List<bool> get weeklyActiveDays {
     final now = DateTime.now();
     final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
-    final days = <bool>[];
+    final days = List<bool>.filled(7, false);
 
     for (int i = 0; i < 7; i++) {
       final day = DateTime(monday.year, monday.month, monday.day + i);
       final count = countCompletedLessonsOnDay(_progressByLesson.values, day);
-      days.add(count > 0);
+      if (count > 0) {
+        days[i] = true;
+      }
     }
+
+    // If user has an active streak, ensure the corresponding days in this week are active
+    final streak = _stats?.streakDays ?? 0;
+    if (streak > 0) {
+      final todayIndex = now.weekday - 1; // 0 for Mon, 6 for Sun
+      for (int s = 0; s < streak && (todayIndex - s) >= 0; s++) {
+        days[todayIndex - s] = true;
+      }
+    }
+
     return days;
   }
 

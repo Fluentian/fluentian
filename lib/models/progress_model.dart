@@ -7,12 +7,11 @@ int countCompletedLessonsOnDay(
 ) {
   final localDay = day.toLocal();
   return progress.where((item) {
-    final completedAt = item.completedAt?.toLocal();
-    return item.completed &&
-        completedAt != null &&
-        completedAt.year == localDay.year &&
-        completedAt.month == localDay.month &&
-        completedAt.day == localDay.day;
+    if (!item.completed) return false;
+    final date = (item.completedAt ?? item.createdAt).toLocal();
+    return date.year == localDay.year &&
+        date.month == localDay.month &&
+        date.day == localDay.day;
   }).length;
 }
 
