@@ -844,12 +844,31 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           ),
         );
       case 'sentence_pair':
+      case 'translation':
+      case 'translation_pair':
+      case 'translation_block':
+      case 'phrase_pair':
         final base =
             block.blockPayload['base']?.toString() ??
             block.blockPayload['source']?.toString() ??
             block.blockPayload['en']?.toString() ??
+            block.blockPayload['translation']?.toString() ??
+            block.blockPayload['meaning']?.toString() ??
+            block.blockPayload['am']?.toString() ??
+            block.blockPayload['explanation']?.toString() ??
             '';
-        final target = block.blockPayload['target']?.toString() ?? '';
+        final target =
+            block.blockPayload['target']?.toString() ??
+            block.blockPayload['french']?.toString() ??
+            block.blockPayload['fr']?.toString() ??
+            block.blockPayload['sentence']?.toString() ??
+            block.blockPayload['phrase']?.toString() ??
+            block.blockPayload['expression']?.toString() ??
+            block.blockPayload['text']?.toString() ??
+            '';
+        final textToSpeak = block.textToSpeak.trim().isNotEmpty
+            ? block.textToSpeak
+            : target;
         return Container(
           margin: const EdgeInsets.only(bottom: 20),
           padding: const EdgeInsets.all(20),
@@ -872,7 +891,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     LText(
-                      target,
+                      target.isNotEmpty ? target : textToSpeak,
                       style: GoogleFonts.inter(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -880,39 +899,60 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                         letterSpacing: 0.2,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: 32,
-                      height: 2,
-                      color: FluentianColors.primary.withValues(alpha: 0.2),
-                    ),
-                    const SizedBox(height: 8),
-                    LText(
-                      base,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: FluentianColors.textSecondary,
-                        fontWeight: FontWeight.w500,
+                    if (base.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 32,
+                        height: 2,
+                        color: FluentianColors.primary.withValues(alpha: 0.2),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      LText(
+                        base,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: FluentianColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              if (block.ttsEnabled && block.textToSpeak.trim().isNotEmpty)
-                IconButton(
-                  tooltip: context.tr('Listen'),
-                  icon: const Icon(
-                    Iconsax.volume_high,
-                    color: FluentianColors.primary,
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    tooltip: context.tr('Listen'),
+                    icon: const Icon(
+                      Iconsax.volume_high,
+                      color: FluentianColors.primary,
+                    ),
+                    onPressed: () => _speakText(
+                      textToSpeak.isNotEmpty ? textToSpeak : target,
+                      language: block.ttsLanguage,
+                    ),
                   ),
-                  onPressed: () => _speakBlock(block),
-                )
-              else
-                const Icon(
-                  Iconsax.translate,
-                  color: FluentianColors.primary,
-                  size: 22,
-                ),
+                  IconButton(
+                    tooltip: context.tr('Ask AI'),
+                    icon: const Icon(
+                      Iconsax.message5,
+                      color: FluentianColors.primary,
+                    ),
+                    onPressed: () {
+                      AiTutorSheet.show(
+                        context,
+                        systemContext: _aiLessonContext(
+                          focus:
+                              'Explain the French sentence or phrase "$target" ($base). Break down its grammar and vocabulary.',
+                        ),
+                        initialPrompt:
+                            'Can you explain the French sentence "$target" and how to use it in conversation?',
+                      );
+                    },
+                  ),
+                ],
+              ),
             ],
           ),
         );

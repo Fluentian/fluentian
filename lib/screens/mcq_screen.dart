@@ -1492,7 +1492,8 @@ class _McqScreenState extends State<McqScreen>
   Widget _buildWordAssemblyHeader(QuestionModel q) {
     final hasAudio =
         (q.audioUrl != null && q.audioUrl!.isNotEmpty) ||
-        (q.ttsEnabled && q.textToSpeak.trim().isNotEmpty);
+        (q.ttsEnabled && q.textToSpeak.trim().isNotEmpty) ||
+        q.textToSpeak.trim().isNotEmpty;
     return Column(
       children: [
         LText(
