@@ -179,6 +179,53 @@ class _LessonListScreenState extends State<LessonListScreen> {
           _pendingInitialUnitId = null;
         }
 
+        Widget buildPathList(BoxConstraints constraints) {
+          return ListView.builder(
+            controller: widget.embedded ? null : _scrollController,
+            physics: widget.embedded
+                ? const NeverScrollableScrollPhysics()
+                : null,
+            shrinkWrap: widget.embedded,
+            padding: EdgeInsets.only(bottom: widget.embedded ? 16 : 40),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              if (item is _CourseHeaderItem) {
+                return _buildCourseHeader(item, content);
+              } else if (item is _UnitHeaderItem) {
+                return Container(
+                  key: _unitKeys.putIfAbsent(
+                    item.unit.id,
+                    () => GlobalKey(),
+                  ),
+                  child: _buildUnitHeader(
+                    context,
+                    item.unit,
+                    content,
+                    isExpanded: _isUnitExpanded(item.unit.id),
+                    isFocused: item.unit.id == _focusedUnitId,
+                  ),
+                );
+              } else if (item is _LessonNodeItem) {
+                return constraints.maxWidth < 330
+                    ? _buildLessonNode(context, item, constraints)
+                    : _buildJourneyNode(
+                        context,
+                        item,
+                        constraints,
+                      );
+              }
+              return const SizedBox.shrink();
+            },
+          );
+        }
+
+        if (widget.embedded) {
+          return LayoutBuilder(
+            builder: (context, constraints) => buildPathList(constraints),
+          );
+        }
+
         return Column(
           children: [
             Container(
@@ -222,7 +269,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                               ),
                             ),
                             LText(
-                              '${(progress * 100).toInt()}%',
+                              '${(progressPercent * 100).toInt()}%',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -235,7 +282,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
-                            value: progress,
+                            value: progressPercent,
                             backgroundColor: FluentianColors.primary
                                 .withValues(alpha: 0.1),
                             valueColor: const AlwaysStoppedAnimation(
