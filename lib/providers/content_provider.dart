@@ -62,13 +62,28 @@ class ContentProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('cached_user_lesson_progress');
       if (raw != null && raw.isNotEmpty) {
-        final decoded = jsonDecode(raw) as Map<String, dynamic>;
-        decoded.forEach((lessonId, val) {
-          if (val is Map) {
-            _progressByLesson[lessonId] =
-                LessonProgressModel.fromJson(Map<String, dynamic>.from(val));
-          }
-        });
+        final decoded = jsonDecode(raw);
+        if (decoded is Map) {
+          decoded.forEach((lessonId, val) {
+            try {
+              if (val is Map) {
+                final model = LessonProgressModel.fromJson(
+                  Map<String, dynamic>.from(val),
+                );
+                final key = model.lessonId.isNotEmpty
+                    ? model.lessonId
+                    : lessonId.toString();
+                if (key.isNotEmpty) {
+                  _progressByLesson[key] = model;
+                }
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('Error parsing cached lesson $lessonId: $e');
+              }
+            }
+          });
+        }
       }
 
       // Also hydrate pending outbox completions so queued completions are recognized locally
@@ -95,7 +110,10 @@ class ContentProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final mapToSave =
           _progressByLesson.map((k, v) => MapEntry(k, v.toJson()));
-      await prefs.setString('cached_user_lesson_progress', jsonEncode(mapToSave));
+      await prefs.setString(
+        'cached_user_lesson_progress',
+        jsonEncode(mapToSave),
+      );
     } catch (e) {
       if (kDebugMode) debugPrint('_saveLocalProgress error: $e');
     }
@@ -129,7 +147,9 @@ class ContentProvider extends ChangeNotifier {
       try {
         final progressList = await _progressApi.getMyLessonProgress();
         for (final p in progressList) {
-          _progressByLesson[p.lessonId] = p;
+          if (p.lessonId.isNotEmpty) {
+            _progressByLesson[p.lessonId] = p;
+          }
         }
         await _saveLocalProgress();
       } catch (e) {
@@ -290,15 +310,19 @@ class ContentProvider extends ChangeNotifier {
   /// Fetch and cache lesson progress for a given list of lesson IDs.
   Future<void> loadLessonProgress() async {
     await _loadLocalProgress();
+    notifyListeners();
     try {
       final progress = await _progressApi.getMyLessonProgress();
       for (final p in progress) {
-        _progressByLesson[p.lessonId] = p;
+        if (p.lessonId.isNotEmpty) {
+          _progressByLesson[p.lessonId] = p;
+        }
       }
       await _saveLocalProgress();
+    } catch (e) {
+      if (kDebugMode) debugPrint('loadLessonProgress network error: $e');
+    } finally {
       notifyListeners();
-    } catch (_) {
-      // Non-fatal: progress can be stale
     }
   }
 

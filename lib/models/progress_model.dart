@@ -35,18 +35,32 @@ class LessonProgressModel {
     required this.createdAt,
   });
 
-  factory LessonProgressModel.fromJson(Map<String, dynamic> json) =>
-      LessonProgressModel(
-        id: json['id'] as String,
-        userId: json['user_id'] as String,
-        lessonId: json['lesson_id'] as String,
-        masteryScore: (json['mastery_score'] as num?)?.toDouble() ?? 0.0,
-        completed: json['completed'] as bool? ?? false,
-        completedAt: json['completed_at'] != null
-            ? DateTime.parse(json['completed_at'] as String)
-            : null,
-        createdAt: DateTime.parse(json['created_at'] as String),
-      );
+  factory LessonProgressModel.fromJson(Map<String, dynamic> json) {
+    DateTime? parsedCompletedAt;
+    if (json['completed_at'] != null) {
+      parsedCompletedAt = DateTime.tryParse(json['completed_at'].toString());
+    }
+
+    DateTime parsedCreatedAt = DateTime.now();
+    if (json['created_at'] != null) {
+      parsedCreatedAt =
+          DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now();
+    }
+
+    return LessonProgressModel(
+      id: json['id']?.toString() ?? '',
+      userId: json['user_id']?.toString() ?? '',
+      lessonId: json['lesson_id']?.toString() ?? '',
+      masteryScore: (json['mastery_score'] as num?)?.toDouble() ??
+          (json['score'] as num?)?.toDouble() ??
+          0.0,
+      completed: json['completed'] as bool? ??
+          json['is_completed'] as bool? ??
+          false,
+      completedAt: parsedCompletedAt,
+      createdAt: parsedCreatedAt,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,

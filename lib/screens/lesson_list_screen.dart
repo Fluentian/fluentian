@@ -39,6 +39,11 @@ class _LessonListScreenState extends State<LessonListScreen> {
   void initState() {
     super.initState();
     _pendingInitialUnitId = widget.initialUnitId;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<ContentProvider>().loadLessonProgress();
+      }
+    });
   }
 
   @override
