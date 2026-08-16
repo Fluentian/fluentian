@@ -1943,6 +1943,15 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
 
   void _previewVoice(String key, [StateSetter? setSheetState]) async {
     final activeKey = UserModel.normalizeVoiceId(key);
+    if (_playingVoiceKey == activeKey) {
+      await TtsService.instance.stop();
+      if (mounted) {
+        setState(() => _playingVoiceKey = null);
+        if (setSheetState != null) setSheetState(() {});
+      }
+      return;
+    }
+
     setState(() => _playingVoiceKey = activeKey);
     if (setSheetState != null) setSheetState(() {});
     final info = _voices[activeKey];
@@ -1956,6 +1965,11 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
   }
 
   void _openVoicePicker(BuildContext context) {
+    // Pre-warm all voice audition samples in background for instant playback
+    for (final entry in _voices.entries) {
+      TtsService.instance.prefetch([entry.value.sampleText], voiceId: entry.key);
+    }
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
