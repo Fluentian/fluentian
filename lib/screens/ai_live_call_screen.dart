@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -29,6 +30,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
   bool _isSending = false;
   bool _isLeaving = false;
   String? _error;
+  bool _permissionPermanentlyDenied = false;
   int _remainingSeconds = 600;
   List<String> _prompts = const [];
 
@@ -47,6 +49,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
 
     final permission = await Permission.microphone.request();
     if (!permission.isGranted) {
+      _permissionPermanentlyDenied = permission.isPermanentlyDenied;
       _setError('Microphone permission is required for live voice practice.');
       return;
     }
@@ -75,11 +78,40 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
 
       await session.start();
       if (!mounted) return;
+      await _waitForAgent(session);
+      if (!mounted) return;
       await session.room.setSpeakerOn(true);
       setState(() => _isStarting = false);
       _startTimer();
     } catch (error) {
+      final failedSession = _session;
+      _session = null;
+      failedSession?.removeListener(_onSessionChanged);
+      if (failedSession != null) await _disposeSession(failedSession);
       _setError(_formatError(error));
+    }
+  }
+
+  Future<void> _waitForAgent(Session session) async {
+    if (session.error != null) throw StateError('LiveKit connection failed');
+    if (session.agent.isConnected) return;
+
+    final ready = Completer<void>();
+    void checkState() {
+      if (ready.isCompleted) return;
+      if (session.error != null || session.agent.error != null) {
+        ready.completeError(StateError('Marie could not join the room'));
+      } else if (session.agent.isConnected) {
+        ready.complete();
+      }
+    }
+
+    session.addListener(checkState);
+    checkState();
+    try {
+      await ready.future.timeout(const Duration(seconds: 26));
+    } finally {
+      session.removeListener(checkState);
     }
   }
 
@@ -117,8 +149,10 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
     if (!mounted) return;
     final session = _session;
     setState(() {
-      if (session?.error != null) {
+      if (session?.error != null || session?.agent.error != null) {
         _error = 'The tutor connection was interrupted. Please try again.';
+      } else if (!_isStarting && !_isLeaving && session?.isConnected == false) {
+        _error = 'The tutor disconnected. Please start a new practice call.';
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToLatest());
@@ -148,7 +182,8 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
 
   String _formatError(Object error) {
     if (error is ApiException) return error.userMessage;
-    return error.toString().replaceFirst('Exception: ', '');
+    if (kDebugMode) debugPrint('AI live call failed: $error');
+    return 'Marie could not join right now. Check your connection and try again.';
   }
 
   String get _agentStatus {
@@ -179,9 +214,10 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
     if (text.isEmpty || session == null || !session.isConnected || _isSending) {
       return;
     }
+    final boundedText = text.length > 600 ? text.substring(0, 600) : text;
     setState(() => _isSending = true);
     _messageController.clear();
-    final message = await session.sendText(text);
+    final message = await session.sendText(boundedText);
     if (!mounted) return;
     setState(() {
       _isSending = false;
@@ -520,7 +556,8 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
           Expanded(
             child: TextField(
               controller: _messageController,
-              enabled: !_isStarting,
+              enabled: !_isStarting && _session?.agent.isConnected == true,
+              maxLength: 600,
               minLines: 1,
               maxLines: 3,
               textInputAction: TextInputAction.send,
@@ -528,6 +565,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
               style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
               decoration: InputDecoration(
                 hintText: context.tr('Type to Marie…'),
+                counterText: '',
                 hintStyle: GoogleFonts.inter(
                   color: Colors.white38,
                   fontSize: 13,
@@ -607,13 +645,24 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
             ),
           ),
           const SizedBox(height: 18),
-          OutlinedButton(
-            onPressed: _leave,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white,
-              side: const BorderSide(color: Colors.white24),
-            ),
-            child: const LText('Go back'),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            children: [
+              if (_permissionPermanentlyDenied)
+                FilledButton(
+                  onPressed: openAppSettings,
+                  child: const LText('Open settings'),
+                ),
+              OutlinedButton(
+                onPressed: _leave,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white24),
+                ),
+                child: const LText('Go back'),
+              ),
+            ],
           ),
         ],
       ),
