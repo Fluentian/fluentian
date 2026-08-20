@@ -12,6 +12,7 @@ class SpeakingCallSession {
   final String? matchStrategy;
   final String? matchReason;
   final DateTime? timerEndsAt;
+  final String? agentName;
 
   const SpeakingCallSession({
     required this.roomToken,
@@ -24,6 +25,7 @@ class SpeakingCallSession {
     this.matchStrategy,
     this.matchReason,
     this.timerEndsAt,
+    this.agentName,
   });
 
   factory SpeakingCallSession.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class SpeakingCallSession {
       timerEndsAt: json['timer_ends_at'] == null
           ? null
           : DateTime.tryParse(json['timer_ends_at'].toString()),
+      agentName: json['agent_name']?.toString(),
     );
   }
 }
@@ -146,6 +149,13 @@ class SocialApi {
       'call_kind': callKind,
       'smart_match': smartMatch,
     });
+    return SpeakingCallSession.fromJson(data);
+  }
+
+  Future<SpeakingCallSession> createAiCall({
+    String topic = 'Everyday French',
+  }) async {
+    final data = await _api.post('/social/ai-calls', {'topic': topic});
     return SpeakingCallSession.fromJson(data);
   }
 
