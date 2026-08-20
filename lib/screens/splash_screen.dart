@@ -147,7 +147,9 @@ class _SplashScreenState extends State<SplashScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF259291).withValues(alpha: 0.18),
+                          color: const Color(
+                            0xFF259291,
+                          ).withValues(alpha: 0.18),
                           blurRadius: 100,
                           spreadRadius: 20,
                         ),
@@ -165,7 +167,9 @@ class _SplashScreenState extends State<SplashScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF33C8C0).withValues(alpha: 0.12),
+                          color: const Color(
+                            0xFF33C8C0,
+                          ).withValues(alpha: 0.12),
                           blurRadius: 120,
                           spreadRadius: 20,
                         ),
@@ -188,7 +192,9 @@ class _SplashScreenState extends State<SplashScreen>
                           builder: (context, child) {
                             final delay = index * 0.33;
                             final progress = (_pulseCtrl.value + delay) % 1.0;
-                            final size = badgeSize + (progress * (centerSize - badgeSize));
+                            final size =
+                                badgeSize +
+                                (progress * (centerSize - badgeSize));
                             final opacity = (1.0 - progress) * 0.35;
 
                             return Container(
@@ -197,8 +203,9 @@ class _SplashScreenState extends State<SplashScreen>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: const Color(0xFF4CB8B3)
-                                      .withValues(alpha: opacity.clamp(0.0, 1.0)),
+                                  color: const Color(
+                                    0xFF4CB8B3,
+                                  ).withValues(alpha: opacity.clamp(0.0, 1.0)),
                                   width: 1.5,
                                 ),
                               ),
@@ -224,7 +231,7 @@ class _SplashScreenState extends State<SplashScreen>
                         },
                       ),
 
-                      // 3D Glassmorphic Badge with "F" Logo & Wave
+                      // 3D glass badge with the real Fluentian app mark.
                       AnimatedBuilder(
                         animation: _entranceCtrl,
                         builder: (context, child) {
@@ -237,27 +244,43 @@ class _SplashScreenState extends State<SplashScreen>
                                 height: badgeSize,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(badgeSize * 0.32),
+                                  borderRadius: BorderRadius.circular(
+                                    badgeSize * 0.32,
+                                  ),
                                   border: Border.all(
                                     color: Colors.white.withValues(alpha: 0.95),
                                     width: 2.0,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.4),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.4,
+                                      ),
                                       blurRadius: 32,
                                       spreadRadius: 2,
                                       offset: const Offset(0, 14),
                                     ),
                                     BoxShadow(
-                                      color: const Color(0xFF33C8C0).withValues(alpha: 0.35),
+                                      color: const Color(
+                                        0xFF33C8C0,
+                                      ).withValues(alpha: 0.35),
                                       blurRadius: 28,
                                       spreadRadius: -2,
                                     ),
                                   ],
                                 ),
-                                child: CustomPaint(
-                                  painter: _CreativeFBadgePainter(),
+                                child: Padding(
+                                  padding: EdgeInsets.all(badgeSize * 0.09),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                      badgeSize * 0.24,
+                                    ),
+                                    child: Image.asset(
+                                      'assets/icon.jpg',
+                                      fit: BoxFit.cover,
+                                      filterQuality: FilterQuality.high,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -325,7 +348,10 @@ class _SplashScreenState extends State<SplashScreen>
                           constraints: BoxConstraints(
                             maxWidth: isTablet ? 480.0 : 360.0,
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(20),
@@ -381,16 +407,17 @@ class _SplashScreenState extends State<SplashScreen>
                               // Rotating Tip Animation
                               AnimatedSwitcher(
                                 duration: const Duration(milliseconds: 400),
-                                transitionBuilder: (child, anim) => FadeTransition(
-                                  opacity: anim,
-                                  child: SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(0, 0.2),
-                                      end: Offset.zero,
-                                    ).animate(anim),
-                                    child: child,
-                                  ),
-                                ),
+                                transitionBuilder: (child, anim) =>
+                                    FadeTransition(
+                                      opacity: anim,
+                                      child: SlideTransition(
+                                        position: Tween<Offset>(
+                                          begin: const Offset(0, 0.2),
+                                          end: Offset.zero,
+                                        ).animate(anim),
+                                        child: child,
+                                      ),
+                                    ),
                                 child: LText(
                                   _proTips[_tipIndex],
                                   key: ValueKey<int>(_tipIndex),
@@ -450,10 +477,7 @@ class _OrbitingWordsPainter extends CustomPainter {
             fontWeight: FontWeight.w600,
             color: Colors.white.withValues(alpha: 0.85),
             shadows: [
-              Shadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 8,
-              ),
+              Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 8),
             ],
           ),
         ),
@@ -488,85 +512,4 @@ class _OrbitingWordsPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _OrbitingWordsPainter oldDelegate) =>
       oldDelegate.angle != angle;
-}
-
-/// Custom painter for the creative stylized "F" logo with dual dynamic wave cuts.
-class _CreativeFBadgePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    // 1. Draw Stylized "F"
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: 'F',
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: size.width * 0.48,
-          fontWeight: FontWeight.w900,
-          color: const Color(0xFF072D52),
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(
-        (size.width - textPainter.width) / 2,
-        (size.height - textPainter.height) / 2 - 2,
-      ),
-    );
-
-    // 2. Primary Wave Arc
-    final wavePaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [
-          Color(0xFF259291),
-          Color(0xFF33C8C0),
-        ],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.045
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path();
-    path.moveTo(size.width * 0.12, size.height * 0.58);
-    path.quadraticBezierTo(
-      size.width * 0.35,
-      size.height * 0.42,
-      size.width * 0.55,
-      size.height * 0.58,
-    );
-    path.quadraticBezierTo(
-      size.width * 0.75,
-      size.height * 0.74,
-      size.width * 0.88,
-      size.height * 0.58,
-    );
-    canvas.drawPath(path, wavePaint);
-
-    // Secondary Accent Line
-    final echoPaint = Paint()
-      ..color = const Color(0xFF4CB8B3).withValues(alpha: 0.4)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.02
-      ..strokeCap = StrokeCap.round;
-
-    final echoPath = Path();
-    echoPath.moveTo(size.width * 0.18, size.height * 0.65);
-    echoPath.quadraticBezierTo(
-      size.width * 0.38,
-      size.height * 0.52,
-      size.width * 0.58,
-      size.height * 0.65,
-    );
-    echoPath.quadraticBezierTo(
-      size.width * 0.78,
-      size.height * 0.78,
-      size.width * 0.84,
-      size.height * 0.65,
-    );
-    canvas.drawPath(echoPath, echoPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
