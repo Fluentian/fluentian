@@ -6,9 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../core/theme.dart';
+import '../models/leaderboard_model.dart';
 import '../services/api_client.dart';
+import '../services/progress_api.dart';
 import '../services/social_api.dart';
 import '../widgets/common_widgets.dart';
+import 'leaderboard_screen.dart';
 
 class SocialScreen extends StatefulWidget {
   const SocialScreen({super.key});
@@ -19,6 +22,7 @@ class SocialScreen extends StatefulWidget {
 
 class _SocialScreenState extends State<SocialScreen> {
   final _api = SocialApi.instance;
+  final _progressApi = ProgressApi.instance;
   final _searchController = TextEditingController();
   bool _loading = true;
   String? _error;
@@ -28,6 +32,8 @@ class _SocialScreenState extends State<SocialScreen> {
   List<FriendChallenge> _challenges = const [];
   List<AccountabilityPartnership> _partnerships = const [];
   List<ChatRoomModel> _chatRooms = const [];
+  WeeklyLeaderboardModel? _leaderboard;
+  bool _showAllChatRooms = false;
 
   @override
   void initState() {
@@ -49,6 +55,7 @@ class _SocialScreenState extends State<SocialScreen> {
       });
     }
     try {
+      final leaderboardFuture = _fetchLeaderboard();
       final results = await Future.wait([
         _api.getFriends(),
         _api.getFriendRequests(),
@@ -57,6 +64,7 @@ class _SocialScreenState extends State<SocialScreen> {
         _api.getChatRooms(),
         _api.getPartnerships(),
       ]);
+      final leaderboard = await leaderboardFuture;
       if (!mounted) return;
       setState(() {
         _friends = results[0] as List<FriendSummary>;
@@ -65,6 +73,7 @@ class _SocialScreenState extends State<SocialScreen> {
         _challenges = results[3] as List<FriendChallenge>;
         _chatRooms = results[4] as List<ChatRoomModel>;
         _partnerships = results[5] as List<AccountabilityPartnership>;
+        _leaderboard = leaderboard;
         _loading = false;
       });
     } catch (e) {
@@ -73,6 +82,15 @@ class _SocialScreenState extends State<SocialScreen> {
         _error = e is ApiException ? e.userMessage : e.toString();
         _loading = false;
       });
+    }
+  }
+
+  Future<WeeklyLeaderboardModel?> _fetchLeaderboard() async {
+    try {
+      return await _progressApi.getWeeklyLeaderboard();
+    } catch (_) {
+      // Social stays usable if the league service is temporarily unavailable.
+      return null;
     }
   }
 
@@ -218,9 +236,18 @@ class _SocialScreenState extends State<SocialScreen> {
   Widget _buildContent() {
     final incoming = _requests.where((item) => item.isIncoming).toList();
     final outgoing = _requests.where((item) => !item.isIncoming).toList();
+    final orderedRooms = [
+      ..._chatRooms.where((room) => room.eligible),
+      ..._chatRooms.where((room) => !room.eligible),
+    ];
+    final visibleRooms = _showAllChatRooms
+        ? orderedRooms
+        : orderedRooms.take(1).toList(growable: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildLeagueStrip(),
+        const SizedBox(height: 20),
         if (incoming.isNotEmpty) ...[
           _SectionTitle(
             title: 'Friend requests',
@@ -316,7 +343,17 @@ class _SocialScreenState extends State<SocialScreen> {
         else
           ..._challenges.take(5).map(_buildChallengeCard),
         const SizedBox(height: 22),
-        _SectionTitle(title: 'Chat rooms'),
+        _SectionTitle(
+          title: 'Chat rooms',
+          action: orderedRooms.length > 1
+              ? (_showAllChatRooms
+                    ? 'Show less'
+                    : 'See all ${orderedRooms.length}')
+              : null,
+          onAction: orderedRooms.length > 1
+              ? () => setState(() => _showAllChatRooms = !_showAllChatRooms)
+              : null,
+        ),
         const SizedBox(height: 10),
         if (_chatRooms.isEmpty)
           const _EmptyPanel(
@@ -325,11 +362,122 @@ class _SocialScreenState extends State<SocialScreen> {
             body: 'Public learning communities will appear here.',
           )
         else
-          ...([
-            ..._chatRooms.where((room) => room.eligible),
-            ..._chatRooms.where((room) => !room.eligible),
-          ]).map(_buildRoomTile),
+          AnimatedSize(
+            duration: MediaQuery.of(context).disableAnimations
+                ? Duration.zero
+                : const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            child: Column(
+              key: ValueKey(_showAllChatRooms),
+              children: visibleRooms
+                  .map(_buildRoomTile)
+                  .toList(growable: false),
+            ),
+          ),
       ],
+    );
+  }
+
+  Widget _buildLeagueStrip() {
+    final me = _leaderboard?.currentUser;
+    final rank = me?.rank;
+    final reward = _leaderboard?.rewardXp;
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const LeaderboardScreen())),
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: FluentianColors.secondary.withValues(alpha: .2),
+            ),
+            boxShadow: [FluentianShadows.subtle],
+          ),
+          child: Row(
+            children: [
+              Container(width: 5, height: 76, color: FluentianColors.secondary),
+              const SizedBox(width: 12),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: FluentianColors.warningTint,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: const Icon(
+                  Iconsax.cup5,
+                  size: 22,
+                  color: FluentianColors.warning,
+                ),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LText(
+                      'Weekly league',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: FluentianColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    LText(
+                      me == null
+                          ? 'See this week’s XP standings'
+                          : rank == null
+                          ? 'Earn XP to enter · ${reward ?? 100} XP prize'
+                          : '${me.weeklyXp} XP this week · ${reward ?? 100} XP prize',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: FluentianColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (rank != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: FluentianColors.secondaryTint,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: LText(
+                    '#$rank',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: FluentianColors.secondary,
+                    ),
+                  ),
+                )
+              else
+                const Icon(
+                  Iconsax.arrow_right_3,
+                  size: 18,
+                  color: FluentianColors.secondary,
+                ),
+              const SizedBox(width: 13),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -1745,8 +1893,9 @@ class _Surface extends StatelessWidget {
 class _SectionTitle extends StatelessWidget {
   final String title;
   final String? action;
+  final VoidCallback? onAction;
 
-  const _SectionTitle({required this.title, this.action});
+  const _SectionTitle({required this.title, this.action, this.onAction});
 
   @override
   Widget build(BuildContext context) {
@@ -1762,12 +1911,21 @@ class _SectionTitle extends StatelessWidget {
         ),
         const Spacer(),
         if (action != null)
-          LText(
-            action!,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: FluentianColors.primary,
+          InkWell(
+            onTap: onAction,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+              child: LText(
+                action!,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: onAction == null
+                      ? FluentianColors.textSecondary
+                      : FluentianColors.primary,
+                ),
+              ),
             ),
           ),
       ],
