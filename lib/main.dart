@@ -16,8 +16,11 @@ import 'screens/onboarding_screen.dart';
 import 'services/local_push_service.dart';
 import 'services/remote_push_service.dart';
 
+import 'package:google_fonts/google_fonts.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  GoogleFonts.config.allowRuntimeFetching = true;
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -159,6 +162,7 @@ class _AppRootState extends State<_AppRoot> {
             }
             break;
           case AuthStatus.unauthenticated:
+            _hasLoadedData = false;
             if (auth.hasSeenIntro) {
               child = const SignInScreen(key: ValueKey('sign_in'));
             } else {

@@ -95,10 +95,16 @@ class ContentApi {
 
   /// Fetch published culture exploration stories for the Explore tab.
   Future<List<CultureStoryModel>> getCultureStories() async {
-    final items = await _client.getList(
-      '/content/culture-stories',
-      auth: false,
-    );
+    const cacheKey = 'culture_stories_cache';
+    List<dynamic> items;
+    try {
+      items = await _client.getList('/content/culture-stories', auth: false);
+      if (items.isNotEmpty) {
+        await _cache.putApiCache(cacheKey, items);
+      }
+    } catch (_) {
+      items = await _cache.getApiCache<List<dynamic>>(cacheKey) ?? const [];
+    }
     return items
         .map((e) => CultureStoryModel.fromJson(e as Map<String, dynamic>))
         .where((story) => story.media.isNotEmpty && story.paragraphs.isNotEmpty)

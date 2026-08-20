@@ -35,18 +35,42 @@ class LessonProgressModel {
     required this.createdAt,
   });
 
-  factory LessonProgressModel.fromJson(Map<String, dynamic> json) =>
-      LessonProgressModel(
-        id: json['id'] as String,
-        userId: json['user_id'] as String,
-        lessonId: json['lesson_id'] as String,
-        masteryScore: (json['mastery_score'] as num?)?.toDouble() ?? 0.0,
-        completed: json['completed'] as bool? ?? false,
-        completedAt: json['completed_at'] != null
-            ? DateTime.parse(json['completed_at'] as String)
-            : null,
-        createdAt: DateTime.parse(json['created_at'] as String),
-      );
+  factory LessonProgressModel.fromJson(Map<String, dynamic> json) {
+    DateTime? parsedCompletedAt;
+    if (json['completed_at'] != null) {
+      parsedCompletedAt = DateTime.tryParse(json['completed_at'].toString());
+    }
+
+    DateTime parsedCreatedAt = DateTime.now();
+    if (json['created_at'] != null) {
+      parsedCreatedAt =
+          DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now();
+    }
+
+    return LessonProgressModel(
+      id: json['id']?.toString() ?? '',
+      userId: json['user_id']?.toString() ?? '',
+      lessonId: json['lesson_id']?.toString() ?? '',
+      masteryScore:
+          (json['mastery_score'] as num?)?.toDouble() ??
+          (json['score'] as num?)?.toDouble() ??
+          0.0,
+      completed:
+          json['completed'] as bool? ?? json['is_completed'] as bool? ?? false,
+      completedAt: parsedCompletedAt,
+      createdAt: parsedCreatedAt,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'user_id': userId,
+    'lesson_id': lessonId,
+    'mastery_score': masteryScore,
+    'completed': completed,
+    'completed_at': completedAt?.toIso8601String(),
+    'created_at': createdAt.toIso8601String(),
+  };
 }
 
 class UserStatsModel {
@@ -77,6 +101,16 @@ class UserStatsModel {
     currentLevel: json['current_level'] as String? ?? 'A0',
     weeklyXp: json['weekly_xp'] as int? ?? 0,
   );
+
+  Map<String, dynamic> toJson() => {
+    'total_xp': totalXp,
+    'streak_days': streakDays,
+    'lessons_completed': lessonsCompleted,
+    'units_completed': unitsCompleted,
+    'hearts': hearts,
+    'current_level': currentLevel,
+    'weekly_xp': weeklyXp,
+  };
 }
 
 class EnrollmentModel {
@@ -108,6 +142,8 @@ class CompleteLessonResult {
   final int xpEarned;
   final int newXpTotal;
   final int streakDays;
+  final int streakFreezes;
+  final bool streakFreezeEarned;
   final int heartsRemaining;
   final bool lessonCompleted;
   final bool unitCompleted;
@@ -116,6 +152,8 @@ class CompleteLessonResult {
     required this.xpEarned,
     required this.newXpTotal,
     required this.streakDays,
+    this.streakFreezes = 0,
+    this.streakFreezeEarned = false,
     required this.heartsRemaining,
     required this.lessonCompleted,
     required this.unitCompleted,
@@ -126,6 +164,8 @@ class CompleteLessonResult {
         xpEarned: json['xp_earned'] as int? ?? 0,
         newXpTotal: json['new_xp_total'] as int? ?? 0,
         streakDays: json['streak_days'] as int? ?? 0,
+        streakFreezes: json['streak_freezes'] as int? ?? 0,
+        streakFreezeEarned: json['streak_freeze_earned'] as bool? ?? false,
         heartsRemaining: json['hearts_remaining'] as int? ?? 5,
         lessonCompleted: json['lesson_completed'] as bool? ?? false,
         unitCompleted: json['unit_completed'] as bool? ?? false,

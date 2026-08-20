@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../local_db/app_database.dart';
 import '../models/course_model.dart';
 import '../models/progress_model.dart';
@@ -53,6 +54,101 @@ class ContentProvider extends ChangeNotifier {
   /// network step fails, we keep showing cached data instead of erroring --
   /// that's the whole point of caching for spotty Ethiopian mobile networks.
   ///
+  /// Known limitation: locally cached course/lesson titles are the
+  /// canonical (French/admin) text, not the learner's explanation-language
+  /// translation -- translations aren't synced to the local store yet, so
+  /// offline users briefly see untranslated titles until back online.
+  Future<void> _loadLocalProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('cached_user_lesson_progress');
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw);
+        if (decoded is Map) {
+          decoded.forEach((lessonId, val) {
+            try {
+              if (val is Map) {
+                final model = LessonProgressModel.fromJson(
+                  Map<String, dynamic>.from(val),
+                );
+                final key = model.lessonId.isNotEmpty
+                    ? model.lessonId
+                    : lessonId.toString();
+                if (key.isNotEmpty) {
+                  _progressByLesson[key] = model;
+                }
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('Error parsing cached lesson $lessonId: $e');
+              }
+            }
+          });
+        }
+      }
+
+      // Also hydrate pending outbox completions so queued completions are recognized locally
+      final pendingEntries = await AppDatabase.instance
+          .getPendingOutboxEntries();
+      for (final entry in pendingEntries) {
+        _progressByLesson[entry.lessonId] = LessonProgressModel(
+          id: entry.idempotencyKey,
+          userId: '',
+          lessonId: entry.lessonId,
+          masteryScore: 1.0,
+          completed: true,
+          completedAt: DateTime.now(),
+          createdAt: DateTime.now(),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('_loadLocalProgress error: $e');
+    }
+  }
+
+  Future<void> _saveLocalProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final mapToSave = _progressByLesson.map(
+        (k, v) => MapEntry(k, v.toJson()),
+      );
+      await prefs.setString(
+        'cached_user_lesson_progress',
+        jsonEncode(mapToSave),
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('_saveLocalProgress error: $e');
+    }
+  }
+
+  /// Paint stats instantly from whatever was cached last session, so the
+  /// streak/XP/hearts UI isn't blank/zeroed while the network call is in
+  /// flight -- same stale-while-revalidate idea as course/progress caching.
+  Future<void> _loadLocalStats() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('cached_user_stats');
+      if (raw != null && raw.isNotEmpty) {
+        _stats = UserStatsModel.fromJson(
+          Map<String, dynamic>.from(jsonDecode(raw)),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('_loadLocalStats error: $e');
+    }
+  }
+
+  Future<void> _saveLocalStats() async {
+    final stats = _stats;
+    if (stats == null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cached_user_stats', jsonEncode(stats.toJson()));
+    } catch (e) {
+      if (kDebugMode) debugPrint('_saveLocalStats error: $e');
+    }
+  }
+
   Future<void> loadHomeData({bool showLoading = true}) async {
     if (showLoading && _courses.isEmpty) _status = ContentStatus.loading;
     _error = null;
@@ -60,6 +156,8 @@ class ContentProvider extends ChangeNotifier {
 
     await _db.migrateLegacyApiCacheIfPresent();
     await StarterCurriculumLoader.instance.seedIfEmpty();
+    await _loadLocalProgress();
+    await _loadLocalStats();
     final cached = await _loadCoursesFromLocalDb();
     if (cached.isNotEmpty) {
       _courses = cached;
@@ -78,27 +176,32 @@ class ContentProvider extends ChangeNotifier {
         _courses = await _contentApi.getCourses();
       }
 
-      try {
-        _stats = await _progressApi.getMyStats();
-      } catch (e) {
-        if (kDebugMode) debugPrint('loadHomeData stats error: $e');
-        _stats ??= const UserStatsModel(
-          totalXp: 0,
-          streakDays: 0,
-          lessonsCompleted: 0,
-          unitsCompleted: 0,
-          hearts: 5,
-          currentLevel: 'A0',
-          weeklyXp: 0,
-        );
-      }
-
-      List<EnrollmentModel> enrollments = const [];
-      try {
-        enrollments = await _progressApi.getMyEnrollments();
-      } catch (e) {
-        if (kDebugMode) debugPrint('loadHomeData enrollments error: $e');
-      }
+      // Lesson progress is intentionally not re-fetched here: every call
+      // site that invokes loadHomeData() also calls loadLessonProgress()
+      // alongside it, so fetching it here too was a duplicate network
+      // round-trip on every load.
+      final results = await Future.wait([
+        _progressApi.getMyStats().catchError((e) {
+          if (kDebugMode) debugPrint('loadHomeData stats error: $e');
+          return _stats ??
+              const UserStatsModel(
+                totalXp: 0,
+                streakDays: 0,
+                lessonsCompleted: 0,
+                unitsCompleted: 0,
+                hearts: 5,
+                currentLevel: 'A0',
+                weeklyXp: 0,
+              );
+        }),
+        _progressApi.getMyEnrollments().catchError((e) {
+          if (kDebugMode) debugPrint('loadHomeData enrollments error: $e');
+          return <EnrollmentModel>[];
+        }),
+      ]);
+      _stats = results[0] as UserStatsModel;
+      await _saveLocalStats();
+      final enrollments = results[1] as List<EnrollmentModel>;
 
       _enrolledCourseIds
         ..clear()
@@ -121,6 +224,9 @@ class ContentProvider extends ChangeNotifier {
       }
       if (kDebugMode) debugPrint('ContentProvider.loadHomeData error: $e');
     } finally {
+      if (_courses.isNotEmpty && _status == ContentStatus.loading) {
+        _status = ContentStatus.loaded;
+      }
       notifyListeners();
     }
   }
@@ -236,15 +342,20 @@ class ContentProvider extends ChangeNotifier {
 
   /// Fetch and cache lesson progress for a given list of lesson IDs.
   Future<void> loadLessonProgress() async {
+    await _loadLocalProgress();
+    notifyListeners();
     try {
       final progress = await _progressApi.getMyLessonProgress();
-      _progressByLesson.clear();
       for (final p in progress) {
-        _progressByLesson[p.lessonId] = p;
+        if (p.lessonId.isNotEmpty) {
+          _progressByLesson[p.lessonId] = p;
+        }
       }
+      await _saveLocalProgress();
+    } catch (e) {
+      if (kDebugMode) debugPrint('loadLessonProgress network error: $e');
+    } finally {
       notifyListeners();
-    } catch (_) {
-      // Non-fatal: progress can be stale
     }
   }
 
@@ -255,6 +366,32 @@ class ContentProvider extends ChangeNotifier {
   /// Unique lessons first completed on the learner's current local calendar day.
   int get lessonsCompletedToday {
     return countCompletedLessonsOnDay(_progressByLesson.values, DateTime.now());
+  }
+
+  /// Returns a 7-element bool list [Mon..Sun] indicating which days of the current week had active practice.
+  List<bool> get weeklyActiveDays {
+    final now = DateTime.now();
+    final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+    final days = List<bool>.filled(7, false);
+
+    for (int i = 0; i < 7; i++) {
+      final day = DateTime(monday.year, monday.month, monday.day + i);
+      final count = countCompletedLessonsOnDay(_progressByLesson.values, day);
+      if (count > 0) {
+        days[i] = true;
+      }
+    }
+
+    // If user has an active streak, ensure the corresponding days in this week are active
+    final streak = _stats?.streakDays ?? 0;
+    if (streak > 0) {
+      final todayIndex = now.weekday - 1; // 0 for Mon, 6 for Sun
+      for (int s = 0; s < streak && (todayIndex - s) >= 0; s++) {
+        days[todayIndex - s] = true;
+      }
+    }
+
+    return days;
   }
 
   bool isCourseEnrolled(String courseId) =>
@@ -387,6 +524,7 @@ class ContentProvider extends ChangeNotifier {
       completedAt: existingProgress?.completedAt ?? DateTime.now(),
       createdAt: DateTime.now(),
     );
+    await _saveLocalProgress();
     _lessonCache.remove(lessonId);
     // Refresh global stats (best-effort; skipped implicitly if offline
     // since getMyStats will also throw and just get swallowed here).

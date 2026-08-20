@@ -73,10 +73,30 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
     }
     _scrollToBottom();
 
-    final aiResponse = await AiService.instance.generateText(
-      messages: _messages,
-      systemContext: widget.systemContext,
-    );
+    final lowerMsg = msg.toLowerCase();
+    String? quickActionType;
+    if (lowerMsg.contains('summarize') || lowerMsg.contains('summary')) {
+      quickActionType = 'summarize';
+    } else if (lowerMsg.contains('example')) {
+      quickActionType = 'example';
+    } else if (lowerMsg.contains('quiz') || lowerMsg.contains('question')) {
+      quickActionType = 'quiz';
+    }
+
+    AiTutorResponse? aiResponse;
+    if (quickActionType != null && widget.systemContext.isNotEmpty) {
+      final contentId = widget.systemContext.hashCode.toString();
+      aiResponse = await AiService.instance.fetchQuickAction(
+        action: quickActionType,
+        contentId: contentId,
+        contextText: widget.systemContext,
+      );
+    } else {
+      aiResponse = await AiService.instance.generateText(
+        messages: _messages,
+        systemContext: widget.systemContext,
+      );
+    }
 
     if (mounted) {
       setState(() {

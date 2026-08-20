@@ -32,30 +32,72 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _navIndex = 0;
+  final Set<int> _activatedTabs = {0}; // Only Home is active initially
+  late final List<Widget?> _tabWidgets = List.filled(6, null);
+
+  @override
+  void initState() {
+    super.initState();
+    _tabWidgets[0] = _HomeContent(key: const ValueKey('tab_home'));
+  }
+
+  Widget _getTabWidget(int index) {
+    if (_tabWidgets[index] != null) return _tabWidgets[index]!;
+
+    switch (index) {
+      case 0:
+        _tabWidgets[0] = _HomeContent(key: const ValueKey('tab_home'));
+        break;
+      case 1:
+        _tabWidgets[1] = const ExploreScreen(key: ValueKey('tab_explore'));
+        break;
+      case 2:
+        _tabWidgets[2] = const LiveCallScreen(key: ValueKey('tab_live'));
+        break;
+      case 3:
+        _tabWidgets[3] = const OpportunityScreen(key: ValueKey('tab_board'));
+        break;
+      case 4:
+        _tabWidgets[4] = const SocialScreen(key: ValueKey('tab_social'));
+        break;
+      case 5:
+        _tabWidgets[5] = const ProfileScreen(key: ValueKey('tab_profile'));
+        break;
+    }
+    return _tabWidgets[index]!;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final screens = [
-      _HomeContent(),
-      const ExploreScreen(),
-      const LiveCallScreen(),
-      const OpportunityScreen(),
-      const SocialScreen(),
-      const ProfileScreen(),
-    ];
-
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
-      body: IndexedStack(index: _navIndex, children: screens),
+      body: IndexedStack(
+        index: _navIndex,
+        children: List.generate(6, (index) {
+          if (!_activatedTabs.contains(index)) {
+            return const SizedBox.shrink();
+          }
+          return _getTabWidget(index);
+        }),
+      ),
       bottomNavigationBar: FluentianBottomNav(
         currentIndex: _navIndex,
-        onTap: (i) => setState(() => _navIndex = i),
+        onTap: (i) {
+          if (_navIndex != i) {
+            setState(() {
+              _activatedTabs.add(i);
+              _navIndex = i;
+            });
+          }
+        },
       ),
     );
   }
 }
 
 class _HomeContent extends StatefulWidget {
+  const _HomeContent({super.key});
+
   @override
   State<_HomeContent> createState() => _HomeContentState();
 }
@@ -69,19 +111,21 @@ class _HomeContentState extends State<_HomeContent> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<AuthProvider>().refreshHearts();
+      final content = context.read<ContentProvider>();
+      if (content.courses.isEmpty || content.status == ContentStatus.idle) {
+        content.loadHomeData();
+      }
+      content.loadLessonProgress();
       setState(() {
-        _dueQuestionsFuture = context
-            .read<ContentProvider>()
-            .getDueSrsQuestions();
+        _dueQuestionsFuture = content.getDueSrsQuestions();
       });
     });
   }
 
   void _refreshDueQuestions() {
+    final future = context.read<ContentProvider>().getDueSrsQuestions();
     setState(() {
-      _dueQuestionsFuture = context
-          .read<ContentProvider>()
-          .getDueSrsQuestions();
+      _dueQuestionsFuture = future;
     });
   }
 
@@ -96,7 +140,9 @@ class _HomeContentState extends State<_HomeContent> {
       dueQuestions,
     ]);
     if (!mounted) return;
-    setState(() => _dueQuestionsFuture = dueQuestions);
+    setState(() {
+      _dueQuestionsFuture = dueQuestions;
+    });
   }
 
   UnitModel? _unitForLesson(ContentProvider content, String lessonId) {
@@ -113,8 +159,8 @@ class _HomeContentState extends State<_HomeContent> {
     return SafeArea(
       child: Consumer2<AuthProvider, ContentProvider>(
         builder: (context, auth, content, _) {
-          if (content.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+          if (content.isLoading && content.courses.isEmpty) {
+            return const _HomeSkeletonView();
           }
           if (content.status == ContentStatus.error) {
             return Center(
@@ -150,8 +196,8 @@ class _HomeContentState extends State<_HomeContent> {
 
           final user = auth.user;
           final stats = content.stats;
-          final xp = stats?.totalXp ?? 0;
-          final streak = stats?.streakDays ?? 0;
+          final xp = stats?.totalXp ?? user?.xpTotal ?? 0;
+          final streak = stats?.streakDays ?? user?.streakDays ?? 0;
           final hearts = auth.user?.hearts ?? stats?.hearts ?? 5;
 
           final xpForNextLevel = 500; // Simplified for MVP
@@ -442,13 +488,10 @@ class _HomeContentState extends State<_HomeContent> {
                     const SizedBox(height: 24),
                     const _HomeSectionLabel(text: 'YOUR LEARNING PATH'),
                     const SizedBox(height: 10),
-                    SizedBox(
-                      height: 600,
-                      child: LessonListScreen(
-                        key: const ValueKey('home_roadmap'),
-                        initialUnitId: nextUnit?.id,
-                        embedded: true,
-                      ),
+                    LessonListScreen(
+                      key: const ValueKey('home_roadmap'),
+                      initialUnitId: nextUnit?.id,
+                      embedded: true,
                     ),
                   ],
 
@@ -667,7 +710,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                 const SizedBox(height: 7),
                 LText(
                   lesson.title,
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     fontSize: 21,
@@ -679,7 +722,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 LText(
                   chapterTitle,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     fontSize: 13,
@@ -886,7 +929,7 @@ class _HomeHero extends StatelessWidget {
                     children: [
                       _HeroPill(
                         icon: Iconsax.flash_15,
-                        text: '$streak day streak',
+                        text: streak > 0 ? '$streak day streak' : 'Start streak',
                       ),
                       HeartStatusChip(
                         hearts: hearts,
@@ -1094,6 +1137,88 @@ class _NotificationButtonState extends State<_NotificationButton> {
           ],
         );
       },
+    );
+  }
+}
+
+class ShimmerBox extends StatefulWidget {
+  final double width;
+  final double height;
+  final double borderRadius;
+
+  const ShimmerBox({
+    super.key,
+    required this.width,
+    required this.height,
+    this.borderRadius = 12,
+  });
+
+  @override
+  State<ShimmerBox> createState() => _ShimmerBoxState();
+}
+
+class _ShimmerBoxState extends State<ShimmerBox>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, child) {
+        final opacity = 0.25 + (_ctrl.value * 0.35);
+        return Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            color: const Color(0xFFCBD5E1).withOpacity(opacity),
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HomeSkeletonView extends StatelessWidget {
+  const _HomeSkeletonView();
+
+  @override
+  Widget build(BuildContext context) {
+    return const FluentianShimmer(
+      child: SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SkeletonHeroCard(),
+            SizedBox(height: 20),
+            SkeletonMissionCard(),
+            SizedBox(height: 16),
+            SkeletonChallengeCard(),
+            SizedBox(height: 24),
+            _HomeSectionLabel(text: 'YOUR LEARNING PATH'),
+            SizedBox(height: 10),
+            SkeletonRoadmap(),
+            SizedBox(height: 32),
+          ],
+        ),
+      ),
     );
   }
 }

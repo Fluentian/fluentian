@@ -755,3 +755,699 @@ class SettingsRow extends StatelessWidget {
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SKELETON / SHIMMER LOADING SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Smooth pulsing shimmer wrapper for all skeleton states.
+class FluentianShimmer extends StatefulWidget {
+  final Widget child;
+  final Duration duration;
+
+  const FluentianShimmer({
+    super.key,
+    required this.child,
+    this.duration = const Duration(milliseconds: 1400),
+  });
+
+  @override
+  State<FluentianShimmer> createState() => _FluentianShimmerState();
+}
+
+class _FluentianShimmerState extends State<FluentianShimmer>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.35, end: 0.88).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, _) => Opacity(
+        opacity: _animation.value,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// Primitive skeleton rectangular or rounded container.
+class SkeletonBox extends StatelessWidget {
+  final double? width;
+  final double height;
+  final double borderRadius;
+  final Color? color;
+
+  const SkeletonBox({
+    super.key,
+    this.width,
+    required this.height,
+    this.borderRadius = 8,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: color ?? const Color(0xFFE2E8F0),
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+    );
+  }
+}
+
+/// Skeleton matching the dark navy Home Hero card.
+class SkeletonHeroCard extends StatelessWidget {
+  const SkeletonHeroCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+      decoration: BoxDecoration(
+        gradient: FluentianColors.headerGradient,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonBox(
+                    width: 90,
+                    height: 12,
+                    borderRadius: 6,
+                    color: Colors.white.withValues(alpha: 0.2),
+                  ),
+                  const SizedBox(height: 8),
+                  SkeletonBox(
+                    width: 140,
+                    height: 24,
+                    borderRadius: 6,
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
+                ],
+              ),
+              SkeletonBox(
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SkeletonBox(
+            width: 220,
+            height: 14,
+            borderRadius: 6,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              SkeletonBox(
+                width: 110,
+                height: 32,
+                borderRadius: 16,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+              const SizedBox(width: 8),
+              SkeletonBox(
+                width: 90,
+                height: 32,
+                borderRadius: 16,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          SkeletonBox(
+            width: 100,
+            height: 10,
+            borderRadius: 4,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          const SizedBox(height: 8),
+          SkeletonBox(
+            width: double.infinity,
+            height: 8,
+            borderRadius: 4,
+            color: Colors.white.withValues(alpha: 0.25),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Skeleton matching the Continue Journey / Mission card.
+class SkeletonMissionCard extends StatelessWidget {
+  const SkeletonMissionCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: FluentianColors.headerGradient,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonBox(
+            width: 180,
+            height: 12,
+            borderRadius: 6,
+            color: Colors.white.withValues(alpha: 0.25),
+          ),
+          const SizedBox(height: 12),
+          SkeletonBox(
+            width: double.infinity,
+            height: 22,
+            borderRadius: 6,
+            color: Colors.white.withValues(alpha: 0.35),
+          ),
+          const SizedBox(height: 8),
+          SkeletonBox(
+            width: 200,
+            height: 18,
+            borderRadius: 6,
+            color: Colors.white.withValues(alpha: 0.35),
+          ),
+          const SizedBox(height: 10),
+          SkeletonBox(
+            width: 160,
+            height: 14,
+            borderRadius: 6,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              SkeletonBox(
+                width: 65,
+                height: 20,
+                borderRadius: 6,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+              const SizedBox(width: 12),
+              SkeletonBox(
+                width: 65,
+                height: 20,
+                borderRadius: 6,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+              const Spacer(),
+              SkeletonBox(
+                width: 100,
+                height: 46,
+                borderRadius: 14,
+                color: Colors.white.withValues(alpha: 0.9),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Skeleton matching the Daily Challenge card.
+class SkeletonChallengeCard extends StatelessWidget {
+  const SkeletonChallengeCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+      ),
+      child: Row(
+        children: [
+          const SkeletonBox(width: 50, height: 50, borderRadius: 16),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                SkeletonBox(width: 110, height: 11, borderRadius: 4),
+                SizedBox(height: 8),
+                SkeletonBox(width: 160, height: 16, borderRadius: 6),
+              ],
+            ),
+          ),
+          const SkeletonBox(width: 44, height: 44, borderRadius: 22),
+        ],
+      ),
+    );
+  }
+}
+
+/// Skeleton matching the Learning Path roadmap.
+class SkeletonRoadmap extends StatelessWidget {
+  const SkeletonRoadmap({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              SkeletonBox(width: 38, height: 38, borderRadius: 19),
+              SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonBox(width: 140, height: 16, borderRadius: 6),
+                  SizedBox(height: 4),
+                  SkeletonBox(width: 80, height: 11, borderRadius: 4),
+                ],
+              ),
+              Spacer(),
+              SkeletonBox(width: 60, height: 14, borderRadius: 4),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: FluentianColors.headerGradient,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonBox(
+                  width: 160,
+                  height: 11,
+                  borderRadius: 4,
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+                const SizedBox(height: 10),
+                SkeletonBox(
+                  width: double.infinity,
+                  height: 20,
+                  borderRadius: 6,
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: 6),
+                SkeletonBox(
+                  width: 180,
+                  height: 18,
+                  borderRadius: 6,
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: 16),
+                SkeletonBox(
+                  width: double.infinity,
+                  height: 6,
+                  borderRadius: 3,
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          Center(
+            child: Column(
+              children: const [
+                SkeletonBox(width: 68, height: 68, borderRadius: 34),
+                SizedBox(height: 24),
+                SkeletonBox(width: 68, height: 68, borderRadius: 34),
+                SizedBox(height: 24),
+                SkeletonBox(width: 68, height: 68, borderRadius: 34),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Skeleton matching Opportunity / Board card.
+class SkeletonOpportunityCard extends StatelessWidget {
+  const SkeletonOpportunityCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    SkeletonBox(width: 90, height: 26, borderRadius: 8),
+                    SizedBox(width: 8),
+                    SkeletonBox(width: 60, height: 22, borderRadius: 20),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const SkeletonBox(width: double.infinity, height: 20, borderRadius: 6),
+                const SizedBox(height: 8),
+                const SkeletonBox(width: 220, height: 18, borderRadius: 6),
+                const SizedBox(height: 12),
+                const SkeletonBox(width: double.infinity, height: 14, borderRadius: 4),
+                const SizedBox(height: 6),
+                const SkeletonBox(width: 180, height: 14, borderRadius: 4),
+              ],
+            ),
+          ),
+          Container(height: 1, color: Colors.black.withValues(alpha: 0.04)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
+                SkeletonBox(width: 120, height: 14, borderRadius: 4),
+                SkeletonBox(width: 90, height: 14, borderRadius: 4),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Skeleton matching Culture Story Explore card.
+class SkeletonCultureStory extends StatelessWidget {
+  const SkeletonCultureStory({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SkeletonBox(width: double.infinity, height: 240, borderRadius: 20),
+          const SizedBox(height: 18),
+          const SkeletonBox(width: 100, height: 24, borderRadius: 8),
+          const SizedBox(height: 10),
+          const SkeletonBox(width: 220, height: 28, borderRadius: 8),
+          const SizedBox(height: 8),
+          const SkeletonBox(width: 140, height: 16, borderRadius: 6),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                SkeletonBox(width: double.infinity, height: 16, borderRadius: 4),
+                SizedBox(height: 8),
+                SkeletonBox(width: double.infinity, height: 16, borderRadius: 4),
+                SizedBox(height: 8),
+                SkeletonBox(width: 180, height: 16, borderRadius: 4),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Skeleton matching Live Speaking Rooms.
+class SkeletonLiveRoom extends StatelessWidget {
+  const SkeletonLiveRoom({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: FluentianColors.headerGradient,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SkeletonBox(
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    color: Colors.white.withValues(alpha: 0.24),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonBox(
+                        width: 150,
+                        height: 16,
+                        borderRadius: 6,
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                      const SizedBox(height: 6),
+                      SkeletonBox(
+                        width: 100,
+                        height: 12,
+                        borderRadius: 4,
+                        color: Colors.white.withValues(alpha: 0.24),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              SkeletonBox(
+                width: double.infinity,
+                height: 48,
+                borderRadius: 14,
+                color: Colors.white.withValues(alpha: 0.9),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        const SkeletonBox(width: 140, height: 14, borderRadius: 4),
+        const SizedBox(height: 14),
+        ...List.generate(
+          3,
+          (_) => Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            ),
+            child: Row(
+              children: [
+                const SkeletonBox(width: 46, height: 46, borderRadius: 14),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      SkeletonBox(width: 130, height: 16, borderRadius: 6),
+                      SizedBox(height: 6),
+                      SkeletonBox(width: 160, height: 12, borderRadius: 4),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const SkeletonBox(width: 36, height: 36, borderRadius: 10),
+                const SizedBox(width: 8),
+                const SkeletonBox(width: 36, height: 36, borderRadius: 10),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Skeleton matching Profile Screen.
+class SkeletonProfile extends StatelessWidget {
+  const SkeletonProfile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: FluentianColors.headerGradient,
+            borderRadius: BorderRadius.circular(22),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  SkeletonBox(
+                    width: 76,
+                    height: 76,
+                    borderRadius: 38,
+                    color: Colors.white.withValues(alpha: 0.24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SkeletonBox(
+                          width: 140,
+                          height: 22,
+                          borderRadius: 6,
+                          color: Colors.white.withValues(alpha: 0.38),
+                        ),
+                        const SizedBox(height: 6),
+                        SkeletonBox(
+                          width: 90,
+                          height: 14,
+                          borderRadius: 4,
+                          color: Colors.white.withValues(alpha: 0.24),
+                        ),
+                        const SizedBox(height: 10),
+                        SkeletonBox(
+                          width: 100,
+                          height: 24,
+                          borderRadius: 12,
+                          color: Colors.white.withValues(alpha: 0.24),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SkeletonBox(
+                    width: 40,
+                    height: 40,
+                    borderRadius: 12,
+                    color: Colors.white.withValues(alpha: 0.24),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        const SkeletonBox(width: 120, height: 12, borderRadius: 4),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SkeletonBox(width: 110, height: 16, borderRadius: 6),
+                  SkeletonBox(width: 40, height: 16, borderRadius: 6),
+                ],
+              ),
+              SizedBox(height: 12),
+              SkeletonBox(width: double.infinity, height: 8, borderRadius: 4),
+              SizedBox(height: 10),
+              SkeletonBox(width: 160, height: 12, borderRadius: 4),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        const SkeletonBox(width: 100, height: 12, borderRadius: 4),
+        const SizedBox(height: 10),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1.25,
+          children: List.generate(
+            4,
+            (_) => Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  SkeletonBox(width: 36, height: 36, borderRadius: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonBox(width: 60, height: 18, borderRadius: 6),
+                      SizedBox(height: 4),
+                      SkeletonBox(width: 80, height: 11, borderRadius: 4),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+

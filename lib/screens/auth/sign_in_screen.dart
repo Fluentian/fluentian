@@ -36,6 +36,16 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AuthProvider>().clearError();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -130,187 +140,192 @@ class _SignInScreenState extends State<SignInScreen> {
       backgroundColor: AuthColors.pageBg,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
           child: Consumer<AuthProvider>(
             builder: (context, auth, _) {
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 32),
-                  const AuthLogo(),
-                  const SizedBox(height: 32),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 28,
-                      vertical: 28,
+                  const SizedBox(height: 12),
+                  const Center(child: AuthLogo()),
+                  const SizedBox(height: 36),
+
+                  LText(
+                    'Welcome back',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: AuthColors.heading,
+                      letterSpacing: -0.8,
                     ),
-                    decoration: BoxDecoration(
-                      color: AuthColors.cardBg,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: AuthColors.border),
+                  ),
+                  const SizedBox(height: 6),
+                  LText(
+                    'Sign in to your Fluentian account to continue.',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      color: AuthColors.placeholder,
+                      height: 1.4,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        LText(
-                          'Welcome back',
-                          style: GoogleFonts.inter(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                            color: AuthColors.heading,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        LText(
-                          'Sign in to continue learning.',
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            color: AuthColors.placeholder,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
+                  ),
+                  const SizedBox(height: 32),
 
-                        // Email field
-                        AuthInputField(
-                          label: 'Email address',
-                          leftIcon: Icons.email_outlined,
-                          keyboardType: TextInputType.emailAddress,
-                          controller: _emailController,
-                          hint: 'Enter the email linked to your account',
-                          enabled: !auth.isLoading,
-                          onChanged: (_) => _dismissMessages(),
-                        ),
-                        const SizedBox(height: 16),
+                  // Email field
+                  AuthInputField(
+                    label: 'Email address',
+                    keyboardType: TextInputType.emailAddress,
+                    controller: _emailController,
+                    hint: 'name@example.com',
+                    enabled: !auth.isLoading,
+                    onChanged: (_) => _dismissMessages(),
+                  ),
+                  const SizedBox(height: 20),
 
-                        // Password field
-                        AuthInputField(
-                          label: 'Password',
-                          leftIcon: Icons.lock_outline,
-                          isPassword: true,
-                          controller: _passwordController,
-                          hint: 'Enter your password',
-                          enabled: !auth.isLoading,
-                          onChanged: (_) => _dismissMessages(),
-                          onSubmitted: (_) => _handleSignIn(),
-                        ),
+                  // Password field
+                  AuthInputField(
+                    label: 'Password',
+                    isPassword: true,
+                    controller: _passwordController,
+                    hint: '••••••••',
+                    enabled: !auth.isLoading,
+                    onChanged: (_) => _dismissMessages(),
+                    onSubmitted: (_) => _handleSignIn(),
+                  ),
 
-                        const SizedBox(height: 8),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () =>
-                                _openAuthPage(const ForgotPasswordScreen()),
-                            child: LText(
-                              'Forgot password?',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: AuthColors.primary,
+                  const SizedBox(height: 16),
+
+                  // Remember me & Forgot Password row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: auth.isLoading
+                            ? null
+                            : () => setState(
+                                () => _rememberMe = !_rememberMe,
                               ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Remember me
-                        Row(
+                        child: Row(
                           children: [
-                            GestureDetector(
-                              onTap: auth.isLoading
-                                  ? null
-                                  : () => setState(
-                                      () => _rememberMe = !_rememberMe,
-                                    ),
-                              child: Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: _rememberMe
+                                    ? AuthColors.primaryBlue
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
                                   color: _rememberMe
-                                      ? AuthColors.primary
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: _rememberMe
-                                        ? AuthColors.primary
-                                        : AuthColors.border,
-                                  ),
+                                      ? AuthColors.primaryBlue
+                                      : AuthColors.border,
+                                  width: 1.5,
                                 ),
-                                child: _rememberMe
-                                    ? const Icon(
-                                        Icons.check,
-                                        size: 14,
-                                        color: Colors.white,
-                                      )
-                                    : null,
                               ),
+                              child: _rememberMe
+                                  ? const Icon(
+                                      Icons.check,
+                                      size: 14,
+                                      color: Colors.white,
+                                    )
+                                  : null,
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             LText(
                               'Remember me',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
                                 color: AuthColors.body,
                               ),
                             ),
                           ],
                         ),
-
-                        // Error banner
-                        if (auth.errorMessage != null) ...[
-                          const SizedBox(height: 20),
-                          _ErrorBanner(message: auth.errorMessage!),
-                        ],
-
-                        const SizedBox(height: 28),
-                        AuthButton(
-                          text: auth.isLoading ? 'Signing in…' : 'Sign in',
-                          onPressed: auth.isLoading ? null : _handleSignIn,
+                      ),
+                      GestureDetector(
+                        onTap: () =>
+                            _openAuthPage(const ForgotPasswordScreen()),
+                        child: LText(
+                          'Forgot password?',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AuthColors.primaryBlue,
+                          ),
                         ),
-                        const SizedBox(height: 20),
-                        const AuthDivider(),
-                        const SizedBox(height: 16),
-                        AuthSocialButton(
-                          text: 'Continue with Google',
-                          onPressed: auth.isLoading
-                              ? null
-                              : _handleGoogleSignIn,
+                      ),
+                    ],
+                  ),
+
+                  // Error banner
+                  if (auth.errorMessage != null) ...[
+                    const SizedBox(height: 20),
+                    _ErrorBanner(message: auth.errorMessage!),
+                  ],
+
+                  const SizedBox(height: 28),
+                  AuthButton(
+                    text: auth.isLoading ? 'Signing in…' : 'Sign in',
+                    onPressed: auth.isLoading ? null : _handleSignIn,
+                  ),
+                  const SizedBox(height: 24),
+                  const AuthDivider(),
+                  const SizedBox(height: 20),
+                  AuthSocialButton(
+                    text: 'Continue with Google',
+                    onPressed: auth.isLoading
+                        ? null
+                        : _handleGoogleSignIn,
+                  ),
+                  const SizedBox(height: 32),
+
+                  Center(
+                    child: Column(
+                      children: [
+                        TextButton.icon(
+                          onPressed: () => Navigator.of(context).push(
+                            LegalDocumentScreen.route(
+                              title: 'Privacy policy',
+                              url:
+                                  'https://api.fluentianapp.binovatechnologies.com/privacy',
+                            ),
+                          ),
+                          icon: const Icon(Icons.shield_outlined, size: 16, color: AuthColors.placeholder),
+                          label: LText(
+                            'Privacy policy',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              color: AuthColors.placeholder,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () => _openAuthPage(const SignUpScreen()),
+                          child: RichText(
+                            text: TextSpan(
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                color: AuthColors.placeholder,
+                              ),
+                              children: [
+                                TextSpan(text: context.tr("Don't have an account? ")),
+                                TextSpan(
+                                  text: context.tr('Sign up'),
+                                  style: const TextStyle(
+                                    color: AuthColors.primaryBlue,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  TextButton.icon(
-                    onPressed: () => Navigator.of(context).push(
-                      LegalDocumentScreen.route(
-                        title: 'Privacy policy',
-                        url:
-                            'https://api.fluentianapp.binovatechnologies.com/privacy',
-                      ),
-                    ),
-                    icon: const Icon(Icons.privacy_tip_outlined, size: 16),
-                    label: const LText('Privacy policy'),
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () => _openAuthPage(const SignUpScreen()),
-                    child: RichText(
-                      text: TextSpan(
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: AuthColors.placeholder,
-                        ),
-                        children: [
-                          TextSpan(text: context.tr("Don't have an account? ")),
-                          TextSpan(
-                            text: context.tr('Sign up'),
-                            style: const TextStyle(
-                              color: AuthColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                 ],
               );
             },

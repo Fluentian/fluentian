@@ -39,6 +39,16 @@ class _LessonListScreenState extends State<LessonListScreen> {
   void initState() {
     super.initState();
     _pendingInitialUnitId = widget.initialUnitId;
+    // When embedded on Home, the parent screen already triggers
+    // loadLessonProgress() on init -- calling it again here would just
+    // duplicate that network round-trip.
+    if (!widget.embedded) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<ContentProvider>().loadLessonProgress();
+        }
+      });
+    }
   }
 
   @override
@@ -111,7 +121,15 @@ class _LessonListScreenState extends State<LessonListScreen> {
     final body = Consumer<ContentProvider>(
       builder: (context, content, _) {
         if (content.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const FluentianShimmer(
+            child: SingleChildScrollView(
+              physics: NeverScrollableScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: SkeletonRoadmap(),
+              ),
+            ),
+          );
         }
         if (content.courses.isEmpty) {
           return Center(
@@ -166,133 +184,138 @@ class _LessonListScreenState extends State<LessonListScreen> {
           _pendingInitialUnitId = null;
         }
 
+        Widget buildPathList(BoxConstraints constraints) {
+          return ListView.builder(
+            controller: widget.embedded ? null : _scrollController,
+            physics: widget.embedded
+                ? const NeverScrollableScrollPhysics()
+                : null,
+            shrinkWrap: widget.embedded,
+            padding: EdgeInsets.only(bottom: widget.embedded ? 16 : 40),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final item = items[index];
+              if (item is _CourseHeaderItem) {
+                return _buildCourseHeader(item, content);
+              } else if (item is _UnitHeaderItem) {
+                return Container(
+                  key: _unitKeys.putIfAbsent(
+                    item.unit.id,
+                    () => GlobalKey(),
+                  ),
+                  child: _buildUnitHeader(
+                    context,
+                    item.unit,
+                    content,
+                    isExpanded: _isUnitExpanded(item.unit.id),
+                    isFocused: item.unit.id == _focusedUnitId,
+                  ),
+                );
+              } else if (item is _LessonNodeItem) {
+                return constraints.maxWidth < 330
+                    ? _buildLessonNode(context, item, constraints)
+                    : _buildJourneyNode(
+                        context,
+                        item,
+                        constraints,
+                      );
+              }
+              return const SizedBox.shrink();
+            },
+          );
+        }
+
+        if (widget.embedded) {
+          return LayoutBuilder(
+            builder: (context, constraints) => buildPathList(constraints),
+          );
+        }
+
         return Column(
           children: [
-            // Whole-journey progress keeps multiple courses from looking
-            // like unrelated lists while the route below retains a clear
-            // course boundary for each chapter set. Skipped when embedded
-            // on Home: the stats header and Current Mission card up there
-            // already establish overall progress, so repeating it here
-            // read as a disconnected second screen rather than a
-            // continuation of the same page.
-            if (!widget.embedded)
-              Container(
-                margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.black.withValues(alpha: 0.05),
-                  ),
-                  boxShadow: [FluentianShadows.subtle],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: FluentianColors.primary.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Transform.translate(
-                        offset: const Offset(0, 1),
-                        child: const Icon(
-                          Iconsax.award5,
-                          color: FluentianColors.primary,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          LText(
-                            'Your learning journey',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: FluentianColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: progressPercent,
-                              backgroundColor: FluentianColors.primary
-                                  .withValues(alpha: 0.1),
-                              valueColor: const AlwaysStoppedAnimation(
-                                FluentianColors.primary,
-                              ),
-                              minHeight: 6,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          LText(
-                            '$completedLessons of $totalLessons lessons complete · ${content.courses.length} ${content.courses.length == 1 ? 'course' : 'courses'} · $totalUnits ${totalUnits == 1 ? 'chapter' : 'chapters'}',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: FluentianColors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: FluentianColors.border),
+                boxShadow: [FluentianShadows.subtle],
               ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: FluentianColors.primaryTint,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Iconsax.routing_2,
+                      color: FluentianColors.primary,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            LText(
+                              'French Fluency Path',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: FluentianColors.textPrimary,
+                              ),
+                            ),
+                            LText(
+                              '${(progressPercent * 100).toInt()}%',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: FluentianColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progressPercent,
+                            backgroundColor: FluentianColors.primary
+                                .withValues(alpha: 0.1),
+                            valueColor: const AlwaysStoppedAnimation(
+                              FluentianColors.primary,
+                            ),
+                            minHeight: 6,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        LText(
+                          '$completedLessons of $totalLessons lessons complete · ${content.courses.length} ${content.courses.length == 1 ? 'course' : 'courses'} · $totalUnits ${totalUnits == 1 ? 'chapter' : 'chapters'}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: FluentianColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Expanded(
               child: LayoutBuilder(
-                builder: (context, constraints) {
-                  // This intentionally builds the complete path. Apart from
-                  // being a more natural journey view, it guarantees that a
-                  // deep-linked active chapter has a mounted key for
-                  // Scrollable.ensureVisible (a lazy ListView does not).
-                  return SingleChildScrollView(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.only(bottom: 40),
-                    child: SizedBox(
-                      width: constraints.maxWidth,
-                      child: Column(
-                        children: [
-                          for (final item in items)
-                            if (item is _CourseHeaderItem)
-                              _buildCourseHeader(item, content)
-                            else if (item is _UnitHeaderItem)
-                              Container(
-                                key: _unitKeys.putIfAbsent(
-                                  item.unit.id,
-                                  () => GlobalKey(),
-                                ),
-                                child: _buildUnitHeader(
-                                  context,
-                                  item.unit,
-                                  content,
-                                  isExpanded: _isUnitExpanded(item.unit.id),
-                                  isFocused: item.unit.id == _focusedUnitId,
-                                ),
-                              )
-                            else if (item is _LessonNodeItem)
-                              constraints.maxWidth < 330
-                                  ? _buildLessonNode(context, item, constraints)
-                                  : _buildJourneyNode(
-                                      context,
-                                      item,
-                                      constraints,
-                                    ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                builder: (context, constraints) => buildPathList(constraints),
               ),
             ),
           ],
@@ -488,15 +511,22 @@ class _LessonListScreenState extends State<LessonListScreen> {
   }
 
   String _courseTitle(CourseModel course) {
-    if (course.code == 'FR_A1_BASICS') return 'French A1 Basics';
+    final normalized = course.code.trim().toLowerCase();
+    if (normalized == 'fr-full' || normalized == 'fr_full' || normalized == 'frfull') {
+      return 'French: Complete (${course.levelMin}–${course.levelMax})';
+    }
+    if (normalized == 'fr_a1_basics' || normalized == 'fr-a1-basics') {
+      return 'French A1 Basics';
+    }
 
-    return course.code
+    final cleaned = course.code.replaceAll('-', '_');
+    return cleaned
         .split('_')
         .where((segment) => segment.isNotEmpty)
-        .map(
-          (segment) =>
-              '${segment[0].toUpperCase()}${segment.substring(1).toLowerCase()}',
-        )
+        .map((segment) {
+          if (segment.toLowerCase() == 'fr') return 'French';
+          return '${segment[0].toUpperCase()}${segment.substring(1).toLowerCase()}';
+        })
         .join(' ');
   }
 

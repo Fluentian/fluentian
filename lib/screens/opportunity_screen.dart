@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 import '../services/opportunities_api.dart';
+import '../widgets/common_widgets.dart';
 import 'opportunity_detail_screen.dart';
 
 class OpportunityScreen extends StatefulWidget {
@@ -194,9 +195,19 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
 
             Expanded(
               child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: FluentianColors.accent,
+                  ? const FluentianShimmer(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: SingleChildScrollView(
+                          physics: NeverScrollableScrollPhysics(),
+                          child: Column(
+                            children: [
+                              SkeletonOpportunityCard(),
+                              SkeletonOpportunityCard(),
+                              SkeletonOpportunityCard(),
+                            ],
+                          ),
+                        ),
                       ),
                     )
                   : _error != null

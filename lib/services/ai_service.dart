@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'api_client.dart';
+import 'ai_cache_service.dart';
 import '../core/app_localization.dart';
 
 class AiMessage {
@@ -77,6 +78,52 @@ class AiTutorResponse {
 class AiService {
   AiService._();
   static final AiService instance = AiService._();
+
+  Future<AiTutorResponse?> fetchQuickAction({
+    required String action,
+    required String contentId,
+    required String contextText,
+  }) async {
+    final languageCode = AppLocaleController.activeLanguageCode;
+
+    try {
+      final localCached = await AiCacheService.instance.getCachedResponse(
+        action: action,
+        contentId: contentId,
+        languageCode: languageCode,
+      );
+
+      Map<String, dynamic> responseData;
+      if (localCached != null) {
+        responseData = localCached;
+      } else {
+        responseData = await ApiClient.instance.post('/ai/quick-action', {
+          'action': action,
+          'content_id': contentId,
+          'context_text': contextText,
+          'content_language': languageCode,
+        });
+
+        await AiCacheService.instance.saveResponse(
+          action: action,
+          contentId: contentId,
+          languageCode: languageCode,
+          payload: responseData,
+        );
+      }
+
+      final activityJson = responseData['activity'];
+      return AiTutorResponse(
+        text: responseData['text']?.toString() ?? '',
+        activity: activityJson is Map
+            ? AiTutorActivity.fromJson(Map<String, dynamic>.from(activityJson))
+            : null,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('AI Quick Action Exception: $e');
+      return null;
+    }
+  }
 
   Future<AiTutorResponse?> generateText({
     required List<AiMessage> messages,

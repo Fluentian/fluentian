@@ -8,6 +8,7 @@ import '../models/notification_model.dart';
 import '../services/api_client.dart';
 import '../services/in_app_notification_service.dart';
 import '../services/notifications_api.dart';
+import '../widgets/common_widgets.dart';
 
 enum _NotificationSource { backend, local }
 
@@ -122,7 +123,45 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return FluentianShimmer(
+              child: ListView(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                children: List.generate(
+                  5,
+                  (_) => Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SkeletonBox(width: 42, height: 42, borderRadius: 12),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              SkeletonBox(width: 150, height: 16, borderRadius: 6),
+                              SizedBox(height: 6),
+                              SkeletonBox(width: double.infinity, height: 12, borderRadius: 4),
+                              SizedBox(height: 4),
+                              SkeletonBox(width: 180, height: 12, borderRadius: 4),
+                              SizedBox(height: 8),
+                              SkeletonBox(width: 70, height: 10, borderRadius: 4),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
           }
           if (snapshot.hasError) {
             return _MessageState(

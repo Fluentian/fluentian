@@ -1,4 +1,5 @@
 import 'package:fluentian/services/api_client.dart';
+import 'package:fluentian/services/offline_content_cache.dart';
 
 class Opportunity {
   final String id;
@@ -42,9 +43,20 @@ class Opportunity {
 
 class OpportunitiesApi {
   final ApiClient _client = ApiClient.instance;
+  final OfflineContentCache _cache = OfflineContentCache.instance;
+  static const _cacheKey = 'opportunities:all';
 
   Future<List<Opportunity>> getOpportunities() async {
-    final items = await _client.getList('/opportunities');
+    List<dynamic> items;
+    try {
+      items = await _client.getList('/opportunities');
+      if (items.isNotEmpty) {
+        await _cache.put(_cacheKey, items);
+      }
+    } catch (_) {
+      items = await _cache.get<List<dynamic>>(_cacheKey) ?? const [];
+    }
+
     return items
         .map((json) => Opportunity.fromJson(json as Map<String, dynamic>))
         .toList();

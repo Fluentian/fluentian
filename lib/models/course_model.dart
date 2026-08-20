@@ -219,11 +219,17 @@ class BlockModel {
 
     final frenchText = _firstString(blockPayload, [
       'target',
+      'french',
       'fr',
       'word',
       'phrase',
       'sentence',
       'example_fr',
+      'french_text',
+      'original',
+      'expression',
+      'text',
+      'content',
     ]);
     if (frenchText.isNotEmpty) return frenchText;
 

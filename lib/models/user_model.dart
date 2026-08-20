@@ -37,6 +37,7 @@ class UserModel {
   final bool hapticFeedbackEnabled;
   final double ttsSpeed;
   final int fontScale;
+  final String preferredVoiceId;
 
   const UserModel({
     required this.id,
@@ -74,6 +75,7 @@ class UserModel {
     this.hapticFeedbackEnabled = true,
     this.ttsSpeed = 1.0,
     this.fontScale = 1,
+    this.preferredVoiceId = 'claire',
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -140,7 +142,29 @@ class UserModel {
           settings?['haptic_feedback_enabled'] as bool? ?? true,
       ttsSpeed: (settings?['tts_speed'] as num?)?.toDouble() ?? 1.0,
       fontScale: settings?['font_scale'] as int? ?? 1,
+      preferredVoiceId: normalizeVoiceId(profile?['preferred_voice_id']?.toString()),
     );
+  }
+
+  static String normalizeVoiceId(String? raw) {
+    final v = (raw ?? '').toLowerCase().trim();
+    switch (v) {
+      case 'claire':
+        return 'maya';
+      case 'elodie':
+        return 'sofia';
+      case 'antoine':
+        return 'sami';
+      case 'lucas':
+        return 'daniel';
+      case 'maya':
+      case 'sofia':
+      case 'sami':
+      case 'daniel':
+        return v;
+      default:
+        return 'maya';
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -220,6 +244,7 @@ class UserModel {
     bool? hapticFeedbackEnabled,
     double? ttsSpeed,
     int? fontScale,
+    String? preferredVoiceId,
   }) => UserModel(
     id: id ?? this.id,
     username: username ?? this.username,
@@ -262,6 +287,9 @@ class UserModel {
     hapticFeedbackEnabled: hapticFeedbackEnabled ?? this.hapticFeedbackEnabled,
     ttsSpeed: ttsSpeed ?? this.ttsSpeed,
     fontScale: fontScale ?? this.fontScale,
+    preferredVoiceId: preferredVoiceId != null
+        ? UserModel.normalizeVoiceId(preferredVoiceId)
+        : this.preferredVoiceId,
   );
 
   /// Greeting based on time of day.

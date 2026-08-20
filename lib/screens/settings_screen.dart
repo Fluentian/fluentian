@@ -12,8 +12,10 @@ import '../providers/content_provider.dart';
 import '../services/app_logger.dart';
 import '../services/download_settings.dart';
 import '../services/local_push_service.dart';
+import '../services/tts_service.dart';
 import 'legal_document_screen.dart';
 import 'offline_downloads_screen.dart';
+import '../models/user_model.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -62,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _AccountHeader(onEdit: () => _showProfileEditor(context)),
           const SizedBox(height: 16),
           _SettingsGroup(
-            title: 'Learning language',
+            title: 'App language',
             children: [
               _LanguageRow(
                 locale: context.watch<AppLocaleController>().locale,
@@ -157,6 +159,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label: 'Sound effects',
                 value: user.soundEnabled,
                 onChanged: (value) => _save(context, {'sound_enabled': value}),
+              ),
+              _VoiceSelectorRow(
+                voiceId: user.preferredVoiceId,
+                onChanged: (value) => _save(context, {'preferred_voice_id': value}),
               ),
               _SliderRow(
                 icon: Icons.speed_rounded,
@@ -466,45 +472,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // ── Delete-account reasons ───────────────────────────────────────────────
+  static const List<String> _deletionReasons = [
+    "I'm not making progress",
+    'The app is too difficult',
+    'I found a better alternative',
+    "I don't have enough time",
+    'Technical issues / bugs',
+    'Privacy concerns',
+    'I just want a break',
+    'Other',
+  ];
+
   Future<void> _confirmAccountDeletion(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        icon: const Icon(
-          Icons.warning_amber_rounded,
-          color: FluentianColors.error,
-        ),
-        title: const LText('Delete your account?'),
-        content: const LText(
-          'This permanently removes your profile, learning progress, messages, social data, notifications, and device tokens. This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const LText('Keep account'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: FluentianColors.error,
-            ),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const LText('Delete permanently'),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => const _DeleteAccountBottomSheet(),
     );
+
     if (confirmed != true || !context.mounted) return;
-    final auth = context.read<AuthProvider>();
-    final ok = await auth.deleteAccount();
-    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: LText(
-          ok
-              ? 'Your account was deleted.'
-              : auth.errorMessage ?? 'Could not delete your account.',
-        ),
-      ),
+      const SnackBar(content: LText('Account deleted successfully.')),
     );
   }
 
@@ -1000,11 +990,15 @@ class _LanguageRow extends StatelessWidget {
       (Locale('am'), 'አማርኛ'),
       (Locale('om'), 'Afaan Oromoo'),
     ];
+    const validCodes = {'en', 'am', 'om'};
+    final safeCode = validCodes.contains(locale.languageCode)
+        ? locale.languageCode
+        : 'en';
     return _RowShell(
       icon: Icons.language_rounded,
-      label: 'Learning language',
+      label: 'App language',
       trailing: DropdownButton<String>(
-        value: locale.languageCode,
+        value: safeCode,
         underline: const SizedBox.shrink(),
         items: options
             .map(
@@ -1231,6 +1225,22 @@ class _SliderRow extends StatelessWidget {
                   ),
                 ),
               ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(
+                  Icons.volume_up_rounded,
+                  color: FluentianColors.primary,
+                  size: 20,
+                ),
+                onPressed: () {
+                  TtsService.instance.speak(
+                    "Bonjour ! Bienvenue sur Fluentian.",
+                    speed: double.parse(value.toStringAsFixed(1)),
+                  );
+                },
+              ),
+              const SizedBox(width: 6),
               LText(
                 displayValue,
                 style: GoogleFonts.inter(
@@ -1247,6 +1257,12 @@ class _SliderRow extends StatelessWidget {
             max: max,
             divisions: ((max - min) * 10).round(),
             onChanged: onChanged,
+            onChangeEnd: (val) {
+              TtsService.instance.speak(
+                "Bonjour ! Bienvenue sur Fluentian.",
+                speed: double.parse(val.toStringAsFixed(1)),
+              );
+            },
           ),
         ],
       ),
@@ -1357,4 +1373,956 @@ class _SettingIcon extends StatelessWidget {
       color: enabled ? FluentianColors.primary : FluentianColors.textSecondary,
     ),
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dedicated StatefulWidget to guarantee state persistence across keyboard popups
+// ─────────────────────────────────────────────────────────────────────────────
+class _DeleteAccountBottomSheet extends StatefulWidget {
+  const _DeleteAccountBottomSheet();
+
+  @override
+  State<_DeleteAccountBottomSheet> createState() => _DeleteAccountBottomSheetState();
+}
+
+class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
+  int _step = 0; // 0 = Reason, 1 = OTP
+  String? _selectedReason;
+  bool _isProcessing = false;
+  String? _errorMessage;
+  late final TextEditingController _otpController;
+
+  @override
+  void initState() {
+    super.initState();
+    _otpController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userEmail = context.read<AuthProvider>().user?.email ?? 'your email';
+    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomPadding),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              // Progress Steps bar
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: FluentianColors.error,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: _step >= 1
+                            ? FluentianColors.error
+                            : Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    _step == 0 ? 'Step 1 of 2' : 'Step 2 of 2',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                        ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              if (_errorMessage != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: FluentianColors.error.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: FluentianColors.error.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: FluentianColors.error, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: FluentianColors.error,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              if (_step == 0) ...[
+                // ── Step 0: Reason Selection ──────────────────────────────
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: FluentianColors.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.help_outline_rounded,
+                        color: FluentianColors.error,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Before you go…',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          Text(
+                            'Please select why you are closing your account',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+
+                ..._SettingsScreenState._deletionReasons.map((reason) {
+                  final isSelected = _selectedReason == reason;
+                  return GestureDetector(
+                    onTap: () => setState(() {
+                      _selectedReason = reason;
+                      _errorMessage = null;
+                    }),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? FluentianColors.error.withOpacity(0.08)
+                            : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? FluentianColors.error
+                              : Colors.transparent,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              reason,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    color: isSelected ? FluentianColors.error : null,
+                                  ),
+                            ),
+                          ),
+                          if (isSelected)
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: FluentianColors.error,
+                              size: 18,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _selectedReason != null && !_isProcessing
+                          ? FluentianColors.error
+                          : FluentianColors.error.withOpacity(0.4),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: _selectedReason != null && !_isProcessing
+                        ? () async {
+                            setState(() {
+                              _isProcessing = true;
+                              _errorMessage = null;
+                            });
+                            final auth = context.read<AuthProvider>();
+                            final sent = await auth.requestAccountDeletionOtp();
+                            if (!mounted) return;
+                            if (sent) {
+                              setState(() {
+                                _step = 1;
+                                _isProcessing = false;
+                              });
+                            } else {
+                              setState(() {
+                                _isProcessing = false;
+                                _errorMessage = auth.errorMessage ?? 'Could not send verification code.';
+                              });
+                            }
+                          }
+                        : null,
+                    child: _isProcessing
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Continue to Verification',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: TextButton(
+                    onPressed: _isProcessing ? null : () => Navigator.pop(context, false),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ] else ...[
+                // ── Step 1: Email Code Entry ──────────────────────────────
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: FluentianColors.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.mark_email_unread_outlined,
+                        color: FluentianColors.error,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Check your inbox',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          Text(
+                            'We sent a 6-digit code to verify your request.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Email badge chip
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.alternate_email, size: 16, color: FluentianColors.error),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          userEmail,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                TextField(
+                  controller: _otpController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  autofocus: true,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 18,
+                  ),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    hintText: '······',
+                    hintStyle: TextStyle(
+                      letterSpacing: 14,
+                      color: Colors.grey.shade400,
+                      fontSize: 22,
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: FluentianColors.error.withOpacity(0.6),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  onChanged: (_) => setState(() {
+                    _errorMessage = null;
+                  }),
+                ),
+                const SizedBox(height: 12),
+
+                Center(
+                  child: TextButton(
+                    onPressed: _isProcessing
+                        ? null
+                        : () async {
+                            setState(() {
+                              _isProcessing = true;
+                              _errorMessage = null;
+                            });
+                            final auth = context.read<AuthProvider>();
+                            final ok = await auth.requestAccountDeletionOtp();
+                            if (mounted) {
+                              setState(() {
+                                _isProcessing = false;
+                                if (ok) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('New code sent to your email.')),
+                                  );
+                                } else {
+                                  _errorMessage = auth.errorMessage ?? 'Could not resend code.';
+                                }
+                              });
+                            }
+                          },
+                    child: Text(
+                      'Didn\'t receive code? Resend',
+                      style: TextStyle(
+                        color: FluentianColors.error.withOpacity(0.9),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _otpController,
+                    builder: (context, value, _) {
+                      final canSubmit = value.text.trim().length == 6 && !_isProcessing;
+                      return FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: canSubmit
+                              ? FluentianColors.error
+                              : FluentianColors.error.withOpacity(0.4),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: canSubmit
+                            ? () async {
+                                setState(() {
+                                  _isProcessing = true;
+                                  _errorMessage = null;
+                                });
+                                final auth = context.read<AuthProvider>();
+                                final ok = await auth.confirmAccountDeletion(
+                                  code: _otpController.text.trim(),
+                                  reasonCode: _selectedReason,
+                                );
+                                if (!ok && mounted) {
+                                  setState(() {
+                                    _isProcessing = false;
+                                    _errorMessage = auth.errorMessage ?? 'Invalid or expired code.';
+                                  });
+                                }
+                              }
+                            : null,
+                        child: _isProcessing
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Confirm & Delete Account',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                Center(
+                  child: TextButton(
+                    onPressed: _isProcessing
+                        ? null
+                        : () => setState(() {
+                              _step = 0;
+                              _otpController.clear();
+                              _errorMessage = null;
+                            }),
+                    child: Text(
+                      'Back to reasons',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VoiceInfo {
+  final String name;
+  final String tag;
+  final String accent;
+  final String description;
+  final String sampleText;
+
+  const _VoiceInfo({
+    required this.name,
+    required this.tag,
+    required this.accent,
+    required this.description,
+    required this.sampleText,
+  });
+}
+
+class _VoiceSelectorRow extends StatefulWidget {
+  final String voiceId;
+  final ValueChanged<String> onChanged;
+
+  const _VoiceSelectorRow({
+    required this.voiceId,
+    required this.onChanged,
+  });
+
+  @override
+  State<_VoiceSelectorRow> createState() => _VoiceSelectorRowState();
+}
+
+class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
+  String? _playingVoiceKey;
+
+  static const Map<String, _VoiceInfo> _voices = {
+    'maya': _VoiceInfo(
+      name: 'Maya',
+      tag: 'Young Female',
+      accent: '🇫🇷 French (Female)',
+      description: 'Upbeat, bright and encouraging cadence for everyday French.',
+      sampleText: "Bonjour ! Je m'appelle Maya, votre tutrice Fluentian.",
+    ),
+    'sofia': _VoiceInfo(
+      name: 'Sofia',
+      tag: 'Polished Female',
+      accent: '🇫🇷 French (Female)',
+      description: 'Serene, articulate Parisian tone ideal for clear lessons.',
+      sampleText: "Bonjour ! Je m'appelle Sofia, votre tutrice Fluentian.",
+    ),
+    'sami': _VoiceInfo(
+      name: 'Sami',
+      tag: 'Young Male',
+      accent: '🇫🇷 French (Male)',
+      description: 'Friendly, energetic male voice for casual conversations.',
+      sampleText: "Bonjour ! Je m'appelle Sami, votre tuteur Fluentian.",
+    ),
+    'daniel': _VoiceInfo(
+      name: 'Daniel',
+      tag: 'Polished Male',
+      accent: '🇫🇷 French (Male)',
+      description: 'Clear, reassuring male host style for structured learning.',
+      sampleText: "Bonjour ! Je m'appelle Daniel, votre tuteur Fluentian.",
+    ),
+  };
+
+  void _previewVoice(String key, [StateSetter? setSheetState]) async {
+    final activeKey = UserModel.normalizeVoiceId(key);
+    if (_playingVoiceKey == activeKey) {
+      await TtsService.instance.stop();
+      if (mounted) {
+        setState(() => _playingVoiceKey = null);
+        if (setSheetState != null) setSheetState(() {});
+      }
+      return;
+    }
+
+    setState(() => _playingVoiceKey = activeKey);
+    if (setSheetState != null) setSheetState(() {});
+    final info = _voices[activeKey];
+    if (info != null) {
+      await TtsService.instance.speak(info.sampleText, voiceId: activeKey);
+    }
+    if (mounted) {
+      setState(() => _playingVoiceKey = null);
+      if (setSheetState != null) setSheetState(() {});
+    }
+  }
+
+  void _openVoicePicker(BuildContext context) {
+    // Pre-warm all voice audition samples in background for instant playback
+    for (final entry in _voices.entries) {
+      TtsService.instance.prefetch([entry.value.sampleText], voiceId: entry.key);
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.75,
+              minChildSize: 0.4,
+              maxChildSize: 0.9,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                  ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      Container(
+                        width: 42,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: FluentianColors.primary.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.record_voice_over_rounded,
+                                color: FluentianColors.primary,
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Cartesia AI Voice Engine',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Audition voice samples before picking your tutor.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      Expanded(
+                        child: ListView.separated(
+                          controller: scrollController,
+                          padding: const EdgeInsets.all(20),
+                          itemCount: _voices.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final entry = _voices.entries.elementAt(index);
+                            final key = entry.key;
+                            final info = entry.value;
+                            final activeKey = UserModel.normalizeVoiceId(widget.voiceId);
+                            final isSelected = activeKey == key;
+                            final isPlaying = _playingVoiceKey == key;
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? FluentianColors.primary.withOpacity(0.04)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? FluentianColors.primary.withOpacity(0.5)
+                                      : const Color(0xFFE2E8F0),
+                                  width: isSelected ? 1.8 : 1.0,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.02),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        info.accent.split(' ')[0],
+                                        style: const TextStyle(fontSize: 22),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  info.name,
+                                                  style: GoogleFonts.plusJakartaSans(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: const Color(0xFF0F172A),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                      horizontal: 8, vertical: 3),
+                                                  decoration: BoxDecoration(
+                                                    color: isSelected
+                                                        ? FluentianColors.primary
+                                                        : const Color(0xFFF1F5F9),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Text(
+                                                    info.tag,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: isSelected
+                                                          ? Colors.white
+                                                          : const Color(0xFF475569),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              info.description,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                color: const Color(0xFF64748B),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    children: [
+                                      // Audition Button — wrapped in Flexible to prevent
+                                      // unconstrained-width crash (OutlinedButton.icon
+                                      // uses an internal Row that needs bounded width)
+                                      Flexible(
+                                        fit: FlexFit.loose,
+                                        child: OutlinedButton.icon(
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: isPlaying
+                                                ? FluentianColors.primary
+                                                : const Color(0xFF334155),
+                                            side: BorderSide(
+                                              color: isPlaying
+                                                  ? FluentianColors.primary
+                                                  : const Color(0xFFCBD5E1),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 10),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          onPressed: () => _previewVoice(key, setSheetState),
+                                          icon: Icon(
+                                            isPlaying
+                                                ? Icons.graphic_eq_rounded
+                                                : Icons.play_arrow_rounded,
+                                            size: 18,
+                                            color: isPlaying
+                                                ? FluentianColors.primary
+                                                : const Color(0xFF334155),
+                                          ),
+                                          label: Text(
+                                            isPlaying ? 'Auditioning...' : 'Listen sample',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      // Select Voice Button
+                                      FilledButton(
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: isSelected
+                                              ? const Color(0xFF22C55E)
+                                              : FluentianColors.primary,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          widget.onChanged(key);
+                                          Navigator.of(sheetContext).pop();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Tutor voice set to ${info.name}.'),
+                                              duration: const Duration(seconds: 2),
+                                            ),
+                                          );
+                                        },
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (isSelected) ...[
+                                              const Icon(Icons.check_rounded,
+                                                  size: 16, color: Colors.white),
+                                              const SizedBox(width: 4),
+                                            ],
+                                            Text(
+                                              isSelected ? 'Active' : 'Select voice',
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final activeKey = UserModel.normalizeVoiceId(widget.voiceId);
+    final info = _voices[activeKey] ?? _voices['maya']!;
+    final isPlayingCurrent = _playingVoiceKey == activeKey;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => _openVoicePicker(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: FluentianColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.record_voice_over_rounded,
+                    color: FluentianColors.primary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'French Speaker Voice',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${info.name} • ${info.tag}',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: FluentianColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Direct Audition Button on Settings Screen
+                IconButton.filledTonal(
+                  style: IconButton.styleFrom(
+                    backgroundColor: isPlayingCurrent
+                        ? FluentianColors.primary
+                        : FluentianColors.primary.withOpacity(0.1),
+                  ),
+                  icon: Icon(
+                    isPlayingCurrent
+                        ? Icons.graphic_eq_rounded
+                        : Icons.volume_up_rounded,
+                    color: isPlayingCurrent ? Colors.white : FluentianColors.primary,
+                    size: 20,
+                  ),
+                  tooltip: 'Audition voice sample',
+                  onPressed: () => _previewVoice(widget.voiceId),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xFF94A3B8),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

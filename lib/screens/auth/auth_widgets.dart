@@ -4,17 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AuthColors {
-  static const primary = Color(0xFF0A3B6A);
-  static const pageBg = Color(0xFFF5F8FA);
+  static const primary = Color(0xFF0F172A); // Deep slate midnight
+  static const primaryBlue = Color(0xFF1D4ED8); // Royal French Blue accent
+  static const pageBg = Color(0xFFFFFFFF); // Clean pure white canvas
   static const cardBg = Color(0xFFFFFFFF);
-  static const heading = Color(0xFF072D52);
-  static const body = Color(0xFF374151);
-  static const placeholder = Color(0xFF9CA3AF);
-  static const border = Color(0xFFE5E7EB);
-  static const errorText = Color(0xFFDC2626);
-  static const errorBg = Color(0xFFFEE2E2);
-  static const success = Color(0xFF22C55E);
-  static const disabledBtn = Color(0xFFB8CDE0);
+  static const heading = Color(0xFF0F172A);
+  static const body = Color(0xFF334155);
+  static const placeholder = Color(0xFF94A3B8);
+  static const border = Color(0xFFE2E8F0);
+  static const inputBg = Color(0xFFF8FAFC);
+  static const errorText = Color(0xFFE11D48);
+  static const errorBg = Color(0xFFFFF1F2);
+  static const success = Color(0xFF10B981);
+  static const disabledBtn = Color(0xFF94A3B8);
 }
 
 class AuthLogo extends StatelessWidget {
@@ -25,38 +27,21 @@ class AuthLogo extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AuthColors.primary,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: AuthColors.primary.withValues(alpha: 0.2),
-                blurRadius: 0,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Center(
-            child: LText(
-              'F',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
         LText(
           'fluentian',
-          style: GoogleFonts.inter(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
             color: AuthColors.heading,
+            letterSpacing: -1.0,
+          ),
+        ),
+        LText(
+          '.',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: AuthColors.primaryBlue,
           ),
         ),
       ],
@@ -66,7 +51,7 @@ class AuthLogo extends StatelessWidget {
 
 class AuthInputField extends StatefulWidget {
   final String label;
-  final IconData leftIcon;
+  final IconData? leftIcon;
   final bool isPassword;
   final String? errorText;
   final TextInputType keyboardType;
@@ -80,7 +65,7 @@ class AuthInputField extends StatefulWidget {
   const AuthInputField({
     super.key,
     required this.label,
-    required this.leftIcon,
+    this.leftIcon,
     this.isPassword = false,
     this.errorText,
     this.keyboardType = TextInputType.text,
@@ -106,9 +91,11 @@ class _AuthInputFieldState extends State<AuthInputField> {
     super.initState();
     _obscureText = widget.isPassword;
     _focusNode.addListener(() {
-      setState(() {
-        _isFocused = _focusNode.hasFocus;
-      });
+      if (mounted) {
+        setState(() {
+          _isFocused = _focusNode.hasFocus;
+        });
+      }
     });
   }
 
@@ -123,29 +110,43 @@ class _AuthInputFieldState extends State<AuthInputField> {
     final hasError = widget.errorText != null;
     final borderColor = hasError
         ? AuthColors.errorText
-        : (_isFocused ? AuthColors.primary : AuthColors.border);
+        : (_isFocused ? AuthColors.primaryBlue : AuthColors.border);
     final borderWidth = (_isFocused || hasError) ? 1.5 : 1.0;
-    final iconColor = hasError
-        ? AuthColors.errorText
-        : (_isFocused ? AuthColors.primary : AuthColors.placeholder);
-    final bgColor = hasError ? const Color(0xFFFFF8F8) : Colors.white;
+    final bgColor = hasError ? AuthColors.errorBg : AuthColors.inputBg;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
+        LText(
+          widget.label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AuthColors.heading,
+          ),
+        ),
+        const SizedBox(height: 8),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
           height: 52,
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: borderColor, width: borderWidth),
           ),
           child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Icon(widget.leftIcon, color: iconColor, size: 18),
-              ),
+              if (widget.leftIcon != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 12),
+                  child: Icon(
+                    widget.leftIcon,
+                    color: _isFocused ? AuthColors.primaryBlue : AuthColors.placeholder,
+                    size: 18,
+                  ),
+                )
+              else
+                const SizedBox(width: 16),
               Expanded(
                 child: TextFormField(
                   focusNode: _focusNode,
@@ -155,28 +156,19 @@ class _AuthInputFieldState extends State<AuthInputField> {
                   enabled: widget.enabled,
                   onChanged: widget.onChanged,
                   onFieldSubmitted: widget.onSubmitted,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
                     color: AuthColors.heading,
                   ),
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    labelText: widget.label,
                     hintText: widget.hint,
-                    hintStyle: GoogleFonts.inter(
+                    hintStyle: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
-                      color: AuthColors.placeholder.withValues(alpha: 0.7),
-                    ),
-                    labelStyle: GoogleFonts.inter(
-                      fontSize: _isFocused ? 12 : 16,
                       color: AuthColors.placeholder,
                     ),
-                    floatingLabelStyle: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: hasError
-                          ? AuthColors.errorText
-                          : AuthColors.primary,
-                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
@@ -199,22 +191,13 @@ class _AuthInputFieldState extends State<AuthInputField> {
         if (hasError)
           Padding(
             padding: const EdgeInsets.only(top: 6, left: 4),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: AuthColors.errorText,
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
-                LText(
-                  widget.errorText!,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: AuthColors.errorText,
-                  ),
-                ),
-              ],
+            child: LText(
+              widget.errorText!,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AuthColors.errorText,
+              ),
             ),
           ),
       ],
@@ -230,36 +213,55 @@ class AuthButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    final isLoading = text.contains('…') || text.toLowerCase().contains('loading');
+    return Container(
       width: double.infinity,
       height: 54,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: onPressed != null
+            ? [
+                BoxShadow(
+                  color: AuthColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
+      ),
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: AuthColors.primary,
           disabledBackgroundColor: AuthColors.disabledBtn,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
           ),
           elevation: 0,
         ),
-        child: LText(
-          text,
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
+        child: isLoading
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : LText(
+                text,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
       ),
     );
   }
 }
 
 /// Renders Google's actual official multi-color "G" mark from a bundled SVG
-/// (assets/google_logo.svg) so the button matches the standard "Sign in
-/// with Google" logo used across real apps and websites, not an
-/// approximation.
 class GoogleLogo extends StatelessWidget {
   final double size;
   const GoogleLogo({super.key, this.size = 20});
@@ -280,25 +282,35 @@ class AuthSocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: double.infinity,
-      height: 48,
+      height: 52,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: const GoogleLogo(size: 20),
+        icon: const GoogleLogo(size: 22),
         label: LText(
           text,
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AuthColors.body,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: AuthColors.heading,
           ),
         ),
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.white,
-          side: const BorderSide(color: AuthColors.border),
+          side: const BorderSide(color: AuthColors.border, width: 1.2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           elevation: 0,
         ),
@@ -316,11 +328,12 @@ class AuthDivider extends StatelessWidget {
       children: [
         const Expanded(child: Divider(color: AuthColors.border, thickness: 1)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           child: LText(
             'or continue with',
-            style: GoogleFonts.inter(
-              fontSize: 14,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
               color: AuthColors.placeholder,
             ),
           ),
