@@ -7,8 +7,14 @@ class AiMessage {
   final String role;
   final String content;
   final AiTutorActivity? activity;
+  final String? keyPhrase;
 
-  AiMessage({required this.role, required this.content, this.activity});
+  AiMessage({
+    required this.role,
+    required this.content,
+    this.activity,
+    this.keyPhrase,
+  });
 
   Map<String, dynamic> toJson() => {'role': role, 'content': content};
 }
@@ -71,8 +77,9 @@ class AiTutorActivityOption {
 class AiTutorResponse {
   final String text;
   final AiTutorActivity? activity;
+  final String? keyPhrase;
 
-  const AiTutorResponse({required this.text, this.activity});
+  const AiTutorResponse({required this.text, this.activity, this.keyPhrase});
 }
 
 class AiService {
@@ -118,6 +125,7 @@ class AiService {
         activity: activityJson is Map
             ? AiTutorActivity.fromJson(Map<String, dynamic>.from(activityJson))
             : null,
+        keyPhrase: responseData['key_phrase']?.toString(),
       );
     } catch (e) {
       if (kDebugMode) debugPrint('AI Quick Action Exception: $e');
@@ -141,6 +149,7 @@ class AiService {
         activity: activityJson is Map
             ? AiTutorActivity.fromJson(Map<String, dynamic>.from(activityJson))
             : null,
+        keyPhrase: data['key_phrase']?.toString(),
       );
     } catch (e) {
       if (kDebugMode) debugPrint('AI Service exception: $e');

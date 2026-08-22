@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -80,7 +81,6 @@ class _McqScreenState extends State<McqScreen>
   // Speaking variables
   _RecordState _recordState = _RecordState.idle;
   late AnimationController _pulseCtrl;
-  double _pronunciationScore = 0.0;
 
   // Audio state variables
   bool _audioLoading = false;
@@ -161,7 +161,6 @@ class _McqScreenState extends State<McqScreen>
     _selectedRight = null;
     _matches.clear();
     _recordState = _RecordState.idle;
-    _pronunciationScore = 0.0;
 
     final q = _currentQ;
 
@@ -242,15 +241,13 @@ class _McqScreenState extends State<McqScreen>
         await _audioPlayer.play();
       }
     } catch (e) {
-      debugPrint('Audio player error: $url $e');
+      debugPrint('Audio player error, falling back to TTS: $url $e');
       if (mounted) {
         setState(() {
           _audioLoading = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: LText('Failed to load audio.')));
       }
+      await _speakCurrentQuestion();
     }
   }
 
@@ -258,7 +255,11 @@ class _McqScreenState extends State<McqScreen>
     setState(() {
       _recordState = _RecordState.recording;
     });
-    _pulseCtrl.repeat(reverse: true);
+    HapticFeedback.mediumImpact();
+    // Honor reduced-motion: skip the pulsing ring when animations are off.
+    if (!MediaQuery.of(context).disableAnimations) {
+      _pulseCtrl.repeat(reverse: true);
+    }
 
     // Auto stop after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
@@ -286,18 +287,36 @@ class _McqScreenState extends State<McqScreen>
     }
   }
 
+  Future<void> _speakQuestionSlow() async {
+    try {
+      await _audioPlayer.stop();
+      await _ttsService.speak(
+        _currentQ.textToSpeak,
+        language: _currentQ.ttsLanguage,
+        speed: 0.65,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: LText('Failed to load audio.')));
+      }
+    }
+  }
+
   void _stopRecording() {
     _pulseCtrl.stop();
     setState(() {
       _recordState = _RecordState.analyzing;
     });
 
-    // Simulate analyzing for 1.5 seconds
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    // Brief pause so the recording finalizes, then show an honest
+    // "recorded" state. Automatic pronunciation scoring is not wired up
+    // yet, so we never fabricate a grade here.
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) {
         setState(() {
           _recordState = _RecordState.result;
-          _pronunciationScore = 88.0 + (DateTime.now().millisecond % 10);
         });
       }
     });
@@ -615,10 +634,12 @@ class _McqScreenState extends State<McqScreen>
           .join('\n');
       submittedAnswer = Map<String, String>.from(_matches);
     } else if (q.questionKind == 'speech_record') {
-      isCorrect = _pronunciationScore >= 80.0;
+      // Speaking prompts have no automatic scoring yet, so completing the
+      // recording counts as practice instead of a fabricated grade.
+      isCorrect = true;
       correctAnswerText = q.mcqCorrectAnswer;
-      userAnswerText = 'Pronunciation Score: ${_pronunciationScore.toInt()}%';
-      submittedAnswer = _pronunciationScore;
+      userAnswerText = 'Recorded (speaking practice)';
+      submittedAnswer = 'recorded';
     }
 
     _answers.add(
@@ -628,6 +649,14 @@ class _McqScreenState extends State<McqScreen>
         isCorrect: isCorrect,
       ),
     );
+
+    // Tactile confirmation of the result: a light tick for correct, a
+    // firmer buzz for wrong.
+    if (isCorrect) {
+      HapticFeedback.lightImpact();
+    } else {
+      HapticFeedback.heavyImpact();
+    }
 
     var shouldSpendHeart = false;
     setState(() {
@@ -881,8 +910,9 @@ class _McqScreenState extends State<McqScreen>
     if (_isSubmitting) return;
     final questions = _activeQuestions;
     if (_currentIndex < questions.length - 1) {
-      if (_resultSheetOpen)
+      if (_resultSheetOpen) {
         Navigator.pop(context); // close sheet, if still open
+      }
       setState(() {
         _currentIndex++;
         _state = _AnswerState.unanswered;
@@ -1949,55 +1979,93 @@ class _McqScreenState extends State<McqScreen>
         ),
         const SizedBox(height: 24),
 
-        // Native speaking audio player card
+        // Native Cartesia French speech buttons (Normal + Slow Turtle mode)
         if ((_currentQ.audioUrl != null && _currentQ.audioUrl!.isNotEmpty) ||
             _currentQ.textToSpeak.trim().isNotEmpty)
-          GestureDetector(
-            onTap: _toggleAudio,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              decoration: BoxDecoration(
-                color: FluentianColors.primaryTint,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: FluentianColors.primary.withValues(alpha: 0.15),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _audioLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            color: FluentianColors.primary,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Icon(
-                          _audioPlaying ? Iconsax.pause : Iconsax.volume_high,
-                          color: FluentianColors.primary,
-                          size: 20,
-                        ),
-                  const SizedBox(width: 8),
-                  LText(
-                    _audioLoading
-                        ? 'Loading...'
-                        : _audioPlaying
-                        ? 'Playing...'
-                        : 'Listen to speaker',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: FluentianColors.primary,
-                      fontWeight: FontWeight.w600,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: _toggleAudio,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                  decoration: BoxDecoration(
+                    color: FluentianColors.primaryTint,
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: FluentianColors.primary.withValues(alpha: 0.2),
                     ),
                   ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _audioLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                color: FluentianColors.primary,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Icon(
+                              _audioPlaying ? Iconsax.pause : Iconsax.volume_high,
+                              color: FluentianColors.primary,
+                              size: 18,
+                            ),
+                      const SizedBox(width: 8),
+                      LText(
+                        _audioLoading
+                            ? 'Loading...'
+                            : _audioPlaying
+                            ? 'Playing...'
+                            : 'Listen',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: FluentianColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: _speakQuestionSlow,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.speed_rounded,
+                        color: FluentianColors.primary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
+                      LText(
+                        'Slow (0.6x)',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: FluentianColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 36),
 
         // Recorder Microphone
         Column(
@@ -2070,9 +2138,9 @@ class _McqScreenState extends State<McqScreen>
               isRecording
                   ? 'Recording... Tap to stop'
                   : isAnalyzing
-                  ? 'Analyzing voice pronunciation...'
+                  ? 'Finishing recording...'
                   : isResult
-                  ? 'Voice Analyzed'
+                  ? 'Recorded'
                   : 'Tap to speak',
               style: GoogleFonts.inter(
                 fontSize: 14,
@@ -2099,29 +2167,32 @@ class _McqScreenState extends State<McqScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(
-                      Iconsax.star5,
-                      color: FluentianColors.primary,
+                      Iconsax.tick_circle,
+                      color: FluentianColors.success,
                       size: 24,
                     ),
                     const SizedBox(width: 8),
                     LText(
-                      'Result: ${_pronunciationScore.toInt()}% Match',
+                      'Recorded — nice practice!',
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: FluentianColors.primary,
+                        color: FluentianColors.textPrimary,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                _MetricRow(
-                  'Pronunciation',
-                  _pronunciationScore / 100,
-                  FluentianColors.info,
+                const SizedBox(height: 10),
+                LText(
+                  'Listen to the model again and compare. Automatic '
+                  'pronunciation scoring is coming soon.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    height: 1.4,
+                    color: FluentianColors.textSecondary,
+                  ),
                 ),
-                _MetricRow('Fluency', 0.90, FluentianColors.success),
-                _MetricRow('Accuracy', 0.84, FluentianColors.accent),
               ],
             ),
           ),
@@ -2131,53 +2202,6 @@ class _McqScreenState extends State<McqScreen>
   }
 }
 
-class _MetricRow extends StatelessWidget {
-  final String label;
-  final double value;
-  final Color color;
-  const _MetricRow(this.label, this.value, this.color);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 100,
-            child: LText(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: FluentianColors.textSecondary,
-              ),
-            ),
-          ),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: value,
-                backgroundColor: color.withValues(alpha: 0.15),
-                valueColor: AlwaysStoppedAnimation(color),
-                minHeight: 8,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          LText(
-            '${(value * 100).toInt()}%',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// A single word-bank/answer-area tile for the word-assembly exercise.
 /// `placed` switches between the two visual states (in the answer area

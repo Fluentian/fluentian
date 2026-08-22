@@ -10,6 +10,7 @@ import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../services/ai_service.dart';
 import '../services/sound_effect_service.dart';
+import 'pronunciation_button.dart';
 
 class AiTutorSheet extends StatefulWidget {
   final String systemContext;
@@ -107,6 +108,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
               role: 'assistant',
               content: aiResponse.text,
               activity: aiResponse.activity,
+              keyPhrase: aiResponse.keyPhrase,
             ),
           );
           if (context.read<AuthProvider>().user?.soundEnabled ?? true) {
@@ -461,6 +463,11 @@ class _TutorMessageBubble extends StatelessWidget {
                             if (message.content.trim().isNotEmpty)
                               const SizedBox(height: 12),
                             _TutorActivityCard(activity: message.activity!),
+                          ],
+                          if (message.keyPhrase != null &&
+                              message.keyPhrase!.trim().isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            PronunciationButton(text: message.keyPhrase!),
                           ],
                         ],
                       ),
@@ -878,7 +885,18 @@ class _AnimatedDotsState extends State<_AnimatedDots>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Honor reduced-motion: keep the dots static rather than pulsing.
+    if (MediaQuery.of(context).disableAnimations) {
+      _controller.stop();
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
   }
 
   @override

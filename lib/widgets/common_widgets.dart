@@ -783,11 +783,23 @@ class _FluentianShimmerState extends State<FluentianShimmer>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: widget.duration)
-      ..repeat(reverse: true);
+    _controller = AnimationController(vsync: this, duration: widget.duration);
     _animation = Tween<double>(begin: 0.35, end: 0.88).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Respect the reduced-motion accessibility setting: show a static
+    // skeleton instead of a looping shimmer when animations are disabled.
+    if (MediaQuery.of(context).disableAnimations) {
+      _controller.stop();
+      _controller.value = 1.0;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
   }
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -43,7 +44,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
     _pulseCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
-    )..repeat();
+    );
 
     _flameScale = Tween<double>(begin: 0.2, end: 1.0).animate(
       CurvedAnimation(
@@ -66,7 +67,25 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
       ),
     );
 
-    _flameCtrl.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) HapticFeedback.heavyImpact();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Honor reduced-motion: show the final celebratory frame without the
+    // elastic entrance or the looping pulse rings.
+    if (MediaQuery.of(context).disableAnimations) {
+      _flameCtrl.value = 1.0;
+      _pulseCtrl.stop();
+    } else {
+      if (_flameCtrl.status == AnimationStatus.dismissed) {
+        _flameCtrl.forward();
+      }
+      if (!_pulseCtrl.isAnimating) _pulseCtrl.repeat();
+    }
   }
 
   @override

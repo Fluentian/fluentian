@@ -36,7 +36,12 @@ class FluentianBottomNav extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(_tabs.length, (index) {
           final isActive = currentIndex == index;
-          return GestureDetector(
+          return Semantics(
+            button: true,
+            selected: isActive,
+            label: _tabs[index].label,
+            excludeSemantics: true,
+            child: GestureDetector(
             onTap: () => onTap(index),
             behavior: HitTestBehavior.opaque,
             child: SizedBox(
@@ -82,6 +87,7 @@ class FluentianBottomNav extends StatelessWidget {
                 ],
               ),
             ),
+          ),
           );
         }),
       ),

@@ -33,7 +33,9 @@ class FluentianColors {
 
   // Neutrals
   static const Color textPrimary = Color(0xFF072D52);
-  static const Color textSecondary = Color(0xFF6B7280);
+  // Darkened from #6B7280 to clear WCAG AA (~7:1 on white / ~6.4:1 on pageBg)
+  // for secondary/body text that previously sat right at the 4.5:1 edge.
+  static const Color textSecondary = Color(0xFF4B5563);
   static const Color border = Color(0xFFE5E7EB);
   static const Color divider = Color(0xFFF3F4F6);
 

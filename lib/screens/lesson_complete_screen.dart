@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -46,6 +47,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      HapticFeedback.heavyImpact();
       if (context.read<AuthProvider>().user?.soundEnabled ?? true) {
         SoundEffectService.instance.play(SoundEffect.result);
       }

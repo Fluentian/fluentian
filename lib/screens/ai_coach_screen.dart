@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../core/theme.dart';
 import '../services/ai_service.dart';
+import '../widgets/pronunciation_button.dart';
 
 class AiCoachScreen extends StatefulWidget {
   const AiCoachScreen({super.key});
@@ -29,6 +30,9 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     'Culture',
   ];
 
+  /// The coach's genuine opening turn for each mode. These are real
+  /// prompts inviting the learner to respond -- we never fabricate the
+  /// learner's own replies or feedback on things they haven't said yet.
   List<_ChatMsg> get _presetMessages {
     switch (_modeIndex) {
       case 1: // Roleplay
@@ -36,127 +40,41 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
           _ChatMsg(
             false,
             'Bienvenue au Café de Paris ! Que désirez-vous commander ? ☕',
-            null,
-          ),
-          _ChatMsg(
-            true,
-            'Bonjour ! Je voudrais un café au lait et un croissant, s\'il vous plaît.',
-            null,
-          ),
-          _ChatMsg(
-            false,
-            'Très bien. Et avec ceci ? Peut-être une pâtisserie ? 🥐',
-            null,
           ),
         ];
       case 2: // Grammar drill
         return [
           _ChatMsg(
             false,
-            'Aujourd\'hui, nous allons pratiquer le subjonctif. Complète cette phrase : "Il faut que tu _______ (partir) maintenant."',
-            null,
+            'Pratiquons le subjonctif. Complète cette phrase : « Il faut que tu ______ (partir) maintenant. »',
           ),
-          _ChatMsg(true, 'Il faut que tu pars maintenant.', null),
-          _ChatMsg(
-            false,
-            null,
-            _Feedback(
-              good: null,
-              tip: 'The verb "partir" in the subjunctive is "partes".',
-              fix: '✗ Correction: "pars" → "partes"',
-            ),
-          ),
-          _ChatMsg(false, 'Essaie encore ! 📝', null),
         ];
       case 3: // Pronunciation
         return [
           _ChatMsg(
             false,
-            'Répète après moi : "L\'écureuil est sur l\'arbre." 🐿️',
-            null,
-          ),
-          _ChatMsg(true, '[Voice Message: L-ecure-uil...]', null),
-          _ChatMsg(
-            false,
-            null,
-            _Feedback(
-              good: '✓ Good "L\'écureuil" vowel sound',
-              tip: 'Work on the "r" in "arbre"',
-              fix: null,
-            ),
-          ),
-          _ChatMsg(
-            false,
-            'Ta prononciation s\'améliore ! Continue comme ça. 🔊',
-            null,
+            'Répète après moi : « L\'écureuil est sur l\'arbre. » 🐿️ Enregistre-toi, puis dis-moi si tu veux des conseils.',
           ),
         ];
       case 4: // Exam prep
         return [
           _ChatMsg(
             false,
-            'Préparation au DELF B2. Écoute cet extrait et dis-moi l\'idée principale. 🎧',
-            null,
-          ),
-          _ChatMsg(
-            true,
-            'L\'idée principale est l\'impact du télétravail sur l\'environnement.',
-            null,
-          ),
-          _ChatMsg(
-            false,
-            'Exactement ! Quels arguments l\'intervenant utilise-t-il ?',
-            null,
+            'Préparation au DELF B2. Quel thème veux-tu travailler aujourd\'hui — compréhension, production écrite ou orale ? 🎧',
           ),
         ];
       case 5: // Culture
         return [
           _ChatMsg(
             false,
-            'Savais-tu que la Fête de la Musique a lieu chaque 21 juin en France ? 🎸',
-            null,
-          ),
-          _ChatMsg(
-            true,
-            'Non, je ne savais pas. C\'est quoi exactement ?',
-            null,
-          ),
-          _ChatMsg(
-            false,
-            'C\'est une journée où tout le monde peut jouer de la musique dans les rues gratuitement ! 🎶',
-            null,
+            'Savais-tu que la Fête de la Musique a lieu chaque 21 juin en France ? 🎸 Veux-tu en savoir plus ?',
           ),
         ];
       default: // Free chat
         return [
           _ChatMsg(
             false,
-            'Bonjour ! Je suis Marie, ton coach IA. Comment ça va aujourd\'hui ? 😊',
-            null,
-          ),
-          _ChatMsg(
-            false,
-            null,
-            _Feedback(
-              good: '✓ Good greeting structure',
-              tip: 'Try using "Comment allez-vous?" for formal',
-              fix: null,
-            ),
-          ),
-          _ChatMsg(true, 'Bonjour Marie ! Je suis bien, merci.', null),
-          _ChatMsg(
-            false,
-            'Très bien ! Petite correction : on dit "Je vais bien" plutôt que "Je suis bien". 📝',
-            null,
-          ),
-          _ChatMsg(
-            false,
-            null,
-            _Feedback(
-              good: '✓ Good use of "merci"',
-              tip: null,
-              fix: '✗ Correction: "Je suis bien" → "Je vais bien"',
-            ),
+            'Bonjour ! Je suis Marie, ton coach IA. De quoi veux-tu parler aujourd\'hui ? 😊',
           ),
         ];
     }
@@ -172,7 +90,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     final text = _controller.text.trim();
     if (text.isEmpty || _isLoading) return;
     setState(() {
-      _messages.add(_ChatMsg(true, text, null));
+      _messages.add(_ChatMsg(true, text));
       _controller.clear();
       _isLoading = true;
     });
@@ -200,7 +118,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
           false,
           response?.text ??
               context.tr('The AI tutor is unavailable. Please try again.'),
-          null,
+          keyPhrase: response?.keyPhrase,
         ),
       );
     });
@@ -498,18 +416,28 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                     ? null
                     : Border.all(color: FluentianColors.darkBorder),
               ),
-              child: msg.feedback != null
-                  ? _buildFeedback(msg.feedback!)
-                  : isUser
-                  ? LText(
-                      msg.text!,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        color: Colors.white,
-                        height: 1.4,
-                      ),
-                    )
-                  : _CoachMarkdownResponse(msg.text!),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  isUser
+                      ? LText(
+                          msg.text!,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            color: Colors.white,
+                            height: 1.4,
+                          ),
+                        )
+                      : _CoachMarkdownResponse(msg.text!),
+                  if (!isUser &&
+                      msg.keyPhrase != null &&
+                      msg.keyPhrase!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    PronunciationButton(text: msg.keyPhrase!),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
@@ -517,16 +445,6 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     );
   }
 
-  Widget _buildFeedback(_Feedback fb) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (fb.good != null) _FeedbackChip(fb.good!, FluentianColors.success),
-        if (fb.tip != null) _FeedbackChip(fb.tip!, FluentianColors.accent),
-        if (fb.fix != null) _FeedbackChip(fb.fix!, FluentianColors.error),
-      ],
-    );
-  }
 }
 
 class _CoachMarkdownResponse extends StatelessWidget {
@@ -586,32 +504,6 @@ class _CoachMarkdownResponse extends StatelessWidget {
         blockquotePadding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
         blockSpacing: 10,
         listIndent: 20,
-      ),
-    );
-  }
-}
-
-class _FeedbackChip extends StatelessWidget {
-  final String text;
-  final Color color;
-  const _FeedbackChip(this.text, this.color);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: LText(
-        text,
-        style: GoogleFonts.inter(
-          fontSize: 13,
-          color: color,
-          fontWeight: FontWeight.w500,
-        ),
       ),
     );
   }
@@ -705,7 +597,18 @@ class _CoachThinkingDotsState extends State<_CoachThinkingDots>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 950),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Honor reduced-motion: keep the thinking dots static.
+    if (MediaQuery.of(context).disableAnimations) {
+      _controller.stop();
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
   }
 
   @override
@@ -746,11 +649,6 @@ class _CoachThinkingDotsState extends State<_CoachThinkingDots>
 class _ChatMsg {
   final bool isUser;
   final String? text;
-  final _Feedback? feedback;
-  const _ChatMsg(this.isUser, this.text, this.feedback);
-}
-
-class _Feedback {
-  final String? good, tip, fix;
-  const _Feedback({this.good, this.tip, this.fix});
+  final String? keyPhrase;
+  const _ChatMsg(this.isUser, this.text, {this.keyPhrase});
 }
