@@ -244,6 +244,19 @@ class ApiClient {
           .get(uri, headers: headers)
           .timeout(const Duration(seconds: 15));
       await _logResponse('GET', uri, response.statusCode, start);
+
+      if (response.statusCode == 401 &&
+          auth &&
+          !_isRefreshing &&
+          !path.contains('/auth/')) {
+        _isRefreshing = true;
+        final refreshed = await _tryRefreshToken();
+        _isRefreshing = false;
+        if (refreshed) {
+          return getList(path, auth: auth);
+        }
+      }
+
       _checkStatus(response, uri: uri);
       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
       if (decoded is List) return decoded;
@@ -262,6 +275,39 @@ class ApiClient {
   }
 
   // ── Internal ──────────────────────────────────────────
+
+  bool _isRefreshing = false;
+
+  Future<bool> _tryRefreshToken() async {
+    final refreshToken = await getRefreshToken();
+    if (refreshToken == null || refreshToken.isEmpty) return false;
+
+    try {
+      final uri = Uri.parse('$_baseUrl/auth/refresh');
+      final response = await http
+          .post(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: jsonEncode({'refresh_token': refreshToken}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes))
+            as Map<String, dynamic>;
+        final newAccess = data['access_token']?.toString();
+        final newRefresh = data['refresh_token']?.toString() ?? refreshToken;
+        if (newAccess != null && newAccess.isNotEmpty) {
+          await saveTokens(newAccess, newRefresh);
+          return true;
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
 
   Future<Map<String, dynamic>> _request(
     String method,
@@ -307,6 +353,25 @@ class ApiClient {
       }
 
       await _logResponse(method, uri, response.statusCode, start);
+
+      if (response.statusCode == 401 &&
+          auth &&
+          !_isRefreshing &&
+          !path.contains('/auth/')) {
+        _isRefreshing = true;
+        final refreshed = await _tryRefreshToken();
+        _isRefreshing = false;
+        if (refreshed) {
+          return _request(
+            method,
+            path,
+            body: body,
+            auth: auth,
+            extraHeaders: extraHeaders,
+          );
+        }
+      }
+
       _checkStatus(response, uri: uri);
       if (response.body.isEmpty) return {};
       return jsonDecode(utf8.decode(response.bodyBytes))

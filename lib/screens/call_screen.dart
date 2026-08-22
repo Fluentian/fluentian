@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import '../core/app_localization.dart';
@@ -139,6 +140,9 @@ class _CallScreenState extends State<CallScreen> {
   LocalVideoTrack? _localVideoTrack;
   RemoteVideoTrack? _remoteVideoTrack;
 
+  Timer? _pingTimer;
+  int _pingMs = 45;
+
   Timer? _quoteTimer;
   int _quoteIndex = 0;
 
@@ -210,13 +214,28 @@ class _CallScreenState extends State<CallScreen> {
       // will ever call disconnect()/dispose() on since this State's own
       // dispose() already ran.
       if (!mounted) return;
-      final room = Room();
+      final roomOptions = RoomOptions(
+        adaptiveStream: true,
+        dynacast: true,
+        defaultAudioCaptureOptions: const AudioCaptureOptions(
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        ),
+        defaultCameraCaptureOptions: const CameraCaptureOptions(
+          params: VideoParametersPresets.h540_169,
+        ),
+      );
+      final room = Room(roomOptions: roomOptions);
       final listener = room.createListener()
         ..on<RoomConnectedEvent>((_) => _setStatus('Connected. Say bonjour!'))
         ..on<RoomReconnectingEvent>((_) => _setStatus('Reconnecting...'))
         ..on<RoomReconnectedEvent>((_) => _setStatus('Back in the room'))
         ..on<ParticipantConnectedEvent>((_) => _refreshParticipants())
         ..on<ParticipantDisconnectedEvent>((_) => _refreshParticipants())
+        ..on<ParticipantConnectionQualityUpdatedEvent>((_) {
+          if (mounted) setState(() {});
+        })
         ..on<LocalTrackPublishedEvent>((event) {
           final track = event.publication.track;
           if (track is LocalVideoTrack) _setLocalVideo(track);
@@ -252,14 +271,36 @@ class _CallScreenState extends State<CallScreen> {
             : 'Joining ${widget.topic}...';
       });
 
-      await room.connect(session.serverUrl, session.roomToken);
-      await room.localParticipant?.setMicrophoneEnabled(true);
-      if (widget.isVideo) {
-        await room.localParticipant?.setCameraEnabled(true);
-        _refreshLocalVideoTrack();
+      await room.connect(
+        session.serverUrl,
+        session.roomToken,
+        connectOptions: const ConnectOptions(
+          autoSubscribe: true,
+        ),
+      ).timeout(const Duration(seconds: 25));
+
+      try {
+        await room.localParticipant?.setMicrophoneEnabled(true);
+      } catch (e) {
+        debugPrint('Could not enable initial mic track: $e');
       }
-      await room.setSpeakerOn(_speakerOn);
+
+      if (widget.isVideo) {
+        try {
+          await room.localParticipant?.setCameraEnabled(true);
+          _refreshLocalVideoTrack();
+        } catch (e) {
+          debugPrint('Could not enable initial camera track: $e');
+          if (mounted) setState(() => _isCameraOff = true);
+        }
+      }
+
+      try {
+        await room.setSpeakerOn(_speakerOn);
+      } catch (_) {}
+
       _refreshParticipants();
+      _startPingMonitoring();
       if (!_isPrivateMatch) {
         _startTimer();
       } else if (_participantCount < 2) {
@@ -353,7 +394,14 @@ class _CallScreenState extends State<CallScreen> {
       }
       return error.userMessage;
     }
-    return error.toString().replaceFirst('Exception: ', '');
+    final str = error.toString();
+    if (str.contains('ConnectException') ||
+        str.contains('TimeoutException') ||
+        str.contains('Future not completed') ||
+        str.contains('SocketException')) {
+      return 'Speaking room connection timed out. Please check your internet connection and tap retry.';
+    }
+    return str.replaceFirst('Exception: ', '');
   }
 
   void _startTimer() {
@@ -481,9 +529,82 @@ class _CallScreenState extends State<CallScreen> {
     if (mounted) setState(() => _isCameraOff = nextOff);
   }
 
+  void _startPingMonitoring() {
+    _pingTimer?.cancel();
+    _measurePing();
+    _pingTimer = Timer.periodic(const Duration(seconds: 3), (_) => _measurePing());
+  }
+
+  Future<void> _measurePing() async {
+    if (!mounted) return;
+    final sw = Stopwatch()..start();
+    try {
+      final client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
+      final req = await client.getUrl(Uri.parse('https://live.binovatechnologies.com'));
+      final res = await req.close();
+      await res.drain();
+      sw.stop();
+      if (mounted) {
+        setState(() {
+          _pingMs = sw.elapsedMilliseconds.clamp(15, 999);
+        });
+      }
+    } catch (_) {}
+  }
+
+  Widget _buildPingPill() {
+    final Color color;
+    if (_pingMs < 80) {
+      color = const Color(0xFF4CAF50); // Emerald green
+    } else if (_pingMs < 180) {
+      color = const Color(0xFFFFB300); // Amber
+    } else {
+      color = const Color(0xFFF44336); // Red
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.6),
+                  blurRadius: 4,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            '$_pingMs ms',
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _leave() async {
     _timer?.cancel();
     _abandonmentTimer?.cancel();
+    _pingTimer?.cancel();
     final ticketId = _matchTicketId;
     _matchTicketId = null;
     if (ticketId != null) {
@@ -505,6 +626,7 @@ class _CallScreenState extends State<CallScreen> {
   void dispose() {
     _timer?.cancel();
     _abandonmentTimer?.cancel();
+    _pingTimer?.cancel();
     _quoteTimer?.cancel();
     final ticketId = _matchTicketId;
     _matchTicketId = null;
@@ -675,6 +797,8 @@ class _CallScreenState extends State<CallScreen> {
             ),
           ),
           _StatusPill(icon: Iconsax.profile_2user, label: '$_participantCount'),
+          const SizedBox(width: 6),
+          _buildPingPill(),
           const SizedBox(width: 6),
           IconButton(
             tooltip: context.tr('Safety center'),
@@ -1159,19 +1283,26 @@ class _CallScreenState extends State<CallScreen> {
           Positioned(
             top: 12,
             left: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: LText(
-                time,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: LText(
+                    time,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                _buildPingPill(),
+              ],
             ),
           ),
           Positioned(
@@ -1216,7 +1347,14 @@ class _CallScreenState extends State<CallScreen> {
           Positioned(
             top: 16,
             left: 16,
-            child: _StatusPill(icon: Iconsax.timer_1, label: time),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _StatusPill(icon: Iconsax.timer_1, label: time),
+                const SizedBox(width: 8),
+                _buildPingPill(),
+              ],
+            ),
           ),
           Positioned(
             right: 16,
