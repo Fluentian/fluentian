@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:drift/drift.dart' show Value;
 
 import '../local_db/app_database.dart';
+import '../core/app_localization.dart';
 import 'app_logger.dart';
 import 'content_api.dart';
 import 'outbox_manager.dart';
+import 'media_cache_manager.dart';
 
 /// Pulls the delta manifest from the backend and applies it to the local
 /// Drift store. Cheap to call often (e.g. on app resume): with nothing
@@ -34,11 +36,35 @@ class SyncManager {
       // sync trigger.
       await OutboxManager.instance.flush();
 
-      final since = forceFullResync ? 0 : await _db.getLastSyncedGlobalVersion();
-      final manifest = await _contentApi.getManifest(since: since);
+      final language = AppLocaleController.activeLanguageCode;
+      final storedLanguage = await _db.getLastSyncedLanguage();
+      if (storedLanguage != language) {
+        await _db.clearCachedCurriculum();
+      }
+      final since = forceFullResync
+          ? 0
+          : await _db.getLastSyncedGlobalVersion();
+      final manifest = await _contentApi.getManifest(
+        since: since,
+        language: language,
+      );
       final globalVersion = manifest['global_version'] as int? ?? since;
       final courses = (manifest['courses'] as List<dynamic>? ?? [])
           .cast<Map<String, dynamic>>();
+      final tombstones = (manifest['tombstones'] as List<dynamic>? ?? [])
+          .cast<Map<String, dynamic>>();
+
+      for (final tombstone in tombstones) {
+        if (tombstone['entity_type'] == 'lesson') {
+          await MediaCacheManager.instance.removeLessonMedia(
+            tombstone['entity_id'] as String,
+          );
+        }
+        await _db.removeContent(
+          tombstone['entity_id'] as String,
+          tombstone['entity_type'] as String,
+        );
+      }
 
       var changed = false;
       for (final course in courses) {
@@ -46,6 +72,7 @@ class SyncManager {
         changed = true;
       }
 
+      await _db.setSyncLanguage(language);
       await _db.setLastSyncedGlobalVersion(globalVersion);
       await AppLogger.instance.info(
         'Sync: since=$since -> global=$globalVersion, ${courses.length} course(s) changed',
@@ -68,14 +95,18 @@ class SyncManager {
       CachedCoursesCompanion(
         id: Value(courseId),
         code: Value(course['code'] as String),
+        title: Value(course['title'] as String? ?? course['code'] as String),
+        description: Value(course['description'] as String? ?? ''),
         levelMin: Value(course['level_min'] as String),
         levelMax: Value(course['level_max'] as String),
         contentVersion: Value(course['content_version'] as int),
         isPublished: const Value(true),
+        contentLanguage: Value(AppLocaleController.activeLanguageCode),
       ),
     );
 
-    final units = (course['units'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+    final units = (course['units'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
     for (final unit in units) {
       await _applyUnit(courseId, unit);
     }
@@ -90,11 +121,14 @@ class SyncManager {
         unitKind: Value(unit['unit_kind'] as String),
         unitNo: Value(unit['unit_no'] as int),
         title: Value(unit['title'] as String),
+        description: Value(unit['description'] as String? ?? ''),
         contentVersion: Value(unit['content_version'] as int),
+        contentLanguage: Value(AppLocaleController.activeLanguageCode),
       ),
     );
 
-    final lessons = (unit['lessons'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+    final lessons = (unit['lessons'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
     for (final lesson in lessons) {
       await _applyLesson(courseId, unitId, lesson);
     }
@@ -114,7 +148,8 @@ class SyncManager {
     // re-fetch here to avoid an unbounded burst of requests on a big sync;
     // ContentProvider re-fetches lazily when detailJson is stale/missing.
     final existing = await _db.getLesson(lessonId);
-    final detailIsStale = existing == null || existing.contentVersion != newVersion;
+    final detailIsStale =
+        existing == null || existing.contentVersion != newVersion;
 
     await _db.upsertLesson(
       CachedLessonsCompanion(
@@ -128,8 +163,13 @@ class SyncManager {
         xpReward: Value(lesson['xp_reward'] as int),
         isPublished: Value(lesson['is_published'] as bool),
         contentVersion: Value(newVersion),
-        detailJson: detailIsStale ? const Value(null) : Value(existing.detailJson),
-        detailFetchedAt: detailIsStale ? const Value(null) : Value(existing.detailFetchedAt),
+        contentLanguage: Value(AppLocaleController.activeLanguageCode),
+        detailJson: detailIsStale
+            ? const Value(null)
+            : Value(existing.detailJson),
+        detailFetchedAt: detailIsStale
+            ? const Value(null)
+            : Value(existing.detailFetchedAt),
       ),
     );
   }
@@ -137,7 +177,9 @@ class SyncManager {
   /// Fetch a lesson's full detail from the network and cache it locally.
   /// Called lazily by ContentProvider when a cached row has no (or stale)
   /// detailJson, and eagerly by the unit-download flow.
-  Future<Map<String, dynamic>> fetchAndCacheLessonDetail(String lessonId) async {
+  Future<Map<String, dynamic>> fetchAndCacheLessonDetail(
+    String lessonId,
+  ) async {
     final detail = await _contentApi.getLessonDetail(lessonId);
     final json = {
       'id': detail.id,
@@ -146,6 +188,8 @@ class SyncManager {
       'lesson_kind': detail.lessonKind,
       'sequence_no': detail.sequenceNo,
       'title': detail.title,
+      'description': detail.description,
+      'content_language': AppLocaleController.activeLanguageCode,
       'estimated_minutes': detail.estimatedMinutes,
       'xp_reward': detail.xpReward,
       'is_published': detail.isPublished,

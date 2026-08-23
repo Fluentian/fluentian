@@ -46,7 +46,7 @@ class ApiException implements Exception {
       case 422:
         return message;
       case 429:
-        return 'Too many requests. Please slow down.';
+        return message;
       case 500:
       case 502:
       case 503:

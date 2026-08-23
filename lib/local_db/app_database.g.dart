@@ -27,6 +27,28 @@ class $CachedCoursesTable extends CachedCourses
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _levelMinMeta = const VerificationMeta(
     'levelMin',
   );
@@ -76,14 +98,29 @@ class $CachedCoursesTable extends CachedCourses
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _contentLanguageMeta = const VerificationMeta(
+    'contentLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> contentLanguage = GeneratedColumn<String>(
+    'content_language',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     code,
+    title,
+    description,
     levelMin,
     levelMax,
     contentVersion,
     isPublished,
+    contentLanguage,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -109,6 +146,21 @@ class $CachedCoursesTable extends CachedCourses
       );
     } else if (isInserting) {
       context.missing(_codeMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
     }
     if (data.containsKey('level_min')) {
       context.handle(
@@ -144,6 +196,15 @@ class $CachedCoursesTable extends CachedCourses
         ),
       );
     }
+    if (data.containsKey('content_language')) {
+      context.handle(
+        _contentLanguageMeta,
+        contentLanguage.isAcceptableOrUnknown(
+          data['content_language']!,
+          _contentLanguageMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -161,6 +222,14 @@ class $CachedCoursesTable extends CachedCourses
         DriftSqlType.string,
         data['${effectivePrefix}code'],
       )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
       levelMin: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}level_min'],
@@ -177,6 +246,10 @@ class $CachedCoursesTable extends CachedCourses
         DriftSqlType.bool,
         data['${effectivePrefix}is_published'],
       )!,
+      contentLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_language'],
+      )!,
     );
   }
 
@@ -189,27 +262,36 @@ class $CachedCoursesTable extends CachedCourses
 class CachedCourse extends DataClass implements Insertable<CachedCourse> {
   final String id;
   final String code;
+  final String title;
+  final String description;
   final String levelMin;
   final String levelMax;
   final int contentVersion;
   final bool isPublished;
+  final String contentLanguage;
   const CachedCourse({
     required this.id,
     required this.code,
+    required this.title,
+    required this.description,
     required this.levelMin,
     required this.levelMax,
     required this.contentVersion,
     required this.isPublished,
+    required this.contentLanguage,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['code'] = Variable<String>(code);
+    map['title'] = Variable<String>(title);
+    map['description'] = Variable<String>(description);
     map['level_min'] = Variable<String>(levelMin);
     map['level_max'] = Variable<String>(levelMax);
     map['content_version'] = Variable<int>(contentVersion);
     map['is_published'] = Variable<bool>(isPublished);
+    map['content_language'] = Variable<String>(contentLanguage);
     return map;
   }
 
@@ -217,10 +299,13 @@ class CachedCourse extends DataClass implements Insertable<CachedCourse> {
     return CachedCoursesCompanion(
       id: Value(id),
       code: Value(code),
+      title: Value(title),
+      description: Value(description),
       levelMin: Value(levelMin),
       levelMax: Value(levelMax),
       contentVersion: Value(contentVersion),
       isPublished: Value(isPublished),
+      contentLanguage: Value(contentLanguage),
     );
   }
 
@@ -232,10 +317,13 @@ class CachedCourse extends DataClass implements Insertable<CachedCourse> {
     return CachedCourse(
       id: serializer.fromJson<String>(json['id']),
       code: serializer.fromJson<String>(json['code']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String>(json['description']),
       levelMin: serializer.fromJson<String>(json['levelMin']),
       levelMax: serializer.fromJson<String>(json['levelMax']),
       contentVersion: serializer.fromJson<int>(json['contentVersion']),
       isPublished: serializer.fromJson<bool>(json['isPublished']),
+      contentLanguage: serializer.fromJson<String>(json['contentLanguage']),
     );
   }
   @override
@@ -244,32 +332,45 @@ class CachedCourse extends DataClass implements Insertable<CachedCourse> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'code': serializer.toJson<String>(code),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String>(description),
       'levelMin': serializer.toJson<String>(levelMin),
       'levelMax': serializer.toJson<String>(levelMax),
       'contentVersion': serializer.toJson<int>(contentVersion),
       'isPublished': serializer.toJson<bool>(isPublished),
+      'contentLanguage': serializer.toJson<String>(contentLanguage),
     };
   }
 
   CachedCourse copyWith({
     String? id,
     String? code,
+    String? title,
+    String? description,
     String? levelMin,
     String? levelMax,
     int? contentVersion,
     bool? isPublished,
+    String? contentLanguage,
   }) => CachedCourse(
     id: id ?? this.id,
     code: code ?? this.code,
+    title: title ?? this.title,
+    description: description ?? this.description,
     levelMin: levelMin ?? this.levelMin,
     levelMax: levelMax ?? this.levelMax,
     contentVersion: contentVersion ?? this.contentVersion,
     isPublished: isPublished ?? this.isPublished,
+    contentLanguage: contentLanguage ?? this.contentLanguage,
   );
   CachedCourse copyWithCompanion(CachedCoursesCompanion data) {
     return CachedCourse(
       id: data.id.present ? data.id.value : this.id,
       code: data.code.present ? data.code.value : this.code,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
       levelMin: data.levelMin.present ? data.levelMin.value : this.levelMin,
       levelMax: data.levelMax.present ? data.levelMax.value : this.levelMax,
       contentVersion: data.contentVersion.present
@@ -278,6 +379,9 @@ class CachedCourse extends DataClass implements Insertable<CachedCourse> {
       isPublished: data.isPublished.present
           ? data.isPublished.value
           : this.isPublished,
+      contentLanguage: data.contentLanguage.present
+          ? data.contentLanguage.value
+          : this.contentLanguage,
     );
   }
 
@@ -286,53 +390,77 @@ class CachedCourse extends DataClass implements Insertable<CachedCourse> {
     return (StringBuffer('CachedCourse(')
           ..write('id: $id, ')
           ..write('code: $code, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
           ..write('levelMin: $levelMin, ')
           ..write('levelMax: $levelMax, ')
           ..write('contentVersion: $contentVersion, ')
-          ..write('isPublished: $isPublished')
+          ..write('isPublished: $isPublished, ')
+          ..write('contentLanguage: $contentLanguage')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, code, levelMin, levelMax, contentVersion, isPublished);
+  int get hashCode => Object.hash(
+    id,
+    code,
+    title,
+    description,
+    levelMin,
+    levelMax,
+    contentVersion,
+    isPublished,
+    contentLanguage,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CachedCourse &&
           other.id == this.id &&
           other.code == this.code &&
+          other.title == this.title &&
+          other.description == this.description &&
           other.levelMin == this.levelMin &&
           other.levelMax == this.levelMax &&
           other.contentVersion == this.contentVersion &&
-          other.isPublished == this.isPublished);
+          other.isPublished == this.isPublished &&
+          other.contentLanguage == this.contentLanguage);
 }
 
 class CachedCoursesCompanion extends UpdateCompanion<CachedCourse> {
   final Value<String> id;
   final Value<String> code;
+  final Value<String> title;
+  final Value<String> description;
   final Value<String> levelMin;
   final Value<String> levelMax;
   final Value<int> contentVersion;
   final Value<bool> isPublished;
+  final Value<String> contentLanguage;
   final Value<int> rowid;
   const CachedCoursesCompanion({
     this.id = const Value.absent(),
     this.code = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
     this.levelMin = const Value.absent(),
     this.levelMax = const Value.absent(),
     this.contentVersion = const Value.absent(),
     this.isPublished = const Value.absent(),
+    this.contentLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CachedCoursesCompanion.insert({
     required String id,
     required String code,
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
     required String levelMin,
     required String levelMax,
     this.contentVersion = const Value.absent(),
     this.isPublished = const Value.absent(),
+    this.contentLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        code = Value(code),
@@ -341,19 +469,25 @@ class CachedCoursesCompanion extends UpdateCompanion<CachedCourse> {
   static Insertable<CachedCourse> custom({
     Expression<String>? id,
     Expression<String>? code,
+    Expression<String>? title,
+    Expression<String>? description,
     Expression<String>? levelMin,
     Expression<String>? levelMax,
     Expression<int>? contentVersion,
     Expression<bool>? isPublished,
+    Expression<String>? contentLanguage,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (code != null) 'code': code,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
       if (levelMin != null) 'level_min': levelMin,
       if (levelMax != null) 'level_max': levelMax,
       if (contentVersion != null) 'content_version': contentVersion,
       if (isPublished != null) 'is_published': isPublished,
+      if (contentLanguage != null) 'content_language': contentLanguage,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -361,19 +495,25 @@ class CachedCoursesCompanion extends UpdateCompanion<CachedCourse> {
   CachedCoursesCompanion copyWith({
     Value<String>? id,
     Value<String>? code,
+    Value<String>? title,
+    Value<String>? description,
     Value<String>? levelMin,
     Value<String>? levelMax,
     Value<int>? contentVersion,
     Value<bool>? isPublished,
+    Value<String>? contentLanguage,
     Value<int>? rowid,
   }) {
     return CachedCoursesCompanion(
       id: id ?? this.id,
       code: code ?? this.code,
+      title: title ?? this.title,
+      description: description ?? this.description,
       levelMin: levelMin ?? this.levelMin,
       levelMax: levelMax ?? this.levelMax,
       contentVersion: contentVersion ?? this.contentVersion,
       isPublished: isPublished ?? this.isPublished,
+      contentLanguage: contentLanguage ?? this.contentLanguage,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -387,6 +527,12 @@ class CachedCoursesCompanion extends UpdateCompanion<CachedCourse> {
     if (code.present) {
       map['code'] = Variable<String>(code.value);
     }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
     if (levelMin.present) {
       map['level_min'] = Variable<String>(levelMin.value);
     }
@@ -399,6 +545,9 @@ class CachedCoursesCompanion extends UpdateCompanion<CachedCourse> {
     if (isPublished.present) {
       map['is_published'] = Variable<bool>(isPublished.value);
     }
+    if (contentLanguage.present) {
+      map['content_language'] = Variable<String>(contentLanguage.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -410,10 +559,13 @@ class CachedCoursesCompanion extends UpdateCompanion<CachedCourse> {
     return (StringBuffer('CachedCoursesCompanion(')
           ..write('id: $id, ')
           ..write('code: $code, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
           ..write('levelMin: $levelMin, ')
           ..write('levelMax: $levelMax, ')
           ..write('contentVersion: $contentVersion, ')
           ..write('isPublished: $isPublished, ')
+          ..write('contentLanguage: $contentLanguage, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -475,6 +627,18 @@ class $CachedUnitsTable extends CachedUnits
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _contentVersionMeta = const VerificationMeta(
     'contentVersion',
   );
@@ -487,6 +651,18 @@ class $CachedUnitsTable extends CachedUnits
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
   );
+  static const VerificationMeta _contentLanguageMeta = const VerificationMeta(
+    'contentLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> contentLanguage = GeneratedColumn<String>(
+    'content_language',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -494,7 +670,9 @@ class $CachedUnitsTable extends CachedUnits
     unitKind,
     unitNo,
     title,
+    description,
     contentVersion,
+    contentLanguage,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -545,12 +723,30 @@ class $CachedUnitsTable extends CachedUnits
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
     if (data.containsKey('content_version')) {
       context.handle(
         _contentVersionMeta,
         contentVersion.isAcceptableOrUnknown(
           data['content_version']!,
           _contentVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('content_language')) {
+      context.handle(
+        _contentLanguageMeta,
+        contentLanguage.isAcceptableOrUnknown(
+          data['content_language']!,
+          _contentLanguageMeta,
         ),
       );
     }
@@ -583,9 +779,17 @@ class $CachedUnitsTable extends CachedUnits
         DriftSqlType.string,
         data['${effectivePrefix}title'],
       )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
       contentVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}content_version'],
+      )!,
+      contentLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_language'],
       )!,
     );
   }
@@ -602,14 +806,18 @@ class CachedUnit extends DataClass implements Insertable<CachedUnit> {
   final String unitKind;
   final int unitNo;
   final String title;
+  final String description;
   final int contentVersion;
+  final String contentLanguage;
   const CachedUnit({
     required this.id,
     required this.courseId,
     required this.unitKind,
     required this.unitNo,
     required this.title,
+    required this.description,
     required this.contentVersion,
+    required this.contentLanguage,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -619,7 +827,9 @@ class CachedUnit extends DataClass implements Insertable<CachedUnit> {
     map['unit_kind'] = Variable<String>(unitKind);
     map['unit_no'] = Variable<int>(unitNo);
     map['title'] = Variable<String>(title);
+    map['description'] = Variable<String>(description);
     map['content_version'] = Variable<int>(contentVersion);
+    map['content_language'] = Variable<String>(contentLanguage);
     return map;
   }
 
@@ -630,7 +840,9 @@ class CachedUnit extends DataClass implements Insertable<CachedUnit> {
       unitKind: Value(unitKind),
       unitNo: Value(unitNo),
       title: Value(title),
+      description: Value(description),
       contentVersion: Value(contentVersion),
+      contentLanguage: Value(contentLanguage),
     );
   }
 
@@ -645,7 +857,9 @@ class CachedUnit extends DataClass implements Insertable<CachedUnit> {
       unitKind: serializer.fromJson<String>(json['unitKind']),
       unitNo: serializer.fromJson<int>(json['unitNo']),
       title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String>(json['description']),
       contentVersion: serializer.fromJson<int>(json['contentVersion']),
+      contentLanguage: serializer.fromJson<String>(json['contentLanguage']),
     );
   }
   @override
@@ -657,7 +871,9 @@ class CachedUnit extends DataClass implements Insertable<CachedUnit> {
       'unitKind': serializer.toJson<String>(unitKind),
       'unitNo': serializer.toJson<int>(unitNo),
       'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String>(description),
       'contentVersion': serializer.toJson<int>(contentVersion),
+      'contentLanguage': serializer.toJson<String>(contentLanguage),
     };
   }
 
@@ -667,14 +883,18 @@ class CachedUnit extends DataClass implements Insertable<CachedUnit> {
     String? unitKind,
     int? unitNo,
     String? title,
+    String? description,
     int? contentVersion,
+    String? contentLanguage,
   }) => CachedUnit(
     id: id ?? this.id,
     courseId: courseId ?? this.courseId,
     unitKind: unitKind ?? this.unitKind,
     unitNo: unitNo ?? this.unitNo,
     title: title ?? this.title,
+    description: description ?? this.description,
     contentVersion: contentVersion ?? this.contentVersion,
+    contentLanguage: contentLanguage ?? this.contentLanguage,
   );
   CachedUnit copyWithCompanion(CachedUnitsCompanion data) {
     return CachedUnit(
@@ -683,9 +903,15 @@ class CachedUnit extends DataClass implements Insertable<CachedUnit> {
       unitKind: data.unitKind.present ? data.unitKind.value : this.unitKind,
       unitNo: data.unitNo.present ? data.unitNo.value : this.unitNo,
       title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
       contentVersion: data.contentVersion.present
           ? data.contentVersion.value
           : this.contentVersion,
+      contentLanguage: data.contentLanguage.present
+          ? data.contentLanguage.value
+          : this.contentLanguage,
     );
   }
 
@@ -697,14 +923,24 @@ class CachedUnit extends DataClass implements Insertable<CachedUnit> {
           ..write('unitKind: $unitKind, ')
           ..write('unitNo: $unitNo, ')
           ..write('title: $title, ')
-          ..write('contentVersion: $contentVersion')
+          ..write('description: $description, ')
+          ..write('contentVersion: $contentVersion, ')
+          ..write('contentLanguage: $contentLanguage')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, courseId, unitKind, unitNo, title, contentVersion);
+  int get hashCode => Object.hash(
+    id,
+    courseId,
+    unitKind,
+    unitNo,
+    title,
+    description,
+    contentVersion,
+    contentLanguage,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -714,7 +950,9 @@ class CachedUnit extends DataClass implements Insertable<CachedUnit> {
           other.unitKind == this.unitKind &&
           other.unitNo == this.unitNo &&
           other.title == this.title &&
-          other.contentVersion == this.contentVersion);
+          other.description == this.description &&
+          other.contentVersion == this.contentVersion &&
+          other.contentLanguage == this.contentLanguage);
 }
 
 class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
@@ -723,7 +961,9 @@ class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
   final Value<String> unitKind;
   final Value<int> unitNo;
   final Value<String> title;
+  final Value<String> description;
   final Value<int> contentVersion;
+  final Value<String> contentLanguage;
   final Value<int> rowid;
   const CachedUnitsCompanion({
     this.id = const Value.absent(),
@@ -731,7 +971,9 @@ class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
     this.unitKind = const Value.absent(),
     this.unitNo = const Value.absent(),
     this.title = const Value.absent(),
+    this.description = const Value.absent(),
     this.contentVersion = const Value.absent(),
+    this.contentLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CachedUnitsCompanion.insert({
@@ -740,7 +982,9 @@ class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
     required String unitKind,
     required int unitNo,
     required String title,
+    this.description = const Value.absent(),
     this.contentVersion = const Value.absent(),
+    this.contentLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        courseId = Value(courseId),
@@ -753,7 +997,9 @@ class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
     Expression<String>? unitKind,
     Expression<int>? unitNo,
     Expression<String>? title,
+    Expression<String>? description,
     Expression<int>? contentVersion,
+    Expression<String>? contentLanguage,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -762,7 +1008,9 @@ class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
       if (unitKind != null) 'unit_kind': unitKind,
       if (unitNo != null) 'unit_no': unitNo,
       if (title != null) 'title': title,
+      if (description != null) 'description': description,
       if (contentVersion != null) 'content_version': contentVersion,
+      if (contentLanguage != null) 'content_language': contentLanguage,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -773,7 +1021,9 @@ class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
     Value<String>? unitKind,
     Value<int>? unitNo,
     Value<String>? title,
+    Value<String>? description,
     Value<int>? contentVersion,
+    Value<String>? contentLanguage,
     Value<int>? rowid,
   }) {
     return CachedUnitsCompanion(
@@ -782,7 +1032,9 @@ class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
       unitKind: unitKind ?? this.unitKind,
       unitNo: unitNo ?? this.unitNo,
       title: title ?? this.title,
+      description: description ?? this.description,
       contentVersion: contentVersion ?? this.contentVersion,
+      contentLanguage: contentLanguage ?? this.contentLanguage,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -805,8 +1057,14 @@ class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
     if (title.present) {
       map['title'] = Variable<String>(title.value);
     }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
     if (contentVersion.present) {
       map['content_version'] = Variable<int>(contentVersion.value);
+    }
+    if (contentLanguage.present) {
+      map['content_language'] = Variable<String>(contentLanguage.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -822,7 +1080,9 @@ class CachedUnitsCompanion extends UpdateCompanion<CachedUnit> {
           ..write('unitKind: $unitKind, ')
           ..write('unitNo: $unitNo, ')
           ..write('title: $title, ')
+          ..write('description: $description, ')
           ..write('contentVersion: $contentVersion, ')
+          ..write('contentLanguage: $contentLanguage, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -981,6 +1241,18 @@ class $CachedLessonsTable extends CachedLessons
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _contentLanguageMeta = const VerificationMeta(
+    'contentLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> contentLanguage = GeneratedColumn<String>(
+    'content_language',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -996,6 +1268,7 @@ class $CachedLessonsTable extends CachedLessons
     contentVersion,
     detailJson,
     detailFetchedAt,
+    contentLanguage,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1111,6 +1384,15 @@ class $CachedLessonsTable extends CachedLessons
         ),
       );
     }
+    if (data.containsKey('content_language')) {
+      context.handle(
+        _contentLanguageMeta,
+        contentLanguage.isAcceptableOrUnknown(
+          data['content_language']!,
+          _contentLanguageMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1172,6 +1454,10 @@ class $CachedLessonsTable extends CachedLessons
         DriftSqlType.dateTime,
         data['${effectivePrefix}detail_fetched_at'],
       ),
+      contentLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_language'],
+      )!,
     );
   }
 
@@ -1195,6 +1481,7 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
   final int contentVersion;
   final String? detailJson;
   final DateTime? detailFetchedAt;
+  final String contentLanguage;
   const CachedLesson({
     required this.id,
     required this.unitId,
@@ -1209,6 +1496,7 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
     required this.contentVersion,
     this.detailJson,
     this.detailFetchedAt,
+    required this.contentLanguage,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1230,6 +1518,7 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
     if (!nullToAbsent || detailFetchedAt != null) {
       map['detail_fetched_at'] = Variable<DateTime>(detailFetchedAt);
     }
+    map['content_language'] = Variable<String>(contentLanguage);
     return map;
   }
 
@@ -1252,6 +1541,7 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
       detailFetchedAt: detailFetchedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(detailFetchedAt),
+      contentLanguage: Value(contentLanguage),
     );
   }
 
@@ -1274,6 +1564,7 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
       contentVersion: serializer.fromJson<int>(json['contentVersion']),
       detailJson: serializer.fromJson<String?>(json['detailJson']),
       detailFetchedAt: serializer.fromJson<DateTime?>(json['detailFetchedAt']),
+      contentLanguage: serializer.fromJson<String>(json['contentLanguage']),
     );
   }
   @override
@@ -1293,6 +1584,7 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
       'contentVersion': serializer.toJson<int>(contentVersion),
       'detailJson': serializer.toJson<String?>(detailJson),
       'detailFetchedAt': serializer.toJson<DateTime?>(detailFetchedAt),
+      'contentLanguage': serializer.toJson<String>(contentLanguage),
     };
   }
 
@@ -1310,6 +1602,7 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
     int? contentVersion,
     Value<String?> detailJson = const Value.absent(),
     Value<DateTime?> detailFetchedAt = const Value.absent(),
+    String? contentLanguage,
   }) => CachedLesson(
     id: id ?? this.id,
     unitId: unitId ?? this.unitId,
@@ -1326,6 +1619,7 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
     detailFetchedAt: detailFetchedAt.present
         ? detailFetchedAt.value
         : this.detailFetchedAt,
+    contentLanguage: contentLanguage ?? this.contentLanguage,
   );
   CachedLesson copyWithCompanion(CachedLessonsCompanion data) {
     return CachedLesson(
@@ -1358,6 +1652,9 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
       detailFetchedAt: data.detailFetchedAt.present
           ? data.detailFetchedAt.value
           : this.detailFetchedAt,
+      contentLanguage: data.contentLanguage.present
+          ? data.contentLanguage.value
+          : this.contentLanguage,
     );
   }
 
@@ -1376,7 +1673,8 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
           ..write('isPublished: $isPublished, ')
           ..write('contentVersion: $contentVersion, ')
           ..write('detailJson: $detailJson, ')
-          ..write('detailFetchedAt: $detailFetchedAt')
+          ..write('detailFetchedAt: $detailFetchedAt, ')
+          ..write('contentLanguage: $contentLanguage')
           ..write(')'))
         .toString();
   }
@@ -1396,6 +1694,7 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
     contentVersion,
     detailJson,
     detailFetchedAt,
+    contentLanguage,
   );
   @override
   bool operator ==(Object other) =>
@@ -1413,7 +1712,8 @@ class CachedLesson extends DataClass implements Insertable<CachedLesson> {
           other.isPublished == this.isPublished &&
           other.contentVersion == this.contentVersion &&
           other.detailJson == this.detailJson &&
-          other.detailFetchedAt == this.detailFetchedAt);
+          other.detailFetchedAt == this.detailFetchedAt &&
+          other.contentLanguage == this.contentLanguage);
 }
 
 class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
@@ -1430,6 +1730,7 @@ class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
   final Value<int> contentVersion;
   final Value<String?> detailJson;
   final Value<DateTime?> detailFetchedAt;
+  final Value<String> contentLanguage;
   final Value<int> rowid;
   const CachedLessonsCompanion({
     this.id = const Value.absent(),
@@ -1445,6 +1746,7 @@ class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
     this.contentVersion = const Value.absent(),
     this.detailJson = const Value.absent(),
     this.detailFetchedAt = const Value.absent(),
+    this.contentLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CachedLessonsCompanion.insert({
@@ -1461,6 +1763,7 @@ class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
     this.contentVersion = const Value.absent(),
     this.detailJson = const Value.absent(),
     this.detailFetchedAt = const Value.absent(),
+    this.contentLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        unitId = Value(unitId),
@@ -1482,6 +1785,7 @@ class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
     Expression<int>? contentVersion,
     Expression<String>? detailJson,
     Expression<DateTime>? detailFetchedAt,
+    Expression<String>? contentLanguage,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1498,6 +1802,7 @@ class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
       if (contentVersion != null) 'content_version': contentVersion,
       if (detailJson != null) 'detail_json': detailJson,
       if (detailFetchedAt != null) 'detail_fetched_at': detailFetchedAt,
+      if (contentLanguage != null) 'content_language': contentLanguage,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1516,6 +1821,7 @@ class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
     Value<int>? contentVersion,
     Value<String?>? detailJson,
     Value<DateTime?>? detailFetchedAt,
+    Value<String>? contentLanguage,
     Value<int>? rowid,
   }) {
     return CachedLessonsCompanion(
@@ -1532,6 +1838,7 @@ class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
       contentVersion: contentVersion ?? this.contentVersion,
       detailJson: detailJson ?? this.detailJson,
       detailFetchedAt: detailFetchedAt ?? this.detailFetchedAt,
+      contentLanguage: contentLanguage ?? this.contentLanguage,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1578,6 +1885,9 @@ class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
     if (detailFetchedAt.present) {
       map['detail_fetched_at'] = Variable<DateTime>(detailFetchedAt.value);
     }
+    if (contentLanguage.present) {
+      map['content_language'] = Variable<String>(contentLanguage.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1600,6 +1910,7 @@ class CachedLessonsCompanion extends UpdateCompanion<CachedLesson> {
           ..write('contentVersion: $contentVersion, ')
           ..write('detailJson: $detailJson, ')
           ..write('detailFetchedAt: $detailFetchedAt, ')
+          ..write('contentLanguage: $contentLanguage, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1645,11 +1956,24 @@ class $SyncStateTable extends SyncState
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _contentLanguageMeta = const VerificationMeta(
+    'contentLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> contentLanguage = GeneratedColumn<String>(
+    'content_language',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     lastSyncedGlobalVersion,
     lastSyncedAt,
+    contentLanguage,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1684,6 +2008,15 @@ class $SyncStateTable extends SyncState
         ),
       );
     }
+    if (data.containsKey('content_language')) {
+      context.handle(
+        _contentLanguageMeta,
+        contentLanguage.isAcceptableOrUnknown(
+          data['content_language']!,
+          _contentLanguageMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1705,6 +2038,10 @@ class $SyncStateTable extends SyncState
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_synced_at'],
       ),
+      contentLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_language'],
+      )!,
     );
   }
 
@@ -1718,10 +2055,12 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
   final int id;
   final int lastSyncedGlobalVersion;
   final DateTime? lastSyncedAt;
+  final String contentLanguage;
   const SyncStateData({
     required this.id,
     required this.lastSyncedGlobalVersion,
     this.lastSyncedAt,
+    required this.contentLanguage,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1731,6 +2070,7 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
     if (!nullToAbsent || lastSyncedAt != null) {
       map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
     }
+    map['content_language'] = Variable<String>(contentLanguage);
     return map;
   }
 
@@ -1741,6 +2081,7 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
       lastSyncedAt: lastSyncedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(lastSyncedAt),
+      contentLanguage: Value(contentLanguage),
     );
   }
 
@@ -1755,6 +2096,7 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
         json['lastSyncedGlobalVersion'],
       ),
       lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      contentLanguage: serializer.fromJson<String>(json['contentLanguage']),
     );
   }
   @override
@@ -1766,6 +2108,7 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
         lastSyncedGlobalVersion,
       ),
       'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'contentLanguage': serializer.toJson<String>(contentLanguage),
     };
   }
 
@@ -1773,11 +2116,13 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
     int? id,
     int? lastSyncedGlobalVersion,
     Value<DateTime?> lastSyncedAt = const Value.absent(),
+    String? contentLanguage,
   }) => SyncStateData(
     id: id ?? this.id,
     lastSyncedGlobalVersion:
         lastSyncedGlobalVersion ?? this.lastSyncedGlobalVersion,
     lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    contentLanguage: contentLanguage ?? this.contentLanguage,
   );
   SyncStateData copyWithCompanion(SyncStateCompanion data) {
     return SyncStateData(
@@ -1788,6 +2133,9 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
       lastSyncedAt: data.lastSyncedAt.present
           ? data.lastSyncedAt.value
           : this.lastSyncedAt,
+      contentLanguage: data.contentLanguage.present
+          ? data.contentLanguage.value
+          : this.contentLanguage,
     );
   }
 
@@ -1796,46 +2144,54 @@ class SyncStateData extends DataClass implements Insertable<SyncStateData> {
     return (StringBuffer('SyncStateData(')
           ..write('id: $id, ')
           ..write('lastSyncedGlobalVersion: $lastSyncedGlobalVersion, ')
-          ..write('lastSyncedAt: $lastSyncedAt')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('contentLanguage: $contentLanguage')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, lastSyncedGlobalVersion, lastSyncedAt);
+  int get hashCode =>
+      Object.hash(id, lastSyncedGlobalVersion, lastSyncedAt, contentLanguage);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is SyncStateData &&
           other.id == this.id &&
           other.lastSyncedGlobalVersion == this.lastSyncedGlobalVersion &&
-          other.lastSyncedAt == this.lastSyncedAt);
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.contentLanguage == this.contentLanguage);
 }
 
 class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
   final Value<int> id;
   final Value<int> lastSyncedGlobalVersion;
   final Value<DateTime?> lastSyncedAt;
+  final Value<String> contentLanguage;
   const SyncStateCompanion({
     this.id = const Value.absent(),
     this.lastSyncedGlobalVersion = const Value.absent(),
     this.lastSyncedAt = const Value.absent(),
+    this.contentLanguage = const Value.absent(),
   });
   SyncStateCompanion.insert({
     this.id = const Value.absent(),
     this.lastSyncedGlobalVersion = const Value.absent(),
     this.lastSyncedAt = const Value.absent(),
+    this.contentLanguage = const Value.absent(),
   });
   static Insertable<SyncStateData> custom({
     Expression<int>? id,
     Expression<int>? lastSyncedGlobalVersion,
     Expression<DateTime>? lastSyncedAt,
+    Expression<String>? contentLanguage,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (lastSyncedGlobalVersion != null)
         'last_synced_global_version': lastSyncedGlobalVersion,
       if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (contentLanguage != null) 'content_language': contentLanguage,
     });
   }
 
@@ -1843,12 +2199,14 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
     Value<int>? id,
     Value<int>? lastSyncedGlobalVersion,
     Value<DateTime?>? lastSyncedAt,
+    Value<String>? contentLanguage,
   }) {
     return SyncStateCompanion(
       id: id ?? this.id,
       lastSyncedGlobalVersion:
           lastSyncedGlobalVersion ?? this.lastSyncedGlobalVersion,
       lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      contentLanguage: contentLanguage ?? this.contentLanguage,
     );
   }
 
@@ -1866,6 +2224,9 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
     if (lastSyncedAt.present) {
       map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
     }
+    if (contentLanguage.present) {
+      map['content_language'] = Variable<String>(contentLanguage.value);
+    }
     return map;
   }
 
@@ -1874,7 +2235,8 @@ class SyncStateCompanion extends UpdateCompanion<SyncStateData> {
     return (StringBuffer('SyncStateCompanion(')
           ..write('id: $id, ')
           ..write('lastSyncedGlobalVersion: $lastSyncedGlobalVersion, ')
-          ..write('lastSyncedAt: $lastSyncedAt')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('contentLanguage: $contentLanguage')
           ..write(')'))
         .toString();
   }
@@ -1900,6 +2262,18 @@ class $ProgressOutboxEntriesTable extends ProgressOutboxEntries
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
     ),
+  );
+  static const VerificationMeta _operationMeta = const VerificationMeta(
+    'operation',
+  );
+  @override
+  late final GeneratedColumn<String> operation = GeneratedColumn<String>(
+    'operation',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('complete_lesson'),
   );
   static const VerificationMeta _lessonIdMeta = const VerificationMeta(
     'lessonId',
@@ -1982,6 +2356,7 @@ class $ProgressOutboxEntriesTable extends ProgressOutboxEntries
   @override
   List<GeneratedColumn> get $columns => [
     localId,
+    operation,
     lessonId,
     idempotencyKey,
     requestPayloadJson,
@@ -2006,6 +2381,12 @@ class $ProgressOutboxEntriesTable extends ProgressOutboxEntries
       context.handle(
         _localIdMeta,
         localId.isAcceptableOrUnknown(data['local_id']!, _localIdMeta),
+      );
+    }
+    if (data.containsKey('operation')) {
+      context.handle(
+        _operationMeta,
+        operation.isAcceptableOrUnknown(data['operation']!, _operationMeta),
       );
     }
     if (data.containsKey('lesson_id')) {
@@ -2075,6 +2456,10 @@ class $ProgressOutboxEntriesTable extends ProgressOutboxEntries
         DriftSqlType.int,
         data['${effectivePrefix}local_id'],
       )!,
+      operation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}operation'],
+      )!,
       lessonId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}lesson_id'],
@@ -2115,6 +2500,7 @@ class $ProgressOutboxEntriesTable extends ProgressOutboxEntries
 class ProgressOutboxEntry extends DataClass
     implements Insertable<ProgressOutboxEntry> {
   final int localId;
+  final String operation;
   final String lessonId;
   final String idempotencyKey;
   final String requestPayloadJson;
@@ -2124,6 +2510,7 @@ class ProgressOutboxEntry extends DataClass
   final String? lastError;
   const ProgressOutboxEntry({
     required this.localId,
+    required this.operation,
     required this.lessonId,
     required this.idempotencyKey,
     required this.requestPayloadJson,
@@ -2136,6 +2523,7 @@ class ProgressOutboxEntry extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['local_id'] = Variable<int>(localId);
+    map['operation'] = Variable<String>(operation);
     map['lesson_id'] = Variable<String>(lessonId);
     map['idempotency_key'] = Variable<String>(idempotencyKey);
     map['request_payload_json'] = Variable<String>(requestPayloadJson);
@@ -2151,6 +2539,7 @@ class ProgressOutboxEntry extends DataClass
   ProgressOutboxEntriesCompanion toCompanion(bool nullToAbsent) {
     return ProgressOutboxEntriesCompanion(
       localId: Value(localId),
+      operation: Value(operation),
       lessonId: Value(lessonId),
       idempotencyKey: Value(idempotencyKey),
       requestPayloadJson: Value(requestPayloadJson),
@@ -2170,6 +2559,7 @@ class ProgressOutboxEntry extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ProgressOutboxEntry(
       localId: serializer.fromJson<int>(json['localId']),
+      operation: serializer.fromJson<String>(json['operation']),
       lessonId: serializer.fromJson<String>(json['lessonId']),
       idempotencyKey: serializer.fromJson<String>(json['idempotencyKey']),
       requestPayloadJson: serializer.fromJson<String>(
@@ -2186,6 +2576,7 @@ class ProgressOutboxEntry extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'localId': serializer.toJson<int>(localId),
+      'operation': serializer.toJson<String>(operation),
       'lessonId': serializer.toJson<String>(lessonId),
       'idempotencyKey': serializer.toJson<String>(idempotencyKey),
       'requestPayloadJson': serializer.toJson<String>(requestPayloadJson),
@@ -2198,6 +2589,7 @@ class ProgressOutboxEntry extends DataClass
 
   ProgressOutboxEntry copyWith({
     int? localId,
+    String? operation,
     String? lessonId,
     String? idempotencyKey,
     String? requestPayloadJson,
@@ -2207,6 +2599,7 @@ class ProgressOutboxEntry extends DataClass
     Value<String?> lastError = const Value.absent(),
   }) => ProgressOutboxEntry(
     localId: localId ?? this.localId,
+    operation: operation ?? this.operation,
     lessonId: lessonId ?? this.lessonId,
     idempotencyKey: idempotencyKey ?? this.idempotencyKey,
     requestPayloadJson: requestPayloadJson ?? this.requestPayloadJson,
@@ -2218,6 +2611,7 @@ class ProgressOutboxEntry extends DataClass
   ProgressOutboxEntry copyWithCompanion(ProgressOutboxEntriesCompanion data) {
     return ProgressOutboxEntry(
       localId: data.localId.present ? data.localId.value : this.localId,
+      operation: data.operation.present ? data.operation.value : this.operation,
       lessonId: data.lessonId.present ? data.lessonId.value : this.lessonId,
       idempotencyKey: data.idempotencyKey.present
           ? data.idempotencyKey.value
@@ -2238,6 +2632,7 @@ class ProgressOutboxEntry extends DataClass
   String toString() {
     return (StringBuffer('ProgressOutboxEntry(')
           ..write('localId: $localId, ')
+          ..write('operation: $operation, ')
           ..write('lessonId: $lessonId, ')
           ..write('idempotencyKey: $idempotencyKey, ')
           ..write('requestPayloadJson: $requestPayloadJson, ')
@@ -2252,6 +2647,7 @@ class ProgressOutboxEntry extends DataClass
   @override
   int get hashCode => Object.hash(
     localId,
+    operation,
     lessonId,
     idempotencyKey,
     requestPayloadJson,
@@ -2265,6 +2661,7 @@ class ProgressOutboxEntry extends DataClass
       identical(this, other) ||
       (other is ProgressOutboxEntry &&
           other.localId == this.localId &&
+          other.operation == this.operation &&
           other.lessonId == this.lessonId &&
           other.idempotencyKey == this.idempotencyKey &&
           other.requestPayloadJson == this.requestPayloadJson &&
@@ -2277,6 +2674,7 @@ class ProgressOutboxEntry extends DataClass
 class ProgressOutboxEntriesCompanion
     extends UpdateCompanion<ProgressOutboxEntry> {
   final Value<int> localId;
+  final Value<String> operation;
   final Value<String> lessonId;
   final Value<String> idempotencyKey;
   final Value<String> requestPayloadJson;
@@ -2286,6 +2684,7 @@ class ProgressOutboxEntriesCompanion
   final Value<String?> lastError;
   const ProgressOutboxEntriesCompanion({
     this.localId = const Value.absent(),
+    this.operation = const Value.absent(),
     this.lessonId = const Value.absent(),
     this.idempotencyKey = const Value.absent(),
     this.requestPayloadJson = const Value.absent(),
@@ -2296,6 +2695,7 @@ class ProgressOutboxEntriesCompanion
   });
   ProgressOutboxEntriesCompanion.insert({
     this.localId = const Value.absent(),
+    this.operation = const Value.absent(),
     required String lessonId,
     required String idempotencyKey,
     required String requestPayloadJson,
@@ -2308,6 +2708,7 @@ class ProgressOutboxEntriesCompanion
        requestPayloadJson = Value(requestPayloadJson);
   static Insertable<ProgressOutboxEntry> custom({
     Expression<int>? localId,
+    Expression<String>? operation,
     Expression<String>? lessonId,
     Expression<String>? idempotencyKey,
     Expression<String>? requestPayloadJson,
@@ -2318,6 +2719,7 @@ class ProgressOutboxEntriesCompanion
   }) {
     return RawValuesInsertable({
       if (localId != null) 'local_id': localId,
+      if (operation != null) 'operation': operation,
       if (lessonId != null) 'lesson_id': lessonId,
       if (idempotencyKey != null) 'idempotency_key': idempotencyKey,
       if (requestPayloadJson != null)
@@ -2331,6 +2733,7 @@ class ProgressOutboxEntriesCompanion
 
   ProgressOutboxEntriesCompanion copyWith({
     Value<int>? localId,
+    Value<String>? operation,
     Value<String>? lessonId,
     Value<String>? idempotencyKey,
     Value<String>? requestPayloadJson,
@@ -2341,6 +2744,7 @@ class ProgressOutboxEntriesCompanion
   }) {
     return ProgressOutboxEntriesCompanion(
       localId: localId ?? this.localId,
+      operation: operation ?? this.operation,
       lessonId: lessonId ?? this.lessonId,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
       requestPayloadJson: requestPayloadJson ?? this.requestPayloadJson,
@@ -2356,6 +2760,9 @@ class ProgressOutboxEntriesCompanion
     final map = <String, Expression>{};
     if (localId.present) {
       map['local_id'] = Variable<int>(localId.value);
+    }
+    if (operation.present) {
+      map['operation'] = Variable<String>(operation.value);
     }
     if (lessonId.present) {
       map['lesson_id'] = Variable<String>(lessonId.value);
@@ -2385,6 +2792,7 @@ class ProgressOutboxEntriesCompanion
   String toString() {
     return (StringBuffer('ProgressOutboxEntriesCompanion(')
           ..write('localId: $localId, ')
+          ..write('operation: $operation, ')
           ..write('lessonId: $lessonId, ')
           ..write('idempotencyKey: $idempotencyKey, ')
           ..write('requestPayloadJson: $requestPayloadJson, ')
@@ -2985,6 +3393,610 @@ class UnitDownloadsCompanion extends UpdateCompanion<UnitDownload> {
   }
 }
 
+class $ContentTombstonesTable extends ContentTombstones
+    with TableInfo<$ContentTombstonesTable, ContentTombstone> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContentTombstonesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityTypeMeta = const VerificationMeta(
+    'entityType',
+  );
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+    'entity_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentVersionMeta = const VerificationMeta(
+    'contentVersion',
+  );
+  @override
+  late final GeneratedColumn<int> contentVersion = GeneratedColumn<int>(
+    'content_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [entityId, entityType, contentVersion];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'content_tombstones';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContentTombstone> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+        _entityTypeMeta,
+        entityType.isAcceptableOrUnknown(data['entity_type']!, _entityTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityTypeMeta);
+    }
+    if (data.containsKey('content_version')) {
+      context.handle(
+        _contentVersionMeta,
+        contentVersion.isAcceptableOrUnknown(
+          data['content_version']!,
+          _contentVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contentVersionMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {entityId, entityType};
+  @override
+  ContentTombstone map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContentTombstone(
+      entityId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_id'],
+      )!,
+      entityType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_type'],
+      )!,
+      contentVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}content_version'],
+      )!,
+    );
+  }
+
+  @override
+  $ContentTombstonesTable createAlias(String alias) {
+    return $ContentTombstonesTable(attachedDatabase, alias);
+  }
+}
+
+class ContentTombstone extends DataClass
+    implements Insertable<ContentTombstone> {
+  final String entityId;
+  final String entityType;
+  final int contentVersion;
+  const ContentTombstone({
+    required this.entityId,
+    required this.entityType,
+    required this.contentVersion,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['entity_id'] = Variable<String>(entityId);
+    map['entity_type'] = Variable<String>(entityType);
+    map['content_version'] = Variable<int>(contentVersion);
+    return map;
+  }
+
+  ContentTombstonesCompanion toCompanion(bool nullToAbsent) {
+    return ContentTombstonesCompanion(
+      entityId: Value(entityId),
+      entityType: Value(entityType),
+      contentVersion: Value(contentVersion),
+    );
+  }
+
+  factory ContentTombstone.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContentTombstone(
+      entityId: serializer.fromJson<String>(json['entityId']),
+      entityType: serializer.fromJson<String>(json['entityType']),
+      contentVersion: serializer.fromJson<int>(json['contentVersion']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'entityId': serializer.toJson<String>(entityId),
+      'entityType': serializer.toJson<String>(entityType),
+      'contentVersion': serializer.toJson<int>(contentVersion),
+    };
+  }
+
+  ContentTombstone copyWith({
+    String? entityId,
+    String? entityType,
+    int? contentVersion,
+  }) => ContentTombstone(
+    entityId: entityId ?? this.entityId,
+    entityType: entityType ?? this.entityType,
+    contentVersion: contentVersion ?? this.contentVersion,
+  );
+  ContentTombstone copyWithCompanion(ContentTombstonesCompanion data) {
+    return ContentTombstone(
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      entityType: data.entityType.present
+          ? data.entityType.value
+          : this.entityType,
+      contentVersion: data.contentVersion.present
+          ? data.contentVersion.value
+          : this.contentVersion,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentTombstone(')
+          ..write('entityId: $entityId, ')
+          ..write('entityType: $entityType, ')
+          ..write('contentVersion: $contentVersion')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(entityId, entityType, contentVersion);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContentTombstone &&
+          other.entityId == this.entityId &&
+          other.entityType == this.entityType &&
+          other.contentVersion == this.contentVersion);
+}
+
+class ContentTombstonesCompanion extends UpdateCompanion<ContentTombstone> {
+  final Value<String> entityId;
+  final Value<String> entityType;
+  final Value<int> contentVersion;
+  final Value<int> rowid;
+  const ContentTombstonesCompanion({
+    this.entityId = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.contentVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContentTombstonesCompanion.insert({
+    required String entityId,
+    required String entityType,
+    required int contentVersion,
+    this.rowid = const Value.absent(),
+  }) : entityId = Value(entityId),
+       entityType = Value(entityType),
+       contentVersion = Value(contentVersion);
+  static Insertable<ContentTombstone> custom({
+    Expression<String>? entityId,
+    Expression<String>? entityType,
+    Expression<int>? contentVersion,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (entityId != null) 'entity_id': entityId,
+      if (entityType != null) 'entity_type': entityType,
+      if (contentVersion != null) 'content_version': contentVersion,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContentTombstonesCompanion copyWith({
+    Value<String>? entityId,
+    Value<String>? entityType,
+    Value<int>? contentVersion,
+    Value<int>? rowid,
+  }) {
+    return ContentTombstonesCompanion(
+      entityId: entityId ?? this.entityId,
+      entityType: entityType ?? this.entityType,
+      contentVersion: contentVersion ?? this.contentVersion,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (contentVersion.present) {
+      map['content_version'] = Variable<int>(contentVersion.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentTombstonesCompanion(')
+          ..write('entityId: $entityId, ')
+          ..write('entityType: $entityType, ')
+          ..write('contentVersion: $contentVersion, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ApiCacheEntriesTable extends ApiCacheEntries
+    with TableInfo<$ApiCacheEntriesTable, ApiCacheEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ApiCacheEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _cacheKeyMeta = const VerificationMeta(
+    'cacheKey',
+  );
+  @override
+  late final GeneratedColumn<String> cacheKey = GeneratedColumn<String>(
+    'cache_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _jsonValueMeta = const VerificationMeta(
+    'jsonValue',
+  );
+  @override
+  late final GeneratedColumn<String> jsonValue = GeneratedColumn<String>(
+    'json_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastAccessedAtMeta = const VerificationMeta(
+    'lastAccessedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastAccessedAt =
+      GeneratedColumn<DateTime>(
+        'last_accessed_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    cacheKey,
+    jsonValue,
+    cachedAt,
+    lastAccessedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'api_cache_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ApiCacheEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('cache_key')) {
+      context.handle(
+        _cacheKeyMeta,
+        cacheKey.isAcceptableOrUnknown(data['cache_key']!, _cacheKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cacheKeyMeta);
+    }
+    if (data.containsKey('json_value')) {
+      context.handle(
+        _jsonValueMeta,
+        jsonValue.isAcceptableOrUnknown(data['json_value']!, _jsonValueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_jsonValueMeta);
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    if (data.containsKey('last_accessed_at')) {
+      context.handle(
+        _lastAccessedAtMeta,
+        lastAccessedAt.isAcceptableOrUnknown(
+          data['last_accessed_at']!,
+          _lastAccessedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastAccessedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {cacheKey};
+  @override
+  ApiCacheEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ApiCacheEntry(
+      cacheKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cache_key'],
+      )!,
+      jsonValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}json_value'],
+      )!,
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+      lastAccessedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_accessed_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ApiCacheEntriesTable createAlias(String alias) {
+    return $ApiCacheEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class ApiCacheEntry extends DataClass implements Insertable<ApiCacheEntry> {
+  final String cacheKey;
+  final String jsonValue;
+  final DateTime cachedAt;
+  final DateTime lastAccessedAt;
+  const ApiCacheEntry({
+    required this.cacheKey,
+    required this.jsonValue,
+    required this.cachedAt,
+    required this.lastAccessedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['cache_key'] = Variable<String>(cacheKey);
+    map['json_value'] = Variable<String>(jsonValue);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    map['last_accessed_at'] = Variable<DateTime>(lastAccessedAt);
+    return map;
+  }
+
+  ApiCacheEntriesCompanion toCompanion(bool nullToAbsent) {
+    return ApiCacheEntriesCompanion(
+      cacheKey: Value(cacheKey),
+      jsonValue: Value(jsonValue),
+      cachedAt: Value(cachedAt),
+      lastAccessedAt: Value(lastAccessedAt),
+    );
+  }
+
+  factory ApiCacheEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ApiCacheEntry(
+      cacheKey: serializer.fromJson<String>(json['cacheKey']),
+      jsonValue: serializer.fromJson<String>(json['jsonValue']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+      lastAccessedAt: serializer.fromJson<DateTime>(json['lastAccessedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'cacheKey': serializer.toJson<String>(cacheKey),
+      'jsonValue': serializer.toJson<String>(jsonValue),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+      'lastAccessedAt': serializer.toJson<DateTime>(lastAccessedAt),
+    };
+  }
+
+  ApiCacheEntry copyWith({
+    String? cacheKey,
+    String? jsonValue,
+    DateTime? cachedAt,
+    DateTime? lastAccessedAt,
+  }) => ApiCacheEntry(
+    cacheKey: cacheKey ?? this.cacheKey,
+    jsonValue: jsonValue ?? this.jsonValue,
+    cachedAt: cachedAt ?? this.cachedAt,
+    lastAccessedAt: lastAccessedAt ?? this.lastAccessedAt,
+  );
+  ApiCacheEntry copyWithCompanion(ApiCacheEntriesCompanion data) {
+    return ApiCacheEntry(
+      cacheKey: data.cacheKey.present ? data.cacheKey.value : this.cacheKey,
+      jsonValue: data.jsonValue.present ? data.jsonValue.value : this.jsonValue,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+      lastAccessedAt: data.lastAccessedAt.present
+          ? data.lastAccessedAt.value
+          : this.lastAccessedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ApiCacheEntry(')
+          ..write('cacheKey: $cacheKey, ')
+          ..write('jsonValue: $jsonValue, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('lastAccessedAt: $lastAccessedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(cacheKey, jsonValue, cachedAt, lastAccessedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ApiCacheEntry &&
+          other.cacheKey == this.cacheKey &&
+          other.jsonValue == this.jsonValue &&
+          other.cachedAt == this.cachedAt &&
+          other.lastAccessedAt == this.lastAccessedAt);
+}
+
+class ApiCacheEntriesCompanion extends UpdateCompanion<ApiCacheEntry> {
+  final Value<String> cacheKey;
+  final Value<String> jsonValue;
+  final Value<DateTime> cachedAt;
+  final Value<DateTime> lastAccessedAt;
+  final Value<int> rowid;
+  const ApiCacheEntriesCompanion({
+    this.cacheKey = const Value.absent(),
+    this.jsonValue = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.lastAccessedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ApiCacheEntriesCompanion.insert({
+    required String cacheKey,
+    required String jsonValue,
+    required DateTime cachedAt,
+    required DateTime lastAccessedAt,
+    this.rowid = const Value.absent(),
+  }) : cacheKey = Value(cacheKey),
+       jsonValue = Value(jsonValue),
+       cachedAt = Value(cachedAt),
+       lastAccessedAt = Value(lastAccessedAt);
+  static Insertable<ApiCacheEntry> custom({
+    Expression<String>? cacheKey,
+    Expression<String>? jsonValue,
+    Expression<DateTime>? cachedAt,
+    Expression<DateTime>? lastAccessedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (cacheKey != null) 'cache_key': cacheKey,
+      if (jsonValue != null) 'json_value': jsonValue,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (lastAccessedAt != null) 'last_accessed_at': lastAccessedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ApiCacheEntriesCompanion copyWith({
+    Value<String>? cacheKey,
+    Value<String>? jsonValue,
+    Value<DateTime>? cachedAt,
+    Value<DateTime>? lastAccessedAt,
+    Value<int>? rowid,
+  }) {
+    return ApiCacheEntriesCompanion(
+      cacheKey: cacheKey ?? this.cacheKey,
+      jsonValue: jsonValue ?? this.jsonValue,
+      cachedAt: cachedAt ?? this.cachedAt,
+      lastAccessedAt: lastAccessedAt ?? this.lastAccessedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (cacheKey.present) {
+      map['cache_key'] = Variable<String>(cacheKey.value);
+    }
+    if (jsonValue.present) {
+      map['json_value'] = Variable<String>(jsonValue.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (lastAccessedAt.present) {
+      map['last_accessed_at'] = Variable<DateTime>(lastAccessedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ApiCacheEntriesCompanion(')
+          ..write('cacheKey: $cacheKey, ')
+          ..write('jsonValue: $jsonValue, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('lastAccessedAt: $lastAccessedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2997,6 +4009,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MediaCacheEntriesTable mediaCacheEntries =
       $MediaCacheEntriesTable(this);
   late final $UnitDownloadsTable unitDownloads = $UnitDownloadsTable(this);
+  late final $ContentTombstonesTable contentTombstones =
+      $ContentTombstonesTable(this);
+  late final $ApiCacheEntriesTable apiCacheEntries = $ApiCacheEntriesTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3009,6 +4026,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     progressOutboxEntries,
     mediaCacheEntries,
     unitDownloads,
+    contentTombstones,
+    apiCacheEntries,
   ];
 }
 
@@ -3016,20 +4035,26 @@ typedef $$CachedCoursesTableCreateCompanionBuilder =
     CachedCoursesCompanion Function({
       required String id,
       required String code,
+      Value<String> title,
+      Value<String> description,
       required String levelMin,
       required String levelMax,
       Value<int> contentVersion,
       Value<bool> isPublished,
+      Value<String> contentLanguage,
       Value<int> rowid,
     });
 typedef $$CachedCoursesTableUpdateCompanionBuilder =
     CachedCoursesCompanion Function({
       Value<String> id,
       Value<String> code,
+      Value<String> title,
+      Value<String> description,
       Value<String> levelMin,
       Value<String> levelMax,
       Value<int> contentVersion,
       Value<bool> isPublished,
+      Value<String> contentLanguage,
       Value<int> rowid,
     });
 
@@ -3052,6 +4077,16 @@ class $$CachedCoursesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get levelMin => $composableBuilder(
     column: $table.levelMin,
     builder: (column) => ColumnFilters(column),
@@ -3069,6 +4104,11 @@ class $$CachedCoursesTableFilterComposer
 
   ColumnFilters<bool> get isPublished => $composableBuilder(
     column: $table.isPublished,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3092,6 +4132,16 @@ class $$CachedCoursesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get levelMin => $composableBuilder(
     column: $table.levelMin,
     builder: (column) => ColumnOrderings(column),
@@ -3111,6 +4161,11 @@ class $$CachedCoursesTableOrderingComposer
     column: $table.isPublished,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CachedCoursesTableAnnotationComposer
@@ -3128,6 +4183,14 @@ class $$CachedCoursesTableAnnotationComposer
   GeneratedColumn<String> get code =>
       $composableBuilder(column: $table.code, builder: (column) => column);
 
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get levelMin =>
       $composableBuilder(column: $table.levelMin, builder: (column) => column);
 
@@ -3141,6 +4204,11 @@ class $$CachedCoursesTableAnnotationComposer
 
   GeneratedColumn<bool> get isPublished => $composableBuilder(
     column: $table.isPublished,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
     builder: (column) => column,
   );
 }
@@ -3178,36 +4246,48 @@ class $$CachedCoursesTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> code = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> description = const Value.absent(),
                 Value<String> levelMin = const Value.absent(),
                 Value<String> levelMax = const Value.absent(),
                 Value<int> contentVersion = const Value.absent(),
                 Value<bool> isPublished = const Value.absent(),
+                Value<String> contentLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CachedCoursesCompanion(
                 id: id,
                 code: code,
+                title: title,
+                description: description,
                 levelMin: levelMin,
                 levelMax: levelMax,
                 contentVersion: contentVersion,
                 isPublished: isPublished,
+                contentLanguage: contentLanguage,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String id,
                 required String code,
+                Value<String> title = const Value.absent(),
+                Value<String> description = const Value.absent(),
                 required String levelMin,
                 required String levelMax,
                 Value<int> contentVersion = const Value.absent(),
                 Value<bool> isPublished = const Value.absent(),
+                Value<String> contentLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CachedCoursesCompanion.insert(
                 id: id,
                 code: code,
+                title: title,
+                description: description,
                 levelMin: levelMin,
                 levelMax: levelMax,
                 contentVersion: contentVersion,
                 isPublished: isPublished,
+                contentLanguage: contentLanguage,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -3242,7 +4322,9 @@ typedef $$CachedUnitsTableCreateCompanionBuilder =
       required String unitKind,
       required int unitNo,
       required String title,
+      Value<String> description,
       Value<int> contentVersion,
+      Value<String> contentLanguage,
       Value<int> rowid,
     });
 typedef $$CachedUnitsTableUpdateCompanionBuilder =
@@ -3252,7 +4334,9 @@ typedef $$CachedUnitsTableUpdateCompanionBuilder =
       Value<String> unitKind,
       Value<int> unitNo,
       Value<String> title,
+      Value<String> description,
       Value<int> contentVersion,
+      Value<String> contentLanguage,
       Value<int> rowid,
     });
 
@@ -3290,8 +4374,18 @@ class $$CachedUnitsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get contentVersion => $composableBuilder(
     column: $table.contentVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3330,8 +4424,18 @@ class $$CachedUnitsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get contentVersion => $composableBuilder(
     column: $table.contentVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -3360,8 +4464,18 @@ class $$CachedUnitsTableAnnotationComposer
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get contentVersion => $composableBuilder(
     column: $table.contentVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
     builder: (column) => column,
   );
 }
@@ -3402,7 +4516,9 @@ class $$CachedUnitsTableTableManager
                 Value<String> unitKind = const Value.absent(),
                 Value<int> unitNo = const Value.absent(),
                 Value<String> title = const Value.absent(),
+                Value<String> description = const Value.absent(),
                 Value<int> contentVersion = const Value.absent(),
+                Value<String> contentLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CachedUnitsCompanion(
                 id: id,
@@ -3410,7 +4526,9 @@ class $$CachedUnitsTableTableManager
                 unitKind: unitKind,
                 unitNo: unitNo,
                 title: title,
+                description: description,
                 contentVersion: contentVersion,
+                contentLanguage: contentLanguage,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3420,7 +4538,9 @@ class $$CachedUnitsTableTableManager
                 required String unitKind,
                 required int unitNo,
                 required String title,
+                Value<String> description = const Value.absent(),
                 Value<int> contentVersion = const Value.absent(),
+                Value<String> contentLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CachedUnitsCompanion.insert(
                 id: id,
@@ -3428,7 +4548,9 @@ class $$CachedUnitsTableTableManager
                 unitKind: unitKind,
                 unitNo: unitNo,
                 title: title,
+                description: description,
                 contentVersion: contentVersion,
+                contentLanguage: contentLanguage,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -3471,6 +4593,7 @@ typedef $$CachedLessonsTableCreateCompanionBuilder =
       Value<int> contentVersion,
       Value<String?> detailJson,
       Value<DateTime?> detailFetchedAt,
+      Value<String> contentLanguage,
       Value<int> rowid,
     });
 typedef $$CachedLessonsTableUpdateCompanionBuilder =
@@ -3488,6 +4611,7 @@ typedef $$CachedLessonsTableUpdateCompanionBuilder =
       Value<int> contentVersion,
       Value<String?> detailJson,
       Value<DateTime?> detailFetchedAt,
+      Value<String> contentLanguage,
       Value<int> rowid,
     });
 
@@ -3562,6 +4686,11 @@ class $$CachedLessonsTableFilterComposer
 
   ColumnFilters<DateTime> get detailFetchedAt => $composableBuilder(
     column: $table.detailFetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3639,6 +4768,11 @@ class $$CachedLessonsTableOrderingComposer
     column: $table.detailFetchedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CachedLessonsTableAnnotationComposer
@@ -3704,6 +4838,11 @@ class $$CachedLessonsTableAnnotationComposer
     column: $table.detailFetchedAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
+    builder: (column) => column,
+  );
 }
 
 class $$CachedLessonsTableTableManager
@@ -3750,6 +4889,7 @@ class $$CachedLessonsTableTableManager
                 Value<int> contentVersion = const Value.absent(),
                 Value<String?> detailJson = const Value.absent(),
                 Value<DateTime?> detailFetchedAt = const Value.absent(),
+                Value<String> contentLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CachedLessonsCompanion(
                 id: id,
@@ -3765,6 +4905,7 @@ class $$CachedLessonsTableTableManager
                 contentVersion: contentVersion,
                 detailJson: detailJson,
                 detailFetchedAt: detailFetchedAt,
+                contentLanguage: contentLanguage,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3782,6 +4923,7 @@ class $$CachedLessonsTableTableManager
                 Value<int> contentVersion = const Value.absent(),
                 Value<String?> detailJson = const Value.absent(),
                 Value<DateTime?> detailFetchedAt = const Value.absent(),
+                Value<String> contentLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CachedLessonsCompanion.insert(
                 id: id,
@@ -3797,6 +4939,7 @@ class $$CachedLessonsTableTableManager
                 contentVersion: contentVersion,
                 detailJson: detailJson,
                 detailFetchedAt: detailFetchedAt,
+                contentLanguage: contentLanguage,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -3829,12 +4972,14 @@ typedef $$SyncStateTableCreateCompanionBuilder =
       Value<int> id,
       Value<int> lastSyncedGlobalVersion,
       Value<DateTime?> lastSyncedAt,
+      Value<String> contentLanguage,
     });
 typedef $$SyncStateTableUpdateCompanionBuilder =
     SyncStateCompanion Function({
       Value<int> id,
       Value<int> lastSyncedGlobalVersion,
       Value<DateTime?> lastSyncedAt,
+      Value<String> contentLanguage,
     });
 
 class $$SyncStateTableFilterComposer
@@ -3858,6 +5003,11 @@ class $$SyncStateTableFilterComposer
 
   ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
     column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3885,6 +5035,11 @@ class $$SyncStateTableOrderingComposer
     column: $table.lastSyncedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SyncStateTableAnnotationComposer
@@ -3906,6 +5061,11 @@ class $$SyncStateTableAnnotationComposer
 
   GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
     column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contentLanguage => $composableBuilder(
+    column: $table.contentLanguage,
     builder: (column) => column,
   );
 }
@@ -3944,20 +5104,24 @@ class $$SyncStateTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<int> lastSyncedGlobalVersion = const Value.absent(),
                 Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String> contentLanguage = const Value.absent(),
               }) => SyncStateCompanion(
                 id: id,
                 lastSyncedGlobalVersion: lastSyncedGlobalVersion,
                 lastSyncedAt: lastSyncedAt,
+                contentLanguage: contentLanguage,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 Value<int> lastSyncedGlobalVersion = const Value.absent(),
                 Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String> contentLanguage = const Value.absent(),
               }) => SyncStateCompanion.insert(
                 id: id,
                 lastSyncedGlobalVersion: lastSyncedGlobalVersion,
                 lastSyncedAt: lastSyncedAt,
+                contentLanguage: contentLanguage,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -3987,6 +5151,7 @@ typedef $$SyncStateTableProcessedTableManager =
 typedef $$ProgressOutboxEntriesTableCreateCompanionBuilder =
     ProgressOutboxEntriesCompanion Function({
       Value<int> localId,
+      Value<String> operation,
       required String lessonId,
       required String idempotencyKey,
       required String requestPayloadJson,
@@ -3998,6 +5163,7 @@ typedef $$ProgressOutboxEntriesTableCreateCompanionBuilder =
 typedef $$ProgressOutboxEntriesTableUpdateCompanionBuilder =
     ProgressOutboxEntriesCompanion Function({
       Value<int> localId,
+      Value<String> operation,
       Value<String> lessonId,
       Value<String> idempotencyKey,
       Value<String> requestPayloadJson,
@@ -4018,6 +5184,11 @@ class $$ProgressOutboxEntriesTableFilterComposer
   });
   ColumnFilters<int> get localId => $composableBuilder(
     column: $table.localId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get operation => $composableBuilder(
+    column: $table.operation,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4071,6 +5242,11 @@ class $$ProgressOutboxEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get operation => $composableBuilder(
+    column: $table.operation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get lessonId => $composableBuilder(
     column: $table.lessonId,
     builder: (column) => ColumnOrderings(column),
@@ -4118,6 +5294,9 @@ class $$ProgressOutboxEntriesTableAnnotationComposer
   });
   GeneratedColumn<int> get localId =>
       $composableBuilder(column: $table.localId, builder: (column) => column);
+
+  GeneratedColumn<String> get operation =>
+      $composableBuilder(column: $table.operation, builder: (column) => column);
 
   GeneratedColumn<String> get lessonId =>
       $composableBuilder(column: $table.lessonId, builder: (column) => column);
@@ -4194,6 +5373,7 @@ class $$ProgressOutboxEntriesTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> localId = const Value.absent(),
+                Value<String> operation = const Value.absent(),
                 Value<String> lessonId = const Value.absent(),
                 Value<String> idempotencyKey = const Value.absent(),
                 Value<String> requestPayloadJson = const Value.absent(),
@@ -4203,6 +5383,7 @@ class $$ProgressOutboxEntriesTableTableManager
                 Value<String?> lastError = const Value.absent(),
               }) => ProgressOutboxEntriesCompanion(
                 localId: localId,
+                operation: operation,
                 lessonId: lessonId,
                 idempotencyKey: idempotencyKey,
                 requestPayloadJson: requestPayloadJson,
@@ -4214,6 +5395,7 @@ class $$ProgressOutboxEntriesTableTableManager
           createCompanionCallback:
               ({
                 Value<int> localId = const Value.absent(),
+                Value<String> operation = const Value.absent(),
                 required String lessonId,
                 required String idempotencyKey,
                 required String requestPayloadJson,
@@ -4223,6 +5405,7 @@ class $$ProgressOutboxEntriesTableTableManager
                 Value<String?> lastError = const Value.absent(),
               }) => ProgressOutboxEntriesCompanion.insert(
                 localId: localId,
+                operation: operation,
                 lessonId: lessonId,
                 idempotencyKey: idempotencyKey,
                 requestPayloadJson: requestPayloadJson,
@@ -4616,6 +5799,370 @@ typedef $$UnitDownloadsTableProcessedTableManager =
       UnitDownload,
       PrefetchHooks Function()
     >;
+typedef $$ContentTombstonesTableCreateCompanionBuilder =
+    ContentTombstonesCompanion Function({
+      required String entityId,
+      required String entityType,
+      required int contentVersion,
+      Value<int> rowid,
+    });
+typedef $$ContentTombstonesTableUpdateCompanionBuilder =
+    ContentTombstonesCompanion Function({
+      Value<String> entityId,
+      Value<String> entityType,
+      Value<int> contentVersion,
+      Value<int> rowid,
+    });
+
+class $$ContentTombstonesTableFilterComposer
+    extends Composer<_$AppDatabase, $ContentTombstonesTable> {
+  $$ContentTombstonesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get contentVersion => $composableBuilder(
+    column: $table.contentVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContentTombstonesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContentTombstonesTable> {
+  $$ContentTombstonesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get contentVersion => $composableBuilder(
+    column: $table.contentVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContentTombstonesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContentTombstonesTable> {
+  $$ContentTombstonesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get contentVersion => $composableBuilder(
+    column: $table.contentVersion,
+    builder: (column) => column,
+  );
+}
+
+class $$ContentTombstonesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContentTombstonesTable,
+          ContentTombstone,
+          $$ContentTombstonesTableFilterComposer,
+          $$ContentTombstonesTableOrderingComposer,
+          $$ContentTombstonesTableAnnotationComposer,
+          $$ContentTombstonesTableCreateCompanionBuilder,
+          $$ContentTombstonesTableUpdateCompanionBuilder,
+          (
+            ContentTombstone,
+            BaseReferences<
+              _$AppDatabase,
+              $ContentTombstonesTable,
+              ContentTombstone
+            >,
+          ),
+          ContentTombstone,
+          PrefetchHooks Function()
+        > {
+  $$ContentTombstonesTableTableManager(
+    _$AppDatabase db,
+    $ContentTombstonesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContentTombstonesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContentTombstonesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContentTombstonesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> entityId = const Value.absent(),
+                Value<String> entityType = const Value.absent(),
+                Value<int> contentVersion = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContentTombstonesCompanion(
+                entityId: entityId,
+                entityType: entityType,
+                contentVersion: contentVersion,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String entityId,
+                required String entityType,
+                required int contentVersion,
+                Value<int> rowid = const Value.absent(),
+              }) => ContentTombstonesCompanion.insert(
+                entityId: entityId,
+                entityType: entityType,
+                contentVersion: contentVersion,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContentTombstonesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContentTombstonesTable,
+      ContentTombstone,
+      $$ContentTombstonesTableFilterComposer,
+      $$ContentTombstonesTableOrderingComposer,
+      $$ContentTombstonesTableAnnotationComposer,
+      $$ContentTombstonesTableCreateCompanionBuilder,
+      $$ContentTombstonesTableUpdateCompanionBuilder,
+      (
+        ContentTombstone,
+        BaseReferences<
+          _$AppDatabase,
+          $ContentTombstonesTable,
+          ContentTombstone
+        >,
+      ),
+      ContentTombstone,
+      PrefetchHooks Function()
+    >;
+typedef $$ApiCacheEntriesTableCreateCompanionBuilder =
+    ApiCacheEntriesCompanion Function({
+      required String cacheKey,
+      required String jsonValue,
+      required DateTime cachedAt,
+      required DateTime lastAccessedAt,
+      Value<int> rowid,
+    });
+typedef $$ApiCacheEntriesTableUpdateCompanionBuilder =
+    ApiCacheEntriesCompanion Function({
+      Value<String> cacheKey,
+      Value<String> jsonValue,
+      Value<DateTime> cachedAt,
+      Value<DateTime> lastAccessedAt,
+      Value<int> rowid,
+    });
+
+class $$ApiCacheEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $ApiCacheEntriesTable> {
+  $$ApiCacheEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get cacheKey => $composableBuilder(
+    column: $table.cacheKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get jsonValue => $composableBuilder(
+    column: $table.jsonValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastAccessedAt => $composableBuilder(
+    column: $table.lastAccessedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ApiCacheEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ApiCacheEntriesTable> {
+  $$ApiCacheEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get cacheKey => $composableBuilder(
+    column: $table.cacheKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get jsonValue => $composableBuilder(
+    column: $table.jsonValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastAccessedAt => $composableBuilder(
+    column: $table.lastAccessedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ApiCacheEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ApiCacheEntriesTable> {
+  $$ApiCacheEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get cacheKey =>
+      $composableBuilder(column: $table.cacheKey, builder: (column) => column);
+
+  GeneratedColumn<String> get jsonValue =>
+      $composableBuilder(column: $table.jsonValue, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastAccessedAt => $composableBuilder(
+    column: $table.lastAccessedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$ApiCacheEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ApiCacheEntriesTable,
+          ApiCacheEntry,
+          $$ApiCacheEntriesTableFilterComposer,
+          $$ApiCacheEntriesTableOrderingComposer,
+          $$ApiCacheEntriesTableAnnotationComposer,
+          $$ApiCacheEntriesTableCreateCompanionBuilder,
+          $$ApiCacheEntriesTableUpdateCompanionBuilder,
+          (
+            ApiCacheEntry,
+            BaseReferences<_$AppDatabase, $ApiCacheEntriesTable, ApiCacheEntry>,
+          ),
+          ApiCacheEntry,
+          PrefetchHooks Function()
+        > {
+  $$ApiCacheEntriesTableTableManager(
+    _$AppDatabase db,
+    $ApiCacheEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ApiCacheEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ApiCacheEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ApiCacheEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> cacheKey = const Value.absent(),
+                Value<String> jsonValue = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<DateTime> lastAccessedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ApiCacheEntriesCompanion(
+                cacheKey: cacheKey,
+                jsonValue: jsonValue,
+                cachedAt: cachedAt,
+                lastAccessedAt: lastAccessedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String cacheKey,
+                required String jsonValue,
+                required DateTime cachedAt,
+                required DateTime lastAccessedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ApiCacheEntriesCompanion.insert(
+                cacheKey: cacheKey,
+                jsonValue: jsonValue,
+                cachedAt: cachedAt,
+                lastAccessedAt: lastAccessedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ApiCacheEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ApiCacheEntriesTable,
+      ApiCacheEntry,
+      $$ApiCacheEntriesTableFilterComposer,
+      $$ApiCacheEntriesTableOrderingComposer,
+      $$ApiCacheEntriesTableAnnotationComposer,
+      $$ApiCacheEntriesTableCreateCompanionBuilder,
+      $$ApiCacheEntriesTableUpdateCompanionBuilder,
+      (
+        ApiCacheEntry,
+        BaseReferences<_$AppDatabase, $ApiCacheEntriesTable, ApiCacheEntry>,
+      ),
+      ApiCacheEntry,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4634,4 +6181,8 @@ class $AppDatabaseManager {
       $$MediaCacheEntriesTableTableManager(_db, _db.mediaCacheEntries);
   $$UnitDownloadsTableTableManager get unitDownloads =>
       $$UnitDownloadsTableTableManager(_db, _db.unitDownloads);
+  $$ContentTombstonesTableTableManager get contentTombstones =>
+      $$ContentTombstonesTableTableManager(_db, _db.contentTombstones);
+  $$ApiCacheEntriesTableTableManager get apiCacheEntries =>
+      $$ApiCacheEntriesTableTableManager(_db, _db.apiCacheEntries);
 }

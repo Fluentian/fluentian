@@ -8,6 +8,8 @@ class CourseModel {
   final String id;
   final String targetLanguageId;
   final String code;
+  final String title;
+  final String description;
   final String levelMin;
   final String levelMax;
   final bool isPublished;
@@ -18,6 +20,8 @@ class CourseModel {
     required this.id,
     required this.targetLanguageId,
     required this.code,
+    this.title = '',
+    this.description = '',
     required this.levelMin,
     required this.levelMax,
     required this.isPublished,
@@ -29,6 +33,8 @@ class CourseModel {
     id: json['id'] as String,
     targetLanguageId: json['target_language_id'] as String,
     code: json['code'] as String,
+    title: json['title'] as String? ?? '',
+    description: json['description'] as String? ?? '',
     levelMin: json['level_min'] as String,
     levelMax: json['level_max'] as String,
     isPublished: json['is_published'] as bool? ?? false,
@@ -45,6 +51,7 @@ class UnitModel {
   final String unitKind;
   final int unitNo;
   final String title;
+  final String description;
   final DateTime createdAt;
   final List<LessonModel> lessons;
 
@@ -54,6 +61,7 @@ class UnitModel {
     required this.unitKind,
     required this.unitNo,
     required this.title,
+    this.description = '',
     required this.createdAt,
     required this.lessons,
   });
@@ -64,6 +72,7 @@ class UnitModel {
     unitKind: json['unit_kind'] as String? ?? 'core',
     unitNo: json['unit_no'] as int,
     title: json['title'] as String,
+    description: json['description'] as String? ?? '',
     createdAt: DateTime.parse(json['created_at'] as String),
     lessons: (json['lessons'] as List<dynamic>? ?? [])
         .map((l) => LessonModel.fromJson(l as Map<String, dynamic>))
@@ -79,6 +88,8 @@ class LessonModel {
   final String lessonKind;
   final int sequenceNo;
   final String title;
+  final String description;
+  final String contentLanguage;
   final int estimatedMinutes;
   final int xpReward;
   final bool isPublished;
@@ -90,6 +101,8 @@ class LessonModel {
     required this.lessonKind,
     required this.sequenceNo,
     required this.title,
+    this.description = '',
+    this.contentLanguage = 'en',
     required this.estimatedMinutes,
     required this.xpReward,
     required this.isPublished,
@@ -102,6 +115,8 @@ class LessonModel {
     lessonKind: json['lesson_kind'] as String? ?? 'vocabulary',
     sequenceNo: json['sequence_no'] as int,
     title: json['title'] as String,
+    description: json['description'] as String? ?? '',
+    contentLanguage: json['content_language'] as String? ?? 'en',
     estimatedMinutes: json['estimated_minutes'] as int? ?? 5,
     xpReward: json['xp_reward'] as int? ?? 10,
     isPublished: json['is_published'] as bool? ?? false,
@@ -119,6 +134,8 @@ class LessonDetailModel extends LessonModel {
     required super.lessonKind,
     required super.sequenceNo,
     required super.title,
+    super.description,
+    super.contentLanguage,
     required super.estimatedMinutes,
     required super.xpReward,
     required super.isPublished,
@@ -134,6 +151,8 @@ class LessonDetailModel extends LessonModel {
       lessonKind: json['lesson_kind'] as String? ?? 'vocabulary',
       sequenceNo: json['sequence_no'] as int,
       title: json['title'] as String,
+      description: json['description'] as String? ?? '',
+      contentLanguage: json['content_language'] as String? ?? 'en',
       estimatedMinutes: json['estimated_minutes'] as int? ?? 5,
       xpReward: json['xp_reward'] as int? ?? 10,
       isPublished: json['is_published'] as bool? ?? false,

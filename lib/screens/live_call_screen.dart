@@ -9,6 +9,7 @@ import '../core/theme.dart';
 import '../services/api_client.dart';
 import '../services/social_api.dart';
 import 'call_screen.dart';
+import 'ai_live_call_screen.dart';
 import 'find_speaking_partner_screen.dart';
 import '../widgets/common_widgets.dart';
 
@@ -107,6 +108,12 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
     );
   }
 
+  void _startAiPractice() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AiLiveCallScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -131,7 +138,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                       ),
                       const SizedBox(height: 4),
                       LText(
-                        'Rooms open when another learner is online',
+                        'Practice with Marie or learners worldwide',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -156,6 +163,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
               ],
             ),
             const SizedBox(height: 18),
+            _AiTutorCard(onStart: _startAiPractice),
+            const SizedBox(height: 12),
             Builder(
               builder: (context) {
                 if (_isInitialLoading) {
@@ -231,6 +240,121 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
       ),
     );
   }
+}
+
+class _AiTutorCard extends StatelessWidget {
+  final VoidCallback onStart;
+
+  const _AiTutorCard({required this.onStart});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF072D52), Color(0xFF0B6665)],
+      ),
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: FluentianColors.primary.withValues(alpha: .18),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .13),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white24),
+              ),
+              child: const Icon(Icons.auto_awesome, color: Color(0xFF7FE2DC)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LText(
+                    'Practice with Marie',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  LText(
+                    'Your private AI French tutor',
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7FE2DC).withValues(alpha: .15),
+                borderRadius: BorderRadius.circular(99),
+              ),
+              child: LText(
+                'ALWAYS READY',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CEAE5),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: .7,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        LText(
+          'Speak naturally, type when it is easier, and get gentle corrections matched to your level.',
+          style: GoogleFonts.inter(
+            color: Colors.white70,
+            fontSize: 12,
+            height: 1.45,
+          ),
+        ),
+        const SizedBox(height: 15),
+        SizedBox(
+          width: double.infinity,
+          height: 46,
+          child: FilledButton.icon(
+            onPressed: onStart,
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: FluentianColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(13),
+              ),
+            ),
+            icon: const Icon(Iconsax.microphone_2, size: 19),
+            label: LText(
+              'Start private practice',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _Heading extends StatelessWidget {

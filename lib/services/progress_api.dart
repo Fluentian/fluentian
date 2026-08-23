@@ -1,4 +1,5 @@
 import '../models/progress_model.dart';
+import '../models/leaderboard_model.dart';
 import 'api_client.dart';
 
 /// Calls the Fluentian backend progress endpoints.
@@ -36,8 +37,9 @@ class ProgressApi {
   Future<List<LessonProgressModel>> getMyLessonProgress({
     bool? completed,
   }) async {
-    final query =
-        completed != null ? '?completed=$completed&size=100' : '?size=100';
+    final query = completed != null
+        ? '?completed=$completed&size=100'
+        : '?size=100';
     final items = await _client.getList('/progress/me/lessons$query');
     return items
         .map((e) => LessonProgressModel.fromJson(e as Map<String, dynamic>))
@@ -48,6 +50,11 @@ class ProgressApi {
   Future<UserStatsModel> getMyStats() async {
     final json = await _client.get('/progress/me/stats');
     return UserStatsModel.fromJson(json);
+  }
+
+  Future<WeeklyLeaderboardModel> getWeeklyLeaderboard() async {
+    final json = await _client.get('/progress/leaderboard');
+    return WeeklyLeaderboardModel.fromJson(json);
   }
 
   Future<List<EnrollmentModel>> getMyEnrollments() async {

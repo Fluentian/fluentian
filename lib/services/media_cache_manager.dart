@@ -46,7 +46,7 @@ class MediaCacheManager {
   /// Return a local file path for [url], downloading and caching it first
   /// if needed. Returns null (never throws) if download/caching fails, so
   /// callers can fall back to direct streaming.
-  Future<String?> getCachedFilePath(String url) async {
+  Future<String?> getCachedFilePath(String url, {String? lessonId}) async {
     try {
       final existing = await _db.getMediaCacheEntry(url);
       if (existing != null) {
@@ -60,9 +60,9 @@ class MediaCacheManager {
       }
 
       final inFlight = _inFlightDownloads[url];
-      if (inFlight != null) return inFlight;
+      if (inFlight != null) return await inFlight;
 
-      final download = _download(url);
+      final download = _download(url, lessonId: lessonId);
       _inFlightDownloads[url] = download;
       try {
         return await download;
@@ -75,8 +75,10 @@ class MediaCacheManager {
     }
   }
 
-  Future<String?> _download(String url) async {
-    final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 30));
+  Future<String?> _download(String url, {String? lessonId}) async {
+    final response = await http
+        .get(Uri.parse(url))
+        .timeout(const Duration(seconds: 30));
     if (response.statusCode != 200) return null;
 
     final dir = await getTemporaryDirectory();
@@ -93,6 +95,7 @@ class MediaCacheManager {
         url: url,
         localPath: file.path,
         sizeBytes: Value(response.bodyBytes.length),
+        lessonId: Value(lessonId),
       ),
     );
     await _evictIfOverCap();
@@ -125,4 +128,15 @@ class MediaCacheManager {
   }
 
   Future<int> getCurrentCacheBytes() => _db.getTotalMediaCacheBytes();
+
+  Future<void> removeLessonMedia(String lessonId) async {
+    final entries = await _db.getMediaCacheEntriesForLesson(lessonId);
+    for (final entry in entries) {
+      try {
+        final file = File(entry.localPath);
+        if (await file.exists()) await file.delete();
+      } catch (_) {}
+      await _db.deleteMediaCacheEntry(entry.url);
+    }
+  }
 }

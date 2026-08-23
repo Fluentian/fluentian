@@ -10,6 +10,7 @@ import '../services/outbox_manager.dart';
 import '../services/progress_api.dart';
 import '../services/sync_manager.dart';
 import '../services/api_client.dart';
+import '../services/starter_curriculum_loader.dart';
 
 enum ContentStatus { idle, loading, loaded, error }
 
@@ -87,8 +88,8 @@ class ContentProvider extends ChangeNotifier {
       }
 
       // Also hydrate pending outbox completions so queued completions are recognized locally
-      final pendingEntries =
-          await AppDatabase.instance.getPendingOutboxEntries();
+      final pendingEntries = await AppDatabase.instance
+          .getPendingOutboxEntries();
       for (final entry in pendingEntries) {
         _progressByLesson[entry.lessonId] = LessonProgressModel(
           id: entry.idempotencyKey,
@@ -108,8 +109,9 @@ class ContentProvider extends ChangeNotifier {
   Future<void> _saveLocalProgress() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final mapToSave =
-          _progressByLesson.map((k, v) => MapEntry(k, v.toJson()));
+      final mapToSave = _progressByLesson.map(
+        (k, v) => MapEntry(k, v.toJson()),
+      );
       await prefs.setString(
         'cached_user_lesson_progress',
         jsonEncode(mapToSave),
@@ -152,9 +154,10 @@ class ContentProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
+    await _db.migrateLegacyApiCacheIfPresent();
+    await StarterCurriculumLoader.instance.seedIfEmpty();
     await _loadLocalProgress();
     await _loadLocalStats();
-
     final cached = await _loadCoursesFromLocalDb();
     if (cached.isNotEmpty) {
       _courses = cached;
@@ -244,6 +247,7 @@ class ContentProvider extends ChangeNotifier {
               unitKind: unit.unitKind,
               unitNo: unit.unitNo,
               title: unit.title,
+              description: unit.description,
               createdAt: DateTime.now(),
               lessons: lessons
                   .map(
@@ -254,6 +258,8 @@ class ContentProvider extends ChangeNotifier {
                       lessonKind: l.lessonKind,
                       sequenceNo: l.sequenceNo,
                       title: l.title,
+                      description: l.description,
+                      contentLanguage: l.contentLanguage,
                       estimatedMinutes: l.estimatedMinutes,
                       xpReward: l.xpReward,
                       isPublished: l.isPublished,
@@ -268,6 +274,8 @@ class ContentProvider extends ChangeNotifier {
             id: course.id,
             targetLanguageId: '',
             code: course.code,
+            title: course.title,
+            description: course.description,
             levelMin: course.levelMin,
             levelMax: course.levelMax,
             isPublished: course.isPublished,
@@ -556,16 +564,10 @@ class ContentProvider extends ChangeNotifier {
     required List<AnswerPayload> answers,
     required int timeSeconds,
   }) async {
-    final payload = answers
-        .map(
-          (a) => {
-            'question_id': a.questionId,
-            'answer': a.answer,
-            'is_correct': a.isCorrect,
-          },
-        )
-        .toList();
-    final result = await _contentApi.completeSrsReview(payload, timeSeconds);
+    final result = await _outboxManager.submitSrsReview(
+      answers: answers,
+      timeSeconds: timeSeconds,
+    );
 
     // Refresh global stats after SRS
     try {

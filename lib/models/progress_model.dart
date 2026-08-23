@@ -7,11 +7,12 @@ int countCompletedLessonsOnDay(
 ) {
   final localDay = day.toLocal();
   return progress.where((item) {
-    if (!item.completed) return false;
-    final date = (item.completedAt ?? item.createdAt).toLocal();
-    return date.year == localDay.year &&
-        date.month == localDay.month &&
-        date.day == localDay.day;
+    final completedAt = item.completedAt?.toLocal();
+    return item.completed &&
+        completedAt != null &&
+        completedAt.year == localDay.year &&
+        completedAt.month == localDay.month &&
+        completedAt.day == localDay.day;
   }).length;
 }
 
@@ -50,26 +51,26 @@ class LessonProgressModel {
       id: json['id']?.toString() ?? '',
       userId: json['user_id']?.toString() ?? '',
       lessonId: json['lesson_id']?.toString() ?? '',
-      masteryScore: (json['mastery_score'] as num?)?.toDouble() ??
+      masteryScore:
+          (json['mastery_score'] as num?)?.toDouble() ??
           (json['score'] as num?)?.toDouble() ??
           0.0,
-      completed: json['completed'] as bool? ??
-          json['is_completed'] as bool? ??
-          false,
+      completed:
+          json['completed'] as bool? ?? json['is_completed'] as bool? ?? false,
       completedAt: parsedCompletedAt,
       createdAt: parsedCreatedAt,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'user_id': userId,
-        'lesson_id': lessonId,
-        'mastery_score': masteryScore,
-        'completed': completed,
-        'completed_at': completedAt?.toIso8601String(),
-        'created_at': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'user_id': userId,
+    'lesson_id': lessonId,
+    'mastery_score': masteryScore,
+    'completed': completed,
+    'completed_at': completedAt?.toIso8601String(),
+    'created_at': createdAt.toIso8601String(),
+  };
 }
 
 class UserStatsModel {

@@ -2,18 +2,19 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crypto/crypto.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-import 'offline_content_cache.dart';
+import '../local_db/app_database.dart';
 
 class OfflineMediaService {
   OfflineMediaService._();
   static final instance = OfflineMediaService._();
 
   static const maxCacheBytes = 500 * 1024 * 1024;
-  final _store = OfflineContentCache.instance;
+  final _store = AppDatabase.instance;
 
   Future<File?> download(String url, {bool wifiOnly = true}) async {
     final connectivity = await Connectivity().checkConnectivity();
@@ -29,7 +30,13 @@ class OfflineMediaService {
     final name = sha256.convert(response.bodyBytes).toString();
     final file = File(path.join(directory.path, '$name$extension'));
     await file.writeAsBytes(response.bodyBytes, flush: true);
-    await _store.recordMedia(url, file.path, response.bodyBytes.length);
+    await _store.upsertMediaCacheEntry(
+      MediaCacheEntriesCompanion.insert(
+        url: url,
+        localPath: file.path,
+        sizeBytes: Value(response.bodyBytes.length),
+      ),
+    );
     await _evictToLimit();
     return file;
   }

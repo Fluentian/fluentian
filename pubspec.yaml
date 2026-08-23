@@ -45,6 +45,7 @@ dependencies:
   path: ^1.9.0
   connectivity_plus: ^7.1.1
   crypto: ^3.0.6
+  sqlite3: ^3.5.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -64,4 +65,6 @@ flutter:
   assets:
     - assets/icon.jpg
     - assets/google_logo.svg
+    - assets/onboarding/
     - assets/sounds/
+    - assets/starter_curriculum.json

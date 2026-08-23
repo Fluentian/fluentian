@@ -6,6 +6,7 @@ import '../models/progress_model.dart';
 import 'api_client.dart';
 import 'app_logger.dart';
 import 'progress_api.dart';
+import 'content_api.dart';
 
 /// Local-first write path for lesson completions: try the network
 /// immediately (the common case), and if that fails because the device is
@@ -18,6 +19,7 @@ class OutboxManager {
 
   final AppDatabase _db = AppDatabase.instance;
   final ProgressApi _progressApi = ProgressApi.instance;
+  final ContentApi _contentApi = ContentApi.instance;
   final Random _random = Random.secure();
 
   String _generateIdempotencyKey() {
@@ -84,7 +86,39 @@ class OutboxManager {
       idempotencyKey: idempotencyKey,
       requestPayloadJson: jsonEncode(payload),
     );
-    await AppLogger.instance.info('Queued offline lesson completion for $lessonId');
+    await AppLogger.instance.info(
+      'Queued offline lesson completion for $lessonId',
+    );
+  }
+
+  /// Submit an SRS review locally first. The exact answer batch and key are
+  /// persisted so reconnect replay is safe and deterministic.
+  Future<Map<String, dynamic>?> submitSrsReview({
+    required List<AnswerPayload> answers,
+    required int timeSeconds,
+  }) async {
+    final idempotencyKey = _generateIdempotencyKey();
+    final payload = answers.map((a) => a.toJson()).toList();
+    try {
+      return await _contentApi.completeSrsReview(
+        payload,
+        timeSeconds,
+        idempotencyKey: idempotencyKey,
+      );
+    } on NetworkException {
+      await _db.queueMutation(
+        operation: 'srs_review',
+        lessonId: '',
+        idempotencyKey: idempotencyKey,
+        requestPayloadJson: jsonEncode({
+          'answers': payload,
+          'time_seconds': timeSeconds,
+          'idempotency_key': idempotencyKey,
+        }),
+      );
+      await AppLogger.instance.info('Queued offline SRS review');
+      return null;
+    }
   }
 
   /// Replay every queued completion. Best-effort: a queued entry is
@@ -95,7 +129,8 @@ class OutboxManager {
     final pending = await _db.getPendingOutboxEntries();
     for (final entry in pending) {
       try {
-        final payload = jsonDecode(entry.requestPayloadJson) as Map<String, dynamic>;
+        final payload =
+            jsonDecode(entry.requestPayloadJson) as Map<String, dynamic>;
         final answers = (payload['answers'] as List<dynamic>)
             .cast<Map<String, dynamic>>()
             .map(
@@ -106,14 +141,22 @@ class OutboxManager {
               ),
             )
             .toList();
-        await _progressApi.completeLesson(
-          lessonId: entry.lessonId,
-          score: (payload['score'] as num).toDouble(),
-          answers: answers,
-          timeSeconds: payload['time_seconds'] as int,
-          heartsSpent: payload['hearts_spent'] as int? ?? 0,
-          idempotencyKey: entry.idempotencyKey,
-        );
+        if (entry.operation == 'srs_review') {
+          await _contentApi.completeSrsReview(
+            answers.map((a) => a.toJson()).toList(),
+            payload['time_seconds'] as int,
+            idempotencyKey: entry.idempotencyKey,
+          );
+        } else {
+          await _progressApi.completeLesson(
+            lessonId: entry.lessonId,
+            score: (payload['score'] as num).toDouble(),
+            answers: answers,
+            timeSeconds: payload['time_seconds'] as int,
+            heartsSpent: payload['hearts_spent'] as int? ?? 0,
+            idempotencyKey: entry.idempotencyKey,
+          );
+        }
         await _db.markOutboxEntrySynced(entry.localId);
       } on NetworkException {
         // Still offline -- leave it queued, try again on the next flush.

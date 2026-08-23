@@ -1,0 +1,67 @@
+{
+  "bundle_version": 1,
+  "content_language": "en",
+  "courses": [
+    {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "code": "FR_STARTER",
+      "title": "French Foundations",
+      "description": "A small offline starter path for your first French lessons.",
+      "level_min": "a0",
+      "level_max": "a1",
+      "units": [
+        {
+          "id": "00000000-0000-4000-8000-000000000101",
+          "unit_no": 1,
+          "unit_kind": "core",
+          "title": "First contact",
+          "description": "Say hello and introduce yourself.",
+          "lessons": [
+            {
+              "id": "00000000-0000-4000-8000-000000001001",
+              "lesson_kind": "vocabulary",
+              "sequence_no": 1,
+              "title": "Bonjour and salut",
+              "description": "Learn two natural ways to say hello.",
+              "estimated_minutes": 3,
+              "xp_reward": 10,
+              "blocks": [],
+              "questions": []
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000001002",
+              "lesson_kind": "dialogue",
+              "sequence_no": 2,
+              "title": "Je m'appelle…",
+              "description": "Introduce yourself in French.",
+              "estimated_minutes": 4,
+              "xp_reward": 10,
+              "blocks": [],
+              "questions": []
+            }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000102",
+          "unit_no": 2,
+          "unit_kind": "practice",
+          "title": "Useful phrases",
+          "description": "Build confidence with everyday expressions.",
+          "lessons": [
+            {
+              "id": "00000000-0000-4000-8000-000000001003",
+              "lesson_kind": "vocabulary",
+              "sequence_no": 1,
+              "title": "Merci and s'il vous plaît",
+              "description": "Be polite in simple French conversations.",
+              "estimated_minutes": 4,
+              "xp_reward": 10,
+              "blocks": [],
+              "questions": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

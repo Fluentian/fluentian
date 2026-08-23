@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Controls the language used for Fluentian's app chrome and other static UI.
-/// Course, lesson, and community content deliberately stays server-authored.
+/// Controls the language used for Fluentian's app chrome and explanation-language
+/// variants of the French course content.
 class AppLocaleController extends ChangeNotifier {
   static const _storageKey = 'fluentian_app_locale';
   Locale _locale = const Locale('en');
