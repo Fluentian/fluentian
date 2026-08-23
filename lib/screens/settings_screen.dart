@@ -797,9 +797,6 @@ class _AccountHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user!;
-    final initial = user.displayName.isNotEmpty
-        ? user.displayName[0].toUpperCase()
-        : 'U';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

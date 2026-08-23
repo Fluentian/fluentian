@@ -39,9 +39,6 @@ class ProfileScreen extends StatelessWidget {
     final lessons = stats?.lessonsCompleted ?? 0;
     final units = stats?.unitsCompleted ?? 0;
     final levelName = CEFRLevel.getFriendlyName(user.currentLevel);
-    final initial = user.displayName.isNotEmpty
-        ? user.displayName[0].toUpperCase()
-        : 'U';
     final nextLevelXp = 500;
     final xpProgress = nextLevelXp == 0
         ? 0.0

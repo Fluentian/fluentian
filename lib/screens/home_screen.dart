@@ -20,6 +20,7 @@ import 'opportunity_screen.dart';
 import 'explore_screen.dart';
 import 'live_call_screen.dart';
 import 'social_screen.dart';
+import 'notifications_screen.dart';
 import 'srs_review_screen.dart';
 import 'leaderboard_screen.dart';
 import '../widgets/user_avatar.dart';
