@@ -9,6 +9,7 @@ import '../core/theme.dart';
 import '../models/leaderboard_model.dart';
 import '../services/api_client.dart';
 import '../services/progress_api.dart';
+import '../widgets/user_avatar.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   final Future<WeeklyLeaderboardModel> Function()? loadLeaderboard;
@@ -583,34 +584,12 @@ class _LearnerAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final url = ApiClient.resolveMediaUrl(entry.avatarUrl);
-    final fallback = Center(
-      child: LText(
-        entry.displayName.isEmpty ? '?' : entry.displayName[0].toUpperCase(),
-        style: GoogleFonts.inter(
-          fontSize: size * .36,
-          fontWeight: FontWeight.w900,
-          color: FluentianColors.primary,
-        ),
-      ),
-    );
-    return Container(
-      width: size,
-      height: size,
-      padding: EdgeInsets.all(ringColor == null ? 0 : 3),
-      decoration: BoxDecoration(shape: BoxShape.circle, color: ringColor),
-      child: ClipOval(
-        child: ColoredBox(
-          color: FluentianColors.primaryTint,
-          child: url == null
-              ? fallback
-              : Image.network(
-                  url,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => fallback,
-                ),
-        ),
-      ),
+    return UserAvatar(
+      avatarUrl: entry.avatarUrl,
+      name: entry.displayName,
+      size: size,
+      borderColor: ringColor,
+      borderWidth: ringColor != null ? 2.5 : 1.5,
     );
   }
 }

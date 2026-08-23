@@ -20,9 +20,10 @@ import 'opportunity_screen.dart';
 import 'explore_screen.dart';
 import 'live_call_screen.dart';
 import 'social_screen.dart';
-import 'notifications_screen.dart';
 import 'srs_review_screen.dart';
 import 'leaderboard_screen.dart';
+import '../widgets/user_avatar.dart';
+import '../widgets/avatar_picker_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -229,6 +230,7 @@ class _HomeContentState extends State<_HomeContent> {
                   _HomeHero(
                     greeting: user?.greeting ?? 'Hello',
                     displayName: user?.displayName ?? 'Learner',
+                    avatarUrl: user?.avatarUrl,
                     streak: streak,
                     xp: xp,
                     xpProgress: xpProgress,
@@ -904,6 +906,7 @@ class _LeaderboardLaunchCard extends StatelessWidget {
 class _HomeHero extends StatelessWidget {
   final String greeting;
   final String displayName;
+  final String? avatarUrl;
   final int streak;
   final int xp;
   final int xpProgress;
@@ -916,6 +919,7 @@ class _HomeHero extends StatelessWidget {
   const _HomeHero({
     required this.greeting,
     required this.displayName,
+    this.avatarUrl,
     required this.streak,
     required this.xp,
     required this.xpProgress,
@@ -962,7 +966,7 @@ class _HomeHero extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: Column(
@@ -993,6 +997,16 @@ class _HomeHero extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       _NotificationButton(inverted: true),
+                      const SizedBox(width: 10),
+                      UserAvatar(
+                        avatarUrl: avatarUrl,
+                        name: displayName,
+                        size: 44,
+                        onTap: () => AvatarPickerSheet.show(
+                          context,
+                          currentAvatarUrl: avatarUrl,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),

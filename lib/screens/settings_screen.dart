@@ -16,6 +16,8 @@ import '../services/tts_service.dart';
 import 'legal_document_screen.dart';
 import 'offline_downloads_screen.dart';
 import '../models/user_model.dart';
+import '../widgets/user_avatar.dart';
+import '../widgets/avatar_picker_sheet.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -813,23 +815,14 @@ class _AccountHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .15),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: .25)),
-            ),
-            child: Center(
-              child: LText(
-                initial,
-                style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-              ),
+          UserAvatar(
+            avatarUrl: user.avatarUrl,
+            name: user.displayName,
+            size: 56,
+            showEditBadge: true,
+            onTap: () => AvatarPickerSheet.show(
+              context,
+              currentAvatarUrl: user.avatarUrl,
             ),
           ),
           const SizedBox(width: 12),

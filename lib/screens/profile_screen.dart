@@ -8,6 +8,8 @@ import '../core/theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/user_avatar.dart';
+import '../widgets/avatar_picker_sheet.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -57,26 +59,14 @@ class ProfileScreen extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 76,
-                      height: 76,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: .16),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: .34),
-                          width: 2,
-                        ),
-                      ),
-                      child: Center(
-                        child: LText(
-                          initial,
-                          style: GoogleFonts.inter(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        ),
+                    UserAvatar(
+                      avatarUrl: user.avatarUrl,
+                      name: user.displayName,
+                      size: 76,
+                      showEditBadge: true,
+                      onTap: () => AvatarPickerSheet.show(
+                        context,
+                        currentAvatarUrl: user.avatarUrl,
                       ),
                     ),
                     const SizedBox(width: 14),

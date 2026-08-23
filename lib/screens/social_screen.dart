@@ -11,6 +11,7 @@ import '../services/api_client.dart';
 import '../services/progress_api.dart';
 import '../services/social_api.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/user_avatar.dart';
 import 'leaderboard_screen.dart';
 
 class SocialScreen extends StatefulWidget {
@@ -489,6 +490,7 @@ class _SocialScreenState extends State<SocialScreen> {
           children: [
             _Avatar(
               name: request.user.displayName,
+              avatarUrl: request.user.avatarUrl,
               color: FluentianColors.primary,
             ),
             const SizedBox(width: 12),
@@ -551,7 +553,11 @@ class _SocialScreenState extends State<SocialScreen> {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                _Avatar(name: activity.actor.displayName, color: style.color),
+                _Avatar(
+                  name: activity.actor.displayName,
+                  avatarUrl: activity.actor.avatarUrl,
+                  color: style.color,
+                ),
                 Positioned(
                   right: -4,
                   bottom: -4,
@@ -1793,6 +1799,7 @@ class _FriendCard extends StatelessWidget {
               children: [
                 _Avatar(
                   name: friend.displayName,
+                  avatarUrl: friend.avatarUrl,
                   color: FluentianColors.primary,
                 ),
                 const SizedBox(width: 10),
@@ -1936,36 +1943,24 @@ class _SectionTitle extends StatelessWidget {
 class _Avatar extends StatelessWidget {
   final String name;
   final Color color;
+  final String? avatarUrl;
+  final double size;
 
-  const _Avatar({required this.name, required this.color});
+  const _Avatar({
+    required this.name,
+    required this.color,
+    this.avatarUrl,
+    this.size = 44,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final initial = name.trim().isEmpty ? 'F' : name.trim()[0].toUpperCase();
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.22),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Center(
-        child: LText(
-          initial,
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 17,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
+    return UserAvatar(
+      avatarUrl: avatarUrl,
+      name: name,
+      size: size,
+      borderColor: color.withValues(alpha: 0.5),
+      borderWidth: 1.5,
     );
   }
 }
