@@ -40,7 +40,13 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
   String _selectedCategory = 'All';
   bool _saving = false;
 
-  final _categories = ['All', 'French', 'Characters', 'Vibes', 'Mastery'];
+  final _categories = [
+    'All',
+    'French Learners',
+    'Scholars',
+    'Adventurers',
+    'Creative',
+  ];
 
   @override
   void initState() {

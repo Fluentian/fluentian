@@ -67,4 +67,5 @@ flutter:
     - assets/google_logo.svg
     - assets/onboarding/
     - assets/sounds/
+    - assets/avatars/
     - assets/starter_curriculum.json

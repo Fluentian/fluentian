@@ -44,30 +44,23 @@ class UserAvatar extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: preset.gradient,
-          ),
           border: Border.all(
             color: resolvedBorderColor,
             width: borderWidth,
           ),
           boxShadow: [
             BoxShadow(
-              color: preset.gradient.first.withValues(alpha: 0.3),
+              color: preset.gradient.last.withValues(alpha: 0.25),
               blurRadius: size * 0.2,
               offset: Offset(0, size * 0.08),
             ),
           ],
         ),
-        child: Center(
-          child: Text(
-            preset.emoji,
-            style: TextStyle(
-              fontSize: size * 0.48,
-              height: 1.1,
-            ),
+        child: ClipOval(
+          child: Image.asset(
+            preset.imageAsset,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _buildFallbackInitial(),
           ),
         ),
       );
