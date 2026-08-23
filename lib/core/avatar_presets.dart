@@ -22,7 +22,7 @@ class AvatarPresets {
   AvatarPresets._();
 
   static const List<AvatarPreset> all = [
-    // ── French Culture & Icons ────────────────────────
+    // ── French Culture & Heritage (10) ────────────────
     AvatarPreset(
       id: 'french_beret',
       label: 'Parisian Artist',
@@ -87,8 +87,24 @@ class AvatarPresets {
       gradient: [Color(0xFF0D9488), Color(0xFF0F766E)],
       borderColor: Color(0xFF2DD4BF),
     ),
+    AvatarPreset(
+      id: 'coffee_lover',
+      label: 'Café de Flore',
+      category: 'French',
+      emoji: '☕',
+      gradient: [Color(0xFF7C2D12), Color(0xFF431407)],
+      borderColor: Color(0xFF9A3412),
+    ),
+    AvatarPreset(
+      id: 'versailles_royal',
+      label: 'Versailles Royal',
+      category: 'French',
+      emoji: '⚜️',
+      gradient: [Color(0xFFD97706), Color(0xFF78350F)],
+      borderColor: Color(0xFFFDE68A),
+    ),
 
-    // ── Learner Characters ────────────────────────────
+    // ── Learner Characters (10) ───────────────────────
     AvatarPreset(
       id: 'owl_polyglot',
       label: 'Polyglot Owl',
@@ -137,8 +153,40 @@ class AvatarPresets {
       gradient: [Color(0xFF1E293B), Color(0xFF0F172A)],
       borderColor: Color(0xFF475569),
     ),
+    AvatarPreset(
+      id: 'swift_bunny',
+      label: 'Fast Learner',
+      category: 'Characters',
+      emoji: '🐰',
+      gradient: [Color(0xFFEC4899), Color(0xFFBE185D)],
+      borderColor: Color(0xFFF472B6),
+    ),
+    AvatarPreset(
+      id: 'wise_turtle',
+      label: 'Steady Master',
+      category: 'Characters',
+      emoji: '🐢',
+      gradient: [Color(0xFF059669), Color(0xFF064E3B)],
+      borderColor: Color(0xFF6EE7B7),
+    ),
+    AvatarPreset(
+      id: 'koala_reader',
+      label: 'Focus Koala',
+      category: 'Characters',
+      emoji: '🐨',
+      gradient: [Color(0xFF475569), Color(0xFF1E293B)],
+      borderColor: Color(0xFF94A3B8),
+    ),
+    AvatarPreset(
+      id: 'happy_shiba',
+      label: 'Joyful Shiba',
+      category: 'Characters',
+      emoji: '🐕',
+      gradient: [Color(0xFFD97706), Color(0xFFB45309)],
+      borderColor: Color(0xFFFDE68A),
+    ),
 
-    // ── Ambition & Passions ───────────────────────────
+    // ── Ambition & Passions (8) ───────────────────────
     AvatarPreset(
       id: 'cosmic_polyglot',
       label: 'Cosmic Explorer',
@@ -203,21 +251,55 @@ class AvatarPresets {
       gradient: [Color(0xFF059669), Color(0xFF047857)],
       borderColor: Color(0xFF10B981),
     ),
-    AvatarPreset(
-      id: 'coffee_lover',
-      label: 'Café de Flore',
-      category: 'French',
-      emoji: '☕',
-      gradient: [Color(0xFF7C2D12), Color(0xFF431407)],
-      borderColor: Color(0xFF9A3412),
-    ),
+
+    // ── Mastery & Intelligence (6) ───────────────────
     AvatarPreset(
       id: 'spark_genius',
       label: 'Spark Genius',
-      category: 'Vibes',
+      category: 'Mastery',
       emoji: '💡',
       gradient: [Color(0xFFCA8A04), Color(0xFF854D0E)],
       borderColor: Color(0xFFFACC15),
+    ),
+    AvatarPreset(
+      id: 'polyglot_flame',
+      label: 'Streak Fire',
+      category: 'Mastery',
+      emoji: '🔥',
+      gradient: [Color(0xFFDC2626), Color(0xFF991B1B)],
+      borderColor: Color(0xFFF87171),
+    ),
+    AvatarPreset(
+      id: 'golden_quill',
+      label: 'Poet & Writer',
+      category: 'Mastery',
+      emoji: '🪶',
+      gradient: [Color(0xFFB45309), Color(0xFF78350F)],
+      borderColor: Color(0xFFFCD34D),
+    ),
+    AvatarPreset(
+      id: 'lightning_learner',
+      label: 'Flash Learner',
+      category: 'Mastery',
+      emoji: '⚡',
+      gradient: [Color(0xFFEAB308), Color(0xFFCA8A04)],
+      borderColor: Color(0xFFFEF08A),
+    ),
+    AvatarPreset(
+      id: 'diploma_graduate',
+      label: 'DELF Master',
+      category: 'Mastery',
+      emoji: '🎓',
+      gradient: [Color(0xFF1E3A8A), Color(0xFF0F172A)],
+      borderColor: Color(0xFF60A5FA),
+    ),
+    AvatarPreset(
+      id: 'diamond_polyglot',
+      label: 'Diamond League',
+      category: 'Mastery',
+      emoji: '💎',
+      gradient: [Color(0xFF06B6D4), Color(0xFF0891B2)],
+      borderColor: Color(0xFF67E8F9),
     ),
   ];
 
