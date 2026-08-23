@@ -53,7 +53,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
       HapticFeedback.heavyImpact();
       if (context.read<AuthProvider>().user?.soundEnabled ?? true) {
         SoundEffectService.instance.play(
-          widget.isPassed ? SoundEffect.result : SoundEffect.incorrect,
+          widget.isPassed ? SoundEffect.result : SoundEffect.wrong,
         );
       }
     });
