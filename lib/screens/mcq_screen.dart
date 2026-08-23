@@ -934,6 +934,8 @@ class _McqScreenState extends State<McqScreen>
       int? finalStreakDays;
       bool streakFreezeEarned = false;
 
+      bool isPassed = true;
+
       try {
         if (widget.isSrsReview) {
           final result = await contentProvider.completeSrsReview(
@@ -954,6 +956,7 @@ class _McqScreenState extends State<McqScreen>
             timeSeconds: timeSeconds,
             heartsSpent: _persistedHeartSpends,
           );
+          isPassed = result?.lessonCompleted ?? (score >= 0.6);
           if (result != null) {
             finalXpEarned = result.xpEarned;
             finalNewXpTotal = result.newXpTotal;
@@ -1007,6 +1010,7 @@ class _McqScreenState extends State<McqScreen>
             totalQuestions: questions.length,
             streakDays: finalStreakDays,
             streakFreezeEarned: streakFreezeEarned,
+            isPassed: isPassed,
           ),
         ),
       );

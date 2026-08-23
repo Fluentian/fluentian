@@ -149,6 +149,15 @@ class SocialApi {
     return SpeakingCallSession.fromJson(data);
   }
 
+  Future<SpeakingCallSession> createAiCall({
+    String topic = 'French Corner',
+  }) async {
+    final data = await _api.post('/social/ai-calls', {
+      'topic': topic,
+    });
+    return SpeakingCallSession.fromJson(data);
+  }
+
   Future<List<ChatRoomModel>> getChatRooms() async {
     final data = await _api.get('/social/rooms?size=50');
     final items = data['items'];

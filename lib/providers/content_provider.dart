@@ -507,13 +507,15 @@ class ContentProvider extends ChangeNotifier {
     );
     // Reached only on success or offline-queue -- a real rejection throws
     // out of the call above instead of falling through to here.
+    final bool isCompleted = result?.lessonCompleted ?? (score >= 0.6);
     _progressByLesson[lessonId] = LessonProgressModel(
       id: '',
       userId: '',
       lessonId: lessonId,
       masteryScore: score,
-      completed: true,
-      completedAt: existingProgress?.completedAt ?? DateTime.now(),
+      completed: isCompleted,
+      completedAt: existingProgress?.completedAt ??
+          (isCompleted ? DateTime.now() : null),
       createdAt: DateTime.now(),
     );
     await _saveLocalProgress();

@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../services/learning_api.dart';
 import '../services/sound_effect_service.dart';
 import '../widgets/common_widgets.dart';
+import 'lesson_detail_screen.dart';
 import 'streak_celebration_screen.dart';
 
 class LessonCompleteScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class LessonCompleteScreen extends StatefulWidget {
   final int totalQuestions;
   final int? streakDays;
   final bool streakFreezeEarned;
+  final bool isPassed;
 
   const LessonCompleteScreen({
     super.key,
@@ -33,6 +35,7 @@ class LessonCompleteScreen extends StatefulWidget {
     required this.totalQuestions,
     this.streakDays,
     this.streakFreezeEarned = false,
+    this.isPassed = true,
   });
 
   @override
@@ -49,7 +52,9 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
       if (!mounted) return;
       HapticFeedback.heavyImpact();
       if (context.read<AuthProvider>().user?.soundEnabled ?? true) {
-        SoundEffectService.instance.play(SoundEffect.result);
+        SoundEffectService.instance.play(
+          widget.isPassed ? SoundEffect.result : SoundEffect.incorrect,
+        );
       }
     });
   }
@@ -68,6 +73,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
         ? 1
         : widget.totalQuestions;
     final correctCount = widget.correctCount.clamp(0, totalQuestions).toInt();
+    final isPassed = widget.isPassed;
 
     return Scaffold(
       backgroundColor: FluentianColors.white,
@@ -87,35 +93,44 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                     Container(
                       width: 80,
                       height: 80,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: FluentianColors.successTint,
+                        color: isPassed
+                            ? FluentianColors.successTint
+                            : FluentianColors.warningTint,
                       ),
-                      child: const Icon(
-                        Iconsax.tick_circle,
+                      child: Icon(
+                        isPassed
+                            ? Iconsax.tick_circle
+                            : Iconsax.refresh_2,
                         size: 42,
-                        color: FluentianColors.success,
+                        color: isPassed
+                            ? FluentianColors.success
+                            : FluentianColors.warning,
                       ),
                     ),
                     const SizedBox(height: 24),
                     LText(
-                      'Lesson complete',
+                      isPassed ? 'Lesson complete' : 'Keep practicing!',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
-                        fontSize: 30,
+                        fontSize: 28,
                         fontWeight: FontWeight.w800,
                         color: FluentianColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
                     LText(
-                      user == null
-                          ? 'Nice work.'
-                          : 'Nice work, ${user.displayName}.',
+                      isPassed
+                          ? (user == null
+                              ? 'Nice work.'
+                              : 'Nice work, ${user.displayName}.')
+                          : 'You scored $accuracyPercent%. Score at least 60% to pass and unlock the next lesson.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
-                        fontSize: 16,
+                        fontSize: 15,
                         color: FluentianColors.textSecondary,
+                        height: 1.4,
                       ),
                     ),
                     const SizedBox(height: 28),
@@ -123,31 +138,40 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        gradient: FluentianColors.primaryGradient,
+                        gradient: isPassed
+                            ? FluentianColors.primaryGradient
+                            : LinearGradient(
+                                colors: [
+                                  FluentianColors.primary.withValues(alpha: 0.85),
+                                  FluentianColors.darkNav,
+                                ],
+                              ),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
                         children: [
-                          const Icon(
-                            Iconsax.flash_15,
+                          Icon(
+                            isPassed ? Iconsax.flash_15 : Iconsax.timer_1,
                             color: Colors.white,
                             size: 28,
                           ),
                           const SizedBox(height: 6),
                           LText(
-                            '+$xpEarned XP',
+                            isPassed ? '+$xpEarned XP' : '$accuracyPercent% Score',
                             style: GoogleFonts.inter(
-                              fontSize: 44,
+                              fontSize: 38,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 8),
                           LText(
-                            '$previousXp -> $newXpTotal total XP',
+                            isPassed
+                                ? '$previousXp -> $newXpTotal total XP'
+                                : '60% required to earn XP & advance',
                             style: GoogleFonts.inter(
                               fontSize: 13,
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: Colors.white.withValues(alpha: 0.85),
                             ),
                           ),
                         ],
@@ -157,9 +181,13 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                     Builder(
                       builder: (context) {
                         final streak = widget.streakDays ?? user?.streakDays ?? 1;
+                        if (streak <= 0) return const SizedBox.shrink();
                         return Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
@@ -167,7 +195,8 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                                color: const Color(0xFFF59E0B)
+                                    .withValues(alpha: 0.35),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -176,13 +205,19 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Iconsax.flash_15, color: Colors.white, size: 24),
+                              const Icon(
+                                Iconsax.flash_15,
+                                color: Colors.white,
+                                size: 24,
+                              ),
                               const SizedBox(width: 10),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   LText(
-                                    'STREAK INCREASED! 🔥',
+                                    isPassed
+                                        ? 'STREAK INCREASED! 🔥'
+                                        : 'DAILY PRACTICE RECORDED! 🔥',
                                     style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w900,
@@ -205,20 +240,29 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                         );
                       },
                     ),
-                    if (widget.streakFreezeEarned) ...[
+                    if (isPassed && widget.streakFreezeEarned) ...[
                       const SizedBox(height: 12),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: FluentianColors.infoTint,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: FluentianColors.info.withValues(alpha: 0.4)),
+                          border: Border.all(
+                            color: FluentianColors.info.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Iconsax.shield_tick, color: FluentianColors.info, size: 22),
+                            const Icon(
+                              Iconsax.shield_tick,
+                              color: FluentianColors.info,
+                              size: 22,
+                            ),
                             const SizedBox(width: 10),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,25 +315,54 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                         ),
                       ),
                     const SizedBox(height: 12),
-                    FluentianButton(
-                      text: 'Continue',
-                      icon: Iconsax.arrow_right_3,
-                      onPressed: () {
-                        final streak = widget.streakDays ?? user?.streakDays ?? 1;
-                        if (streak > 0) {
+                    if (isPassed)
+                      FluentianButton(
+                        text: 'Continue',
+                        icon: Iconsax.arrow_right_3,
+                        onPressed: () {
+                          final streak =
+                              widget.streakDays ?? user?.streakDays ?? 1;
+                          if (streak > 0) {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => StreakCelebrationScreen(
+                                  streakDays: streak,
+                                  streakFreezeEarned:
+                                      widget.streakFreezeEarned,
+                                ),
+                              ),
+                            );
+                          } else {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                      )
+                    else ...[
+                      FluentianButton(
+                        text: 'Try Again',
+                        icon: Iconsax.refresh,
+                        onPressed: () {
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
-                              builder: (_) => StreakCelebrationScreen(
-                                streakDays: streak,
-                                streakFreezeEarned: widget.streakFreezeEarned,
+                              builder: (_) => LessonDetailScreen(
+                                lessonId: widget.lessonId,
                               ),
                             ),
                           );
-                        } else {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                    ),
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(
+                          context.tr('Back to Roadmap'),
+                          style: GoogleFonts.inter(
+                            color: FluentianColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                   ],
                 ),

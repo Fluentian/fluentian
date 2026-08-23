@@ -17,6 +17,7 @@ class CallScreen extends StatefulWidget {
   final String? level;
   final bool isVideo;
   final bool smartMatch;
+  final bool isAiTutor;
   final String? liveRoomId;
 
   const CallScreen({
@@ -25,6 +26,7 @@ class CallScreen extends StatefulWidget {
     this.level,
     this.isVideo = false,
     this.smartMatch = false,
+    this.isAiTutor = false,
     this.liveRoomId,
   });
 
