@@ -1944,13 +1944,11 @@ class _Avatar extends StatelessWidget {
   final String name;
   final Color color;
   final String? avatarUrl;
-  final double size;
 
   const _Avatar({
     required this.name,
     required this.color,
     this.avatarUrl,
-    this.size = 44,
   });
 
   @override
@@ -1958,7 +1956,7 @@ class _Avatar extends StatelessWidget {
     return UserAvatar(
       avatarUrl: avatarUrl,
       name: name,
-      size: size,
+      size: 44,
       borderColor: color.withValues(alpha: 0.5),
       borderWidth: 1.5,
     );
