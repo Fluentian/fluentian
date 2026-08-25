@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 import '../services/app_logger.dart';
+import '../services/product_analytics.dart';
 import '../services/auth_api.dart';
 import '../services/api_client.dart';
 
@@ -579,6 +580,7 @@ class AuthProvider extends ChangeNotifier {
 
   /// Complete onboarding and transition to authenticated state.
   Future<void> completeOnboarding({String? selectedLevel}) async {
+    await ProductAnalytics.instance.onboardingDone();
     UserModel? updatedUser;
     if (selectedLevel != null && _user != null) {
       _user = _user!.copyWith(currentLevel: selectedLevel);

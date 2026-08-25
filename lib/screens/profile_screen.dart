@@ -10,6 +10,7 @@ import '../providers/content_provider.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/user_avatar.dart';
 import '../widgets/avatar_picker_sheet.dart';
+import '../services/referral_service.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -25,11 +26,7 @@ class ProfileScreen extends StatelessWidget {
     if (user == null) {
       return const Scaffold(
         backgroundColor: FluentianColors.pageBg,
-        body: SafeArea(
-          child: FluentianShimmer(
-            child: SkeletonProfile(),
-          ),
-        ),
+        body: SafeArea(child: FluentianShimmer(child: SkeletonProfile())),
       );
     }
 
@@ -167,6 +164,8 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 14),
+          _InviteCard(username: user.username),
           const SizedBox(height: 16),
           _SectionLabel(text: 'MY MOMENTUM'),
           const SizedBox(height: 8),
@@ -313,14 +312,21 @@ class ProfileScreen extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: FluentianColors.warningTint,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Iconsax.flash_15, color: FluentianColors.warning, size: 14),
+                          const Icon(
+                            Iconsax.flash_15,
+                            color: FluentianColors.warning,
+                            size: 14,
+                          ),
                           const SizedBox(width: 4),
                           LText(
                             '$streak Days',
@@ -357,14 +363,20 @@ class ProfileScreen extends StatelessWidget {
                                 shape: BoxShape.circle,
                                 color: isActive
                                     ? FluentianColors.warning
-                                    : (isToday ? FluentianColors.warningTint : FluentianColors.pageBg),
+                                    : (isToday
+                                          ? FluentianColors.warningTint
+                                          : FluentianColors.pageBg),
                                 border: isToday
-                                    ? Border.all(color: FluentianColors.warning, width: 2)
+                                    ? Border.all(
+                                        color: FluentianColors.warning,
+                                        width: 2,
+                                      )
                                     : Border.all(color: FluentianColors.border),
                                 boxShadow: isActive
                                     ? [
                                         BoxShadow(
-                                          color: FluentianColors.warning.withValues(alpha: 0.35),
+                                          color: FluentianColors.warning
+                                              .withValues(alpha: 0.35),
                                           blurRadius: 8,
                                           offset: const Offset(0, 3),
                                         ),
@@ -373,12 +385,18 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               child: Center(
                                 child: isActive
-                                    ? const Icon(Iconsax.flash_15, color: Colors.white, size: 20)
+                                    ? const Icon(
+                                        Iconsax.flash_15,
+                                        color: Colors.white,
+                                        size: 20,
+                                      )
                                     : LText(
                                         dayLabels[index],
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
-                                          fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
+                                          fontWeight: isToday
+                                              ? FontWeight.w800
+                                              : FontWeight.w600,
                                           color: isToday
                                               ? FluentianColors.warning
                                               : FluentianColors.textSecondary,
@@ -391,7 +409,9 @@ class ProfileScreen extends StatelessWidget {
                               dayLabels[index],
                               style: GoogleFonts.inter(
                                 fontSize: 11,
-                                fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
+                                fontWeight: isToday
+                                    ? FontWeight.w800
+                                    : FontWeight.w500,
                                 color: isToday
                                     ? FluentianColors.warning
                                     : FluentianColors.textSecondary,
@@ -677,6 +697,50 @@ class _SectionLabel extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _InviteCard extends StatelessWidget {
+  final String username;
+  const _InviteCard({required this.username});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
+      decoration: _panelDecoration(),
+      child: Row(
+        children: [
+          const Icon(
+            Iconsax.user_add,
+            color: FluentianColors.primary,
+            size: 25,
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LText(
+                  'Learn together',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                SizedBox(height: 3),
+                LText(
+                  'Invite a friend and keep each other motivated.',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Share invite',
+            onPressed: () => ReferralService.instance.shareInvite(username),
+            icon: const Icon(Iconsax.share, color: FluentianColors.primary),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 BoxDecoration _panelDecoration({double radius = 16}) => BoxDecoration(

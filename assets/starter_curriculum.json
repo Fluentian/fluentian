@@ -25,8 +25,8 @@
               "description": "Learn two natural ways to say hello.",
               "estimated_minutes": 3,
               "xp_reward": 10,
-              "blocks": [],
-              "questions": []
+          "blocks": [{"type": "explanation", "text": "Bonjour means hello. Salut is an informal hello."}],
+          "questions": [{"id": "00000000-0000-4000-8000-000000009001", "kind": "multiple_choice", "prompt": "Which French word means hello?", "options": ["Bonjour", "Merci", "Au revoir"], "correct_answer": "Bonjour", "explanation": "Bonjour means hello."}]
             },
             {
               "id": "00000000-0000-4000-8000-000000001002",
@@ -36,8 +36,8 @@
               "description": "Introduce yourself in French.",
               "estimated_minutes": 4,
               "xp_reward": 10,
-              "blocks": [],
-              "questions": []
+          "blocks": [{"type": "explanation", "text": "Je m'appelle means my name is."}],
+          "questions": [{"id": "00000000-0000-4000-8000-000000009002", "kind": "multiple_choice", "prompt": "Complete: Je ___ appelle Hana.", "options": ["m'", "te", "s'"], "correct_answer": "m'", "explanation": "Je m'appelle means my name is."}]
             }
           ]
         },
@@ -56,8 +56,8 @@
               "description": "Be polite in simple French conversations.",
               "estimated_minutes": 4,
               "xp_reward": 10,
-              "blocks": [],
-              "questions": []
+          "blocks": [{"type": "explanation", "text": "Merci means thank you. S'il vous plaît means please."}],
+          "questions": [{"id": "00000000-0000-4000-8000-000000009003", "kind": "multiple_choice", "prompt": "Which phrase means thank you?", "options": ["Merci", "Bonjour", "Salut"], "correct_answer": "Merci", "explanation": "Merci means thank you."}]
             }
           ]
         }

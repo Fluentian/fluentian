@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_client.dart';
 
 class AppLogger {
   AppLogger._();
@@ -7,6 +8,30 @@ class AppLogger {
 
   static const _storageKey = 'fluentian_debug_logs';
   static const _maxEntries = 250;
+  static const _uploadOptInKey = 'fluentian_log_upload_opt_in';
+
+  Future<bool> get uploadOptIn async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_uploadOptInKey) ?? false;
+  }
+
+  Future<void> setUploadOptIn(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_uploadOptInKey, value);
+  }
+
+  Future<bool> upload() async {
+    if (!await uploadOptIn) return false;
+    final text = await exportText();
+    if (text.isEmpty) return true;
+    try {
+      await ApiClient.instance.post('/telemetry/logs', {'payload': text});
+      await clear();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<void> info(String message) => _write('INFO', message);
   Future<void> warning(String message) => _write('WARN', message);

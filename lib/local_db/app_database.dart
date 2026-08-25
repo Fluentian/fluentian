@@ -302,6 +302,17 @@ class AppDatabase extends _$AppDatabase {
     progressOutboxEntries,
   )..where((t) => t.status.equals('pending'))).get();
 
+  Future<int> getFailedOutboxCount() async => (select(
+    progressOutboxEntries,
+  )..where((t) => t.status.equals('failed'))).get().then((rows) => rows.length);
+
+  Future<void> retryFailedOutbox() =>
+      (update(
+        progressOutboxEntries,
+      )..where((t) => t.status.equals('failed'))).write(
+        const ProgressOutboxEntriesCompanion(status: Value('pending')),
+      );
+
   Future<void> markOutboxEntrySynced(int localId) => (delete(
     progressOutboxEntries,
   )..where((t) => t.localId.equals(localId))).go();

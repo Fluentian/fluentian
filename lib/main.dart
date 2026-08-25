@@ -1,7 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'core/app_localization.dart';
@@ -15,6 +18,7 @@ import 'screens/level_setup_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/local_push_service.dart';
 import 'services/remote_push_service.dart';
+import 'services/connectivity_sync_service.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 
@@ -22,6 +26,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = true;
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FlutterError.onError = (details) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -29,6 +40,7 @@ void main() async {
     ),
   );
   runApp(const FluentianApp());
+  ConnectivitySyncService.instance.start();
 }
 
 class FluentianApp extends StatelessWidget {
@@ -67,6 +79,9 @@ class FluentianApp extends StatelessWidget {
           return MaterialApp(
             title: 'Fluentian',
             debugShowCheckedModeBanner: false,
+            navigatorObservers: [
+              FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
+            ],
             theme: theme,
             locale: localeController.locale,
             supportedLocales: AppLocaleController.supportedLocales,

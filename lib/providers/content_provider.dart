@@ -11,6 +11,7 @@ import '../services/progress_api.dart';
 import '../services/sync_manager.dart';
 import '../services/api_client.dart';
 import '../services/starter_curriculum_loader.dart';
+import '../services/product_analytics.dart';
 
 enum ContentStatus { idle, loading, loaded, error }
 
@@ -505,6 +506,7 @@ class ContentProvider extends ChangeNotifier {
     required int timeSeconds,
     int heartsSpent = 0,
   }) async {
+    await ProductAnalytics.instance.lessonCompleted(lessonId);
     final existingProgress = _progressByLesson[lessonId];
     final result = await _outboxManager.submitLessonCompletion(
       lessonId: lessonId,

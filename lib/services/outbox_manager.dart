@@ -21,6 +21,7 @@ class OutboxManager {
   final ProgressApi _progressApi = ProgressApi.instance;
   final ContentApi _contentApi = ContentApi.instance;
   final Random _random = Random.secure();
+  DateTime _nextRetryAt = DateTime.fromMillisecondsSinceEpoch(0);
 
   String _generateIdempotencyKey() {
     final bytes = List<int>.generate(16, (_) => _random.nextInt(256));
@@ -126,6 +127,7 @@ class OutboxManager {
   /// (which would never succeed on retry); genuine network failures leave
   /// it queued for the next flush.
   Future<void> flush() async {
+    if (DateTime.now().isBefore(_nextRetryAt)) return;
     final pending = await _db.getPendingOutboxEntries();
     for (final entry in pending) {
       try {
@@ -160,12 +162,14 @@ class OutboxManager {
         await _db.markOutboxEntrySynced(entry.localId);
       } on NetworkException {
         // Still offline -- leave it queued, try again on the next flush.
+        _nextRetryAt = DateTime.now().add(const Duration(seconds: 15));
         break;
       } on ApiException catch (e) {
         if (e.statusCode >= 500) {
           // Transient server-side failure, not a rejection of the request
           // itself -- leave it queued and retry on the next flush instead
           // of discarding a real completion/XP write.
+          _nextRetryAt = DateTime.now().add(const Duration(seconds: 30));
           break;
         }
         // A definitive 4xx rejection: retrying it unchanged would just
@@ -175,5 +179,10 @@ class OutboxManager {
         await _db.markOutboxEntryFailed(entry.localId, e.toString());
       }
     }
+  }
+
+  Future<void> retryFailed() async {
+    await _db.retryFailedOutbox();
+    await flush();
   }
 }
