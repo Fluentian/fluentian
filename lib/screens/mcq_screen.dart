@@ -737,10 +737,10 @@ class _McqScreenState extends State<McqScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFFBEB),
+                      color: FluentianColors.warningTint,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                        color: FluentianColors.warning.withValues(alpha: 0.5),
                       ),
                     ),
                     child: Row(

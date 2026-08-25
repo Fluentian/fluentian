@@ -16,13 +16,11 @@ import '../widgets/bottom_nav.dart';
 import 'profile_screen.dart';
 import 'lesson_list_screen.dart';
 import 'lesson_detail_screen.dart';
-import 'opportunity_screen.dart';
 import 'explore_screen.dart';
-import 'live_call_screen.dart';
-import 'social_screen.dart';
+import 'community_screen.dart';
+import 'opportunity_screen.dart';
 import 'notifications_screen.dart';
 import 'srs_review_screen.dart';
-import 'leaderboard_screen.dart';
 import '../widgets/user_avatar.dart';
 import '../widgets/avatar_picker_sheet.dart';
 
@@ -35,7 +33,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _navIndex = 0;
   final Set<int> _activatedTabs = {0}; // Only Home is active initially
-  late final List<Widget?> _tabWidgets = List.filled(6, null);
+  late final List<Widget?> _tabWidgets = List.filled(5, null);
 
   @override
   void initState() {
@@ -54,16 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
         _tabWidgets[1] = const ExploreScreen(key: ValueKey('tab_explore'));
         break;
       case 2:
-        _tabWidgets[2] = const LiveCallScreen(key: ValueKey('tab_live'));
+        _tabWidgets[2] = const CommunityScreen(key: ValueKey('tab_community'));
         break;
       case 3:
         _tabWidgets[3] = const OpportunityScreen(key: ValueKey('tab_board'));
         break;
       case 4:
-        _tabWidgets[4] = const SocialScreen(key: ValueKey('tab_social'));
-        break;
-      case 5:
-        _tabWidgets[5] = const ProfileScreen(key: ValueKey('tab_profile'));
+        _tabWidgets[4] = const ProfileScreen(key: ValueKey('tab_profile'));
         break;
     }
     return _tabWidgets[index]!;
@@ -75,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: FluentianColors.pageBg,
       body: IndexedStack(
         index: _navIndex,
-        children: List.generate(6, (index) {
+        children: List.generate(5, (index) {
           if (!_activatedTabs.contains(index)) {
             return const SizedBox.shrink();
           }
@@ -112,15 +107,23 @@ class _HomeContentState extends State<_HomeContent> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<AuthProvider>().refreshHearts();
-      final content = context.read<ContentProvider>();
-      if (content.courses.isEmpty || content.status == ContentStatus.idle) {
-        content.loadHomeData();
-      }
-      content.loadLessonProgress();
-      setState(() {
-        _dueQuestionsFuture = content.getDueSrsQuestions();
-      });
+      _initialLoad();
+    });
+  }
+
+  Future<void> _initialLoad() async {
+    final content = context.read<ContentProvider>();
+    final auth = context.read<AuthProvider>();
+    // Sequential to avoid a burst of new TLS connections on cold start; the
+    // shared keep-alive client reuses one connection. See ApiClient._client.
+    if (content.courses.isEmpty || content.status == ContentStatus.idle) {
+      await content.loadHomeData();
+    }
+    await content.loadLessonProgress();
+    await auth.refreshHearts();
+    if (!mounted) return;
+    setState(() {
+      _dueQuestionsFuture = content.getDueSrsQuestions();
     });
   }
 
@@ -134,13 +137,13 @@ class _HomeContentState extends State<_HomeContent> {
   Future<void> _refreshHome() async {
     final content = context.read<ContentProvider>();
     final auth = context.read<AuthProvider>();
+    // Sequential (not Future.wait): avoid a burst of new connections on the
+    // backend's flaky network path; keep-alive reuses one. See ApiClient._client.
+    await content.loadHomeData(showLoading: false);
+    await content.loadLessonProgress();
+    await auth.refreshHearts();
     final dueQuestions = content.getDueSrsQuestions();
-    await Future.wait([
-      content.loadHomeData(showLoading: false),
-      content.loadLessonProgress(),
-      auth.refreshHearts(),
-      dueQuestions,
-    ]);
+    await dueQuestions;
     if (!mounted) return;
     setState(() {
       _dueQuestionsFuture = dueQuestions;
@@ -242,17 +245,6 @@ class _HomeContentState extends State<_HomeContent> {
                     onHeartRefreshDue: () => auth.refreshHearts(),
                   ),
                   const SizedBox(height: 14),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _LeaderboardLaunchCard(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const LeaderboardScreen(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -283,6 +275,14 @@ class _HomeContentState extends State<_HomeContent> {
                   ),
 
                   if (content.courses.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    const _HomeSectionLabel(text: 'YOUR LEARNING PATH'),
+                    const SizedBox(height: 10),
+                    LessonListScreen(
+                      key: const ValueKey('home_roadmap'),
+                      initialUnitId: nextUnit?.id,
+                      embedded: true,
+                    ),
                     const SizedBox(height: 24),
                     const _HomeSectionLabel(text: 'TODAY'),
                     const SizedBox(height: 10),
@@ -488,9 +488,8 @@ class _HomeContentState extends State<_HomeContent> {
                                   progressColor: dailyChallengeComplete
                                       ? FluentianColors.success
                                       : FluentianColors.warning,
-                                  backgroundColor: const Color(
-                                    0xFFF59E0B,
-                                  ).withValues(alpha: 0.15),
+                                  backgroundColor: FluentianColors.warning
+                                      .withValues(alpha: 0.15),
                                 ),
                               ],
                             ),
@@ -499,14 +498,6 @@ class _HomeContentState extends State<_HomeContent> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
-                    const _HomeSectionLabel(text: 'YOUR LEARNING PATH'),
-                    const SizedBox(height: 10),
-                    LessonListScreen(
-                      key: const ValueKey('home_roadmap'),
-                      initialUnitId: nextUnit?.id,
-                      embedded: true,
-                    ),
                   ],
 
                   const SizedBox(height: 28),
@@ -829,80 +820,6 @@ class _HomeSectionLabel extends StatelessWidget {
   );
 }
 
-class _LeaderboardLaunchCard extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _LeaderboardLaunchCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) => Material(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(18),
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: FluentianColors.secondary.withValues(alpha: .22),
-          ),
-          boxShadow: [FluentianShadows.subtle],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: FluentianColors.warningTint,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                Iconsax.cup5,
-                color: FluentianColors.warning,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  LText(
-                    'Weekly league',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      color: FluentianColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  LText(
-                    'Climb with XP · First place earns bonus XP',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: FluentianColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Iconsax.arrow_right_3,
-              color: FluentianColors.secondary,
-              size: 19,
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
 
 class _HomeHero extends StatelessWidget {
   final String greeting;

@@ -56,24 +56,24 @@ class _SocialScreenState extends State<SocialScreen> {
       });
     }
     try {
-      final leaderboardFuture = _fetchLeaderboard();
-      final results = await Future.wait([
-        _api.getFriends(),
-        _api.getFriendRequests(),
-        _api.getFriendActivity(),
-        _api.getChallenges(),
-        _api.getChatRooms(),
-        _api.getPartnerships(),
-      ]);
-      final leaderboard = await leaderboardFuture;
+      // Sequential (NOT Future.wait): firing many new TLS connections at once
+      // stalls badly on the backend's network path. The first call warms a
+      // keep-alive connection the rest reuse (~0.2s each). See ApiClient._client.
+      final friends = await _api.getFriends();
+      final requests = await _api.getFriendRequests();
+      final activity = await _api.getFriendActivity();
+      final challenges = await _api.getChallenges();
+      final chatRooms = await _api.getChatRooms();
+      final partnerships = await _api.getPartnerships();
+      final leaderboard = await _fetchLeaderboard();
       if (!mounted) return;
       setState(() {
-        _friends = results[0] as List<FriendSummary>;
-        _requests = results[1] as List<FriendRequest>;
-        _activity = results[2] as List<FriendActivity>;
-        _challenges = results[3] as List<FriendChallenge>;
-        _chatRooms = results[4] as List<ChatRoomModel>;
-        _partnerships = results[5] as List<AccountabilityPartnership>;
+        _friends = friends;
+        _requests = requests;
+        _activity = activity;
+        _challenges = challenges;
+        _chatRooms = chatRooms;
+        _partnerships = partnerships;
         _leaderboard = leaderboard;
         _loading = false;
       });
@@ -106,6 +106,12 @@ class _SocialScreenState extends State<SocialScreen> {
             _buildHeader(),
             const SizedBox(height: 16),
             _buildHero(),
+            const SizedBox(height: 18),
+            _LeaderboardLaunchCard(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const LeaderboardScreen()),
+              ),
+            ),
             const SizedBox(height: 18),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
@@ -786,7 +792,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
                   color: item.status == 'active'
-                      ? const Color(0xFFEAF8F0)
+                      ? FluentianColors.successTint
                       : FluentianColors.primaryTint,
                   borderRadius: BorderRadius.circular(99),
                 ),
@@ -2398,4 +2404,79 @@ class _TinyStepperButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _LeaderboardLaunchCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _LeaderboardLaunchCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(18),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: FluentianColors.secondary.withValues(alpha: .22),
+          ),
+          boxShadow: [FluentianShadows.subtle],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: FluentianColors.warningTint,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Iconsax.cup5,
+                color: FluentianColors.warning,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LText(
+                    'Weekly league',
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: FluentianColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  LText(
+                    'Climb with XP · First place earns bonus XP',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: FluentianColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Iconsax.arrow_right_3,
+              color: FluentianColors.secondary,
+              size: 19,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

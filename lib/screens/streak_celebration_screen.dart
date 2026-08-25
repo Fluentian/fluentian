@@ -102,7 +102,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
     final todayIndex = DateTime.now().weekday - 1;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF072D52),
+      backgroundColor: FluentianColors.primaryDark,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -159,7 +159,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFF59E0B)
+                                  color: FluentianColors.warning
                                       .withValues(alpha: 0.5),
                                   blurRadius: 36,
                                   spreadRadius: 4,

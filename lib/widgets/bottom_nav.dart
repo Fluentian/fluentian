@@ -15,11 +15,10 @@ class FluentianBottomNav extends StatelessWidget {
   });
 
   static const _tabs = [
-    _NavItem(Iconsax.home_1, 'Home'),
+    _NavItem(Iconsax.home_1, 'Learn'),
     _NavItem(Iconsax.global, 'Explore'),
-    _NavItem(Iconsax.microphone_2, 'Live'),
+    _NavItem(Iconsax.heart, 'Community'),
     _NavItem(Iconsax.briefcase, 'Board'),
-    _NavItem(Iconsax.heart, 'Social'),
     _NavItem(Iconsax.user, 'Profile'),
   ];
 
@@ -45,7 +44,7 @@ class FluentianBottomNav extends StatelessWidget {
             onTap: () => onTap(index),
             behavior: HitTestBehavior.opaque,
             child: SizedBox(
-              width: 58,
+              width: 64,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -74,14 +73,23 @@ class FluentianBottomNav extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  LText(
-                    _tabs[index].label,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                      color: isActive
-                          ? FluentianColors.white
-                          : FluentianColors.white.withValues(alpha: 0.5),
+                  // Single line, scaled down to fit if the (localized) label is
+                  // long (e.g. "Community") so it never wraps to two lines.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: LText(
+                      _tabs[index].label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: isActive
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                        color: isActive
+                            ? FluentianColors.white
+                            : FluentianColors.white.withValues(alpha: 0.5),
+                      ),
                     ),
                   ),
                 ],

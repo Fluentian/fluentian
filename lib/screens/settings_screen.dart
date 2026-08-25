@@ -850,7 +850,7 @@ class _AccountHeader extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B).withValues(alpha: .22),
+                          color: FluentianColors.warning.withValues(alpha: .22),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Row(
@@ -859,7 +859,7 @@ class _AccountHeader extends StatelessWidget {
                             const Icon(
                               Iconsax.crown_15,
                               size: 11,
-                              color: Color(0xFFF59E0B),
+                              color: FluentianColors.warning,
                             ),
                             const SizedBox(width: 3),
                             LText(
@@ -867,7 +867,7 @@ class _AccountHeader extends StatelessWidget {
                               style: GoogleFonts.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xFFF59E0B),
+                                color: FluentianColors.warning,
                               ),
                             ),
                           ],
@@ -2175,7 +2175,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                       FilledButton(
                                         style: FilledButton.styleFrom(
                                           backgroundColor: isSelected
-                                              ? const Color(0xFF22C55E)
+                                              ? FluentianColors.success
                                               : FluentianColors.primary,
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 16, vertical: 10),

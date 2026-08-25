@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
 import 'app_logger.dart';
@@ -86,6 +87,18 @@ class ApiClient {
   static final String _baseUrl =
       _configuredBaseUrl.isNotEmpty ? _configuredBaseUrl : defaultBaseUrl;
   static final Uri _baseUri = Uri.parse(_baseUrl);
+
+  /// One shared client for ALL requests so TLS connections are REUSED
+  /// (HTTP keep-alive). Opening a NEW connection to the Hetzner box stalls
+  /// 1-14s on its network edge; reusing an existing one is ~0.2s. Capping
+  /// maxConnectionsPerHost also limits how many new connections a concurrent
+  /// burst can open at once, and idleTimeout keeps them warm across screens.
+  static final http.Client _client = IOClient(
+    HttpClient()
+      ..maxConnectionsPerHost = 4
+      ..idleTimeout = const Duration(seconds: 30)
+      ..connectionTimeout = const Duration(seconds: 15),
+  );
 
   static String? resolveMediaUrl(String? value) {
     final raw = value?.trim();
@@ -240,7 +253,7 @@ class ApiClient {
     final uri = Uri.parse('$_baseUrl$path');
     try {
       final headers = await _buildHeaders(auth: auth);
-      final response = await http
+      final response = await _client
           .get(uri, headers: headers)
           .timeout(const Duration(seconds: 15));
       await _logResponse('GET', uri, response.statusCode, start);
@@ -284,7 +297,7 @@ class ApiClient {
 
     try {
       final uri = Uri.parse('$_baseUrl/auth/refresh');
-      final response = await http
+      final response = await _client
           .post(
             uri,
             headers: {
@@ -325,23 +338,23 @@ class ApiClient {
       http.Response response;
       switch (method) {
         case 'GET':
-          response = await http
+          response = await _client
               .get(uri, headers: headers)
               .timeout(const Duration(seconds: 15));
         case 'POST':
-          response = await http
+          response = await _client
               .post(uri, headers: headers, body: jsonEncode(body))
               .timeout(const Duration(seconds: 15));
         case 'PUT':
-          response = await http
+          response = await _client
               .put(uri, headers: headers, body: jsonEncode(body))
               .timeout(const Duration(seconds: 15));
         case 'PATCH':
-          response = await http
+          response = await _client
               .patch(uri, headers: headers, body: jsonEncode(body))
               .timeout(const Duration(seconds: 15));
         case 'DELETE':
-          response = await http
+          response = await _client
               .delete(
                 uri,
                 headers: headers,

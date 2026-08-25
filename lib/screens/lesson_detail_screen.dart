@@ -230,7 +230,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF072D52), Color(0xFF0A3B6A)],
+          colors: [FluentianColors.primaryDark, FluentianColors.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -883,7 +883,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Colors.white, Color(0xFFF5F8FA)],
+              colors: [Colors.white, FluentianColors.pageBg],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),

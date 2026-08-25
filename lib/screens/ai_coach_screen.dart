@@ -146,9 +146,9 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: FluentianColors.darkNav,
-      child: SafeArea(
+    return Scaffold(
+      backgroundColor: FluentianColors.darkNav,
+      body: SafeArea(
         child: Column(
           children: [
             // Top bar
@@ -156,6 +156,11 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    tooltip: 'Back',
+                  ),
                   Container(
                     width: 40,
                     height: 40,

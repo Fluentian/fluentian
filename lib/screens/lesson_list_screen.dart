@@ -812,7 +812,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                 decoration: BoxDecoration(
                   color: item.isUnlocked
                       ? Colors.white
-                      : const Color(0xFFF3F4F6),
+                      : FluentianColors.divider,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: item.isActive

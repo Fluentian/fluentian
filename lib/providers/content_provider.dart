@@ -180,28 +180,28 @@ class ContentProvider extends ChangeNotifier {
       // site that invokes loadHomeData() also calls loadLessonProgress()
       // alongside it, so fetching it here too was a duplicate network
       // round-trip on every load.
-      final results = await Future.wait([
-        _progressApi.getMyStats().catchError((e) {
-          if (kDebugMode) debugPrint('loadHomeData stats error: $e');
-          return _stats ??
-              const UserStatsModel(
-                totalXp: 0,
-                streakDays: 0,
-                lessonsCompleted: 0,
-                unitsCompleted: 0,
-                hearts: 5,
-                currentLevel: 'A0',
-                weeklyXp: 0,
-              );
-        }),
-        _progressApi.getMyEnrollments().catchError((e) {
-          if (kDebugMode) debugPrint('loadHomeData enrollments error: $e');
-          return <EnrollmentModel>[];
-        }),
-      ]);
-      _stats = results[0] as UserStatsModel;
+      // Sequential (NOT Future.wait): opening two new TLS connections at once
+      // stalls on the backend's flaky network path; the shared keep-alive
+      // client reuses a single connection across both. See ApiClient._client.
+      final stats = await _progressApi.getMyStats().catchError((e) {
+        if (kDebugMode) debugPrint('loadHomeData stats error: $e');
+        return _stats ??
+            const UserStatsModel(
+              totalXp: 0,
+              streakDays: 0,
+              lessonsCompleted: 0,
+              unitsCompleted: 0,
+              hearts: 5,
+              currentLevel: 'A0',
+              weeklyXp: 0,
+            );
+      });
+      final enrollments = await _progressApi.getMyEnrollments().catchError((e) {
+        if (kDebugMode) debugPrint('loadHomeData enrollments error: $e');
+        return <EnrollmentModel>[];
+      });
+      _stats = stats;
       await _saveLocalStats();
-      final enrollments = results[1] as List<EnrollmentModel>;
 
       _enrolledCourseIds
         ..clear()

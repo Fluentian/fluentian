@@ -50,7 +50,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       height: 64,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                        color: FluentianColors.warning.withValues(alpha: 0.15),
                       ),
                       child: Center(
                         child: Icon(
@@ -245,7 +245,7 @@ class _PlanCard extends StatelessWidget {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B),
+                    color: FluentianColors.warning,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: LText(

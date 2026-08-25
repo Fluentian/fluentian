@@ -195,7 +195,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFF59E0B)
+                                color: FluentianColors.warning
                                     .withValues(alpha: 0.35),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),

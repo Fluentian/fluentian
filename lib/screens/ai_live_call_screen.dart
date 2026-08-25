@@ -579,7 +579,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
             onPressed: _isStarting || _isSending ? null : _send,
             style: IconButton.styleFrom(
               backgroundColor: const Color(0xFF74DDD7),
-              foregroundColor: const Color(0xFF072D52),
+              foregroundColor: FluentianColors.primaryDark,
               disabledBackgroundColor: Colors.white10,
             ),
             icon: _isSending

@@ -495,11 +495,11 @@ class _OrbitingWordsPainter extends CustomPainter {
       );
 
       final bgPaint = Paint()
-        ..color = const Color(0xFF072D52).withValues(alpha: 0.75)
+        ..color = FluentianColors.primaryDark.withValues(alpha: 0.75)
         ..style = PaintingStyle.fill;
 
       final borderPaint = Paint()
-        ..color = const Color(0xFF33C8C0).withValues(alpha: 0.4)
+        ..color = FluentianColors.accent.withValues(alpha: 0.4)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0;
 
