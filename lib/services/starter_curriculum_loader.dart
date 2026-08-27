@@ -78,7 +78,11 @@ class StarterCurriculumLoader {
             'xp_reward': lesson['xp_reward'],
             'is_published': true,
             'blocks': lesson['blocks'] ?? [],
-            'questions': lesson['questions'] ?? [],
+            'questions': _canonicalQuestions(
+              (lesson['questions'] as List<dynamic>? ?? [])
+                  .cast<Map<String, dynamic>>(),
+              lessonId,
+            ),
           };
           await _db.upsertLesson(
             CachedLessonsCompanion(
@@ -102,5 +106,68 @@ class StarterCurriculumLoader {
       }
     }
     await _db.putApiCache(_seedMarker, true);
+  }
+
+  /// Bundled questions are authored in a flat shape (`kind`/`prompt`/`options`/
+  /// `correct_answer`), but `QuestionModel.fromJson` hard-casts the canonical
+  /// server shape (`question_kind`/`prompt_payload`/`grading_payload` + required
+  /// `lesson_id`/`sequence_no`/`created_at`). Seeding the raw shape makes the
+  /// model throw on parse, so translate here before it hits the cache.
+  static List<Map<String, dynamic>> _canonicalQuestions(
+    List<Map<String, dynamic>> raw,
+    String lessonId,
+  ) {
+    final nowIso = DateTime.now().toUtc().toIso8601String();
+    final out = <Map<String, dynamic>>[];
+    for (var i = 0; i < raw.length; i++) {
+      final q = raw[i];
+      // Already canonical (future-proof): pass through with required defaults.
+      if (q.containsKey('question_kind')) {
+        out.add({
+          'lesson_id': lessonId,
+          'sequence_no': i + 1,
+          'difficulty': 1,
+          'prompt_payload': <String, dynamic>{},
+          'grading_payload': <String, dynamic>{},
+          'created_at': nowIso,
+          ...q,
+        });
+        continue;
+      }
+      final promptPayload = <String, dynamic>{
+        'question': q['prompt'] ?? q['question'] ?? q['text'] ?? '',
+      };
+      if (q['options'] != null) promptPayload['options'] = q['options'];
+      if (q['explanation'] != null) {
+        promptPayload['explanation'] = q['explanation'];
+      }
+      final gradingPayload = <String, dynamic>{};
+      if (q['correct_answer'] != null) {
+        gradingPayload['correct_answer'] = q['correct_answer'];
+      }
+      out.add({
+        'id': q['id'],
+        'lesson_id': lessonId,
+        'question_kind': _mapKind(q['kind'] as String?),
+        'sequence_no': i + 1,
+        'difficulty': 1,
+        'prompt_payload': promptPayload,
+        'grading_payload': gradingPayload,
+        'created_at': nowIso,
+      });
+    }
+    return out;
+  }
+
+  static String _mapKind(String? authoringKind) {
+    switch (authoringKind) {
+      case 'multiple_choice':
+      case 'mcq':
+        return 'mcq_single';
+      case 'multiple_select':
+        return 'mcq_multi';
+      default:
+        return authoringKind ?? 'mcq_single';
+    }
   }
 }
