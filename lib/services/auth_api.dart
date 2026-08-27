@@ -73,7 +73,7 @@ class AuthApi {
     final json = await _client.post('/auth/refresh', {
       'refresh_token': refreshToken,
     }, auth: false);
-    final res = AuthResponse.fromJson(json);
+    final res = AuthResponse.fromJson(json, fallbackRefreshToken: refreshToken);
     await _client.saveTokens(res.accessToken, res.refreshToken);
     return res;
   }

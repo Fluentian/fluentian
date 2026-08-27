@@ -127,8 +127,7 @@ class UserModel {
       learningReminderEnabled:
           settings?['learning_reminder_enabled'] as bool? ?? true,
       reminderTime: settings?['reminder_time']?.toString() ?? '08:00',
-      timezone:
-          settings?['timezone']?.toString() ?? 'Africa/Addis_Ababa',
+      timezone: settings?['timezone']?.toString() ?? 'Africa/Addis_Ababa',
       opportunityNotificationsEnabled:
           settings?['opportunity_notifications_enabled'] as bool? ?? true,
       phoneticHintsEnabled:
@@ -142,7 +141,9 @@ class UserModel {
           settings?['haptic_feedback_enabled'] as bool? ?? true,
       ttsSpeed: (settings?['tts_speed'] as num?)?.toDouble() ?? 1.0,
       fontScale: settings?['font_scale'] as int? ?? 1,
-      preferredVoiceId: normalizeVoiceId(profile?['preferred_voice_id']?.toString()),
+      preferredVoiceId: normalizeVoiceId(
+        profile?['preferred_voice_id']?.toString(),
+      ),
     );
   }
 
@@ -338,9 +339,13 @@ class AuthResponse {
     required this.user,
   });
 
-  factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
+  factory AuthResponse.fromJson(
+    Map<String, dynamic> json, {
+    String? fallbackRefreshToken,
+  }) => AuthResponse(
     accessToken: json['access_token'] as String,
-    refreshToken: json['refresh_token'] as String,
+    refreshToken:
+        (json['refresh_token'] as String?) ?? fallbackRefreshToken ?? '',
     user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
   );
 }

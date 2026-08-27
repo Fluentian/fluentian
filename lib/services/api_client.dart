@@ -84,8 +84,9 @@ class ApiClient {
   );
   static const String defaultBaseUrl =
       'https://api.fluentianapp.binovatechnologies.com/api/v1';
-  static final String _baseUrl =
-      _configuredBaseUrl.isNotEmpty ? _configuredBaseUrl : defaultBaseUrl;
+  static final String _baseUrl = _configuredBaseUrl.isNotEmpty
+      ? _configuredBaseUrl
+      : defaultBaseUrl;
   static final Uri _baseUri = Uri.parse(_baseUrl);
 
   /// One shared client for ALL requests so TLS connections are REUSED
@@ -213,8 +214,9 @@ class ApiClient {
   }
 
   Future<bool> hasValidToken() async {
-    final token = await getAccessToken();
-    return token != null && token.isNotEmpty;
+    final access = await getAccessToken();
+    final refresh = await getRefreshToken();
+    return (access?.isNotEmpty ?? false) || (refresh?.isNotEmpty ?? false);
   }
 
   // ── Core request methods ──────────────────────────────
@@ -258,15 +260,10 @@ class ApiClient {
           .timeout(const Duration(seconds: 15));
       await _logResponse('GET', uri, response.statusCode, start);
 
-      if (response.statusCode == 401 &&
-          auth &&
-          !_isRefreshing &&
-          !path.contains('/auth/')) {
-        _isRefreshing = true;
+      if (response.statusCode == 401 && auth && !path.contains('/auth/')) {
         final refreshed = await _tryRefreshToken();
-        _isRefreshing = false;
         if (refreshed) {
-          return getList(path, auth: auth);
+          return await getList(path, auth: auth);
         }
       }
 
@@ -289,9 +286,21 @@ class ApiClient {
 
   // ── Internal ──────────────────────────────────────────
 
-  bool _isRefreshing = false;
+  Future<bool>? _refreshFuture;
 
   Future<bool> _tryRefreshToken() async {
+    final inFlight = _refreshFuture;
+    if (inFlight != null) return inFlight;
+    final future = _refreshTokensOnce();
+    _refreshFuture = future;
+    try {
+      return await future;
+    } finally {
+      if (identical(_refreshFuture, future)) _refreshFuture = null;
+    }
+  }
+
+  Future<bool> _refreshTokensOnce() async {
     final refreshToken = await getRefreshToken();
     if (refreshToken == null || refreshToken.isEmpty) return false;
 
@@ -309,8 +318,8 @@ class ApiClient {
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(utf8.decode(response.bodyBytes))
-            as Map<String, dynamic>;
+        final data =
+            jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
         final newAccess = data['access_token']?.toString();
         final newRefresh = data['refresh_token']?.toString() ?? refreshToken;
         if (newAccess != null && newAccess.isNotEmpty) {
@@ -367,15 +376,10 @@ class ApiClient {
 
       await _logResponse(method, uri, response.statusCode, start);
 
-      if (response.statusCode == 401 &&
-          auth &&
-          !_isRefreshing &&
-          !path.contains('/auth/')) {
-        _isRefreshing = true;
+      if (response.statusCode == 401 && auth && !path.contains('/auth/')) {
         final refreshed = await _tryRefreshToken();
-        _isRefreshing = false;
         if (refreshed) {
-          return _request(
+          return await _request(
             method,
             path,
             body: body,
