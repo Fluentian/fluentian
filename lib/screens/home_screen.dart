@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/content_provider.dart';
 import '../services/in_app_notification_service.dart';
+import '../local_db/app_database.dart';
+import '../services/outbox_manager.dart';
 import '../services/notifications_api.dart';
 import '../core/theme.dart';
 import '../core/app_localization.dart';
@@ -244,6 +246,7 @@ class _HomeContentState extends State<_HomeContent> {
                     nextHeartRefillAt: auth.nextHeartRefillAt,
                     onHeartRefreshDue: () => auth.refreshHearts(),
                   ),
+                  const _SyncStatusBanner(),
                   const SizedBox(height: 14),
 
                   Padding(
@@ -497,7 +500,6 @@ class _HomeContentState extends State<_HomeContent> {
                         ),
                       ),
                     ),
-
                   ],
 
                   const SizedBox(height: 28),
@@ -509,6 +511,45 @@ class _HomeContentState extends State<_HomeContent> {
       ),
     );
   }
+}
+
+class _SyncStatusBanner extends StatefulWidget {
+  const _SyncStatusBanner();
+  @override
+  State<_SyncStatusBanner> createState() => _SyncStatusBannerState();
+}
+
+class _SyncStatusBannerState extends State<_SyncStatusBanner> {
+  Future<int> _failed() => AppDatabase.instance.getFailedOutboxCount();
+  @override
+  Widget build(BuildContext context) => FutureBuilder<int>(
+    future: _failed(),
+    builder: (context, snapshot) {
+      final count = snapshot.data ?? 0;
+      if (count == 0) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        child: Card(
+          color: FluentianColors.errorTint,
+          child: ListTile(
+            leading: const Icon(
+              Icons.cloud_off_rounded,
+              color: FluentianColors.error,
+            ),
+            title: const LText('Some progress could not sync'),
+            subtitle: LText('$count item(s) need another try'),
+            trailing: TextButton(
+              onPressed: () async {
+                await OutboxManager.instance.retryFailed();
+                if (mounted) setState(() {});
+              },
+              child: const LText('Retry'),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 class _NoCoursesCard extends StatelessWidget {
@@ -820,7 +861,6 @@ class _HomeSectionLabel extends StatelessWidget {
   );
 }
 
-
 class _HomeHero extends StatelessWidget {
   final String greeting;
   final String displayName;
@@ -947,7 +987,9 @@ class _HomeHero extends StatelessWidget {
                     children: [
                       _HeroPill(
                         icon: Iconsax.flash_15,
-                        text: streak > 0 ? '$streak day streak' : 'Start streak',
+                        text: streak > 0
+                            ? '$streak day streak'
+                            : 'Start streak',
                       ),
                       HeartStatusChip(
                         hearts: hearts,
