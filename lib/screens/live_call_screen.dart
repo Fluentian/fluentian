@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/theme.dart';
 import '../services/api_client.dart';
@@ -30,16 +31,27 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
   List<LiveRoomModel>? _rooms;
   bool _isInitialLoading = true;
   Object? _error;
+  List<AiScenario>? _scenarios;
   Timer? _presenceTimer;
 
   @override
   void initState() {
     super.initState();
     _loadInitial();
+    _loadScenarios();
     _presenceTimer = Timer.periodic(
       const Duration(seconds: 25),
       (_) => _refresh(silent: true),
     );
+  }
+
+  Future<void> _loadScenarios() async {
+    try {
+      final scenarios = await SocialApi.instance.getAiScenarios();
+      if (mounted) setState(() => _scenarios = scenarios);
+    } catch (_) {
+      if (mounted) setState(() => _scenarios = const []);
+    }
   }
 
   Future<void> _loadInitial() async {
@@ -108,10 +120,43 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
     );
   }
 
-  void _startAiPractice() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const AiLiveCallScreen()));
+  Future<void> _startAiPractice() async {
+    final p = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    final result = await showModalBottomSheet<AiCallSettings>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _AiCallSettingsSheet(
+        speed: p.getDouble('ai_speed') ?? 1,
+        level: p.getString('ai_level'),
+        immersion: p.getBool('ai_immersion') ?? false,
+        explanation: p.getString('ai_explanation') ?? 'English',
+        voice: p.getString('ai_voice') ?? 'maya',
+        personality: p.getString('ai_personality') ?? 'Warm',
+        mood: p.getString('ai_mood') ?? 'Encouraging',
+        register: p.getString('ai_register') ?? 'Natural',
+        curveball: p.getBool('ai_curveball') ?? false,
+      ),
+    );
+    if (result == null || !mounted) return;
+    await p.setDouble('ai_speed', result.speed);
+    if (result.level == null) {
+      await p.remove('ai_level');
+    } else {
+      await p.setString('ai_level', result.level!);
+    }
+    await p.setBool('ai_immersion', result.immersion);
+    await p.setString('ai_explanation', result.explanationLanguage);
+    await p.setString('ai_voice', result.voice);
+    await p.setString('ai_personality', result.personality);
+    await p.setString('ai_mood', result.mood);
+    await p.setString('ai_register', result.register);
+    await p.setBool('ai_curveball', result.curveball);
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => AiLiveCallScreen(settings: result)),
+    );
   }
 
   @override
@@ -163,14 +208,14 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
               ],
             ),
             const SizedBox(height: 18),
+            if (_scenarios != null && _scenarios!.isNotEmpty)
+              _ScenarioGallery(scenarios: _scenarios!),
             _AiTutorCard(onStart: _startAiPractice),
             const SizedBox(height: 12),
             Builder(
               builder: (context) {
                 if (_isInitialLoading) {
-                  return const FluentianShimmer(
-                    child: SkeletonLiveRoom(),
-                  );
+                  return const FluentianShimmer(child: SkeletonLiveRoom());
                 }
                 if (_error != null) {
                   final err = _error;
@@ -240,6 +285,338 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
       ),
     );
   }
+}
+
+class _ScenarioGallery extends StatelessWidget {
+  final List<AiScenario> scenarios;
+  const _ScenarioGallery({required this.scenarios});
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      LText(
+        'Choose a scenario',
+        style: GoogleFonts.inter(
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+          color: FluentianColors.textPrimary,
+        ),
+      ),
+      const SizedBox(height: 10),
+      SizedBox(
+        height: 164,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: scenarios.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (_, i) {
+            final s = scenarios[i];
+            return SizedBox(
+              width: 238,
+              child: Card(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => _showRolePicker(context, s),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                s.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                            Chip(
+                              label: Text(
+                                s.level,
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        Text(
+                          s.setting,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: FluentianColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Goal: ${s.goal}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: FluentianColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    ],
+  );
+}
+
+Future<void> _showRolePicker(BuildContext context, AiScenario scenario) async {
+  var ai = 'Waiter';
+  var learner = 'Customer';
+  await showDialog(
+    context: context,
+    builder: (dialogContext) => StatefulBuilder(
+      builder: (_, set) => AlertDialog(
+        title: Text(scenario.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Goal: ${scenario.goal}'),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: ai,
+              decoration: const InputDecoration(labelText: 'AI plays'),
+              items: [
+                'Waiter',
+                'Receptionist',
+                'Friend',
+              ].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+              onChanged: (v) => set(() => ai = v!),
+            ),
+            DropdownButtonFormField<String>(
+              initialValue: learner,
+              decoration: const InputDecoration(labelText: 'You play'),
+              items: [
+                'Customer',
+                'Guest',
+                'Friend',
+              ].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+              onChanged: (v) => set(() => learner = v!),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const LText('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AiLiveCallScreen(
+                    settings: AiCallSettings(
+                      level: scenario.level.toLowerCase(),
+                      scenarioId: scenario.id,
+                      learnerRole: learner.toLowerCase() == 'customer'
+                          ? 'traveler'
+                          : 'student',
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: const LText('Start scenario'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _AiCallSettingsSheet extends StatefulWidget {
+  final double speed;
+  final String? level;
+  final bool immersion;
+  final String explanation;
+  final String voice;
+  final String personality;
+  final String mood;
+  final String register;
+  final bool curveball;
+  const _AiCallSettingsSheet({
+    required this.speed,
+    required this.level,
+    required this.immersion,
+    required this.explanation,
+    required this.voice,
+    required this.personality,
+    required this.mood,
+    required this.register,
+    required this.curveball,
+  });
+  @override
+  State<_AiCallSettingsSheet> createState() => _AiCallSettingsSheetState();
+}
+
+class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
+  late double speed = widget.speed;
+  late String? level = widget.level;
+  late bool immersion = widget.immersion;
+  late String explanation = widget.explanation,
+      voice = widget.voice,
+      personality = widget.personality,
+      mood = widget.mood,
+      register = widget.register;
+  late bool curveball = widget.curveball;
+  Widget _pick(
+    String label,
+    String value,
+    List<String> values,
+    void Function(String) set,
+  ) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: DropdownButtonFormField<String>(
+      initialValue: value,
+      decoration: InputDecoration(
+        labelText: context.tr(label),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      items: values
+          .map((v) => DropdownMenuItem(value: v, child: Text(v)))
+          .toList(),
+      onChanged: (v) {
+        if (v != null) set(v);
+      },
+    ),
+  );
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LText(
+            'Before you start',
+            style: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: FluentianColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          LText(
+            'Shape this practice around how you learn best.',
+            style: GoogleFonts.inter(color: FluentianColors.textSecondary),
+          ),
+          const SizedBox(height: 20),
+          LText(
+            'Speaking speed',
+            style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          ),
+          Slider(
+            value: speed,
+            min: .6,
+            max: 1.4,
+            divisions: 8,
+            label: '${speed.toStringAsFixed(1)}×',
+            onChanged: (v) => setState(() => speed = v),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const LText('Slower'),
+              Text(
+                '${speed.toStringAsFixed(1)}×',
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const LText('Faster'),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _pick('Level', level ?? 'Auto', const [
+            'Auto',
+            'A0',
+            'A1',
+            'A2',
+            'B1',
+            'B2',
+            'C1',
+          ], (v) => setState(() => level = v == 'Auto' ? null : v)),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: LText('Immersion mode'),
+            subtitle: LText('Keep the conversation in French'),
+            value: immersion,
+            onChanged: (v) => setState(() => immersion = v),
+          ),
+          _pick('Explanation language', explanation, const [
+            'English',
+            'Amharic',
+            'Afaan Oromo',
+          ], (v) => setState(() => explanation = v)),
+          _pick('Voice', voice, const [
+            'maya',
+            'claire',
+            'marie',
+          ], (v) => setState(() => voice = v)),
+          _pick('Personality', personality, const [
+            'Warm',
+            'Direct',
+            'Playful',
+          ], (v) => setState(() => personality = v)),
+          _pick('Mood', mood, const [
+            'Encouraging',
+            'Calm',
+            'Energetic',
+          ], (v) => setState(() => mood = v)),
+          _pick('Register', register, const [
+            'Natural',
+            'Formal',
+            'Casual',
+          ], (v) => setState(() => register = v)),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const LText('Curveball mode'),
+            subtitle: const LText('Add a realistic surprise to the role-play'),
+            value: curveball,
+            onChanged: (v) => setState(() => curveball = v),
+          ),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: FilledButton.icon(
+              icon: const Icon(Iconsax.microphone_2),
+              label: const LText('Start practice'),
+              onPressed: () => Navigator.pop(
+                context,
+                AiCallSettings(
+                  speed: speed,
+                  level: level,
+                  immersion: immersion,
+                  explanationLanguage: explanation,
+                  voice: voice,
+                  personality: personality,
+                  mood: mood,
+                  register: register,
+                  curveball: curveball,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _AiTutorCard extends StatelessWidget {

@@ -53,6 +53,59 @@ class SpeakingCallSession {
   }
 }
 
+class AiScenario {
+  final String id, title, setting, level, goal, aiRole, learnerRole;
+  const AiScenario({
+    required this.id,
+    required this.title,
+    required this.setting,
+    required this.level,
+    required this.goal,
+    required this.aiRole,
+    required this.learnerRole,
+  });
+  factory AiScenario.fromJson(Map<String, dynamic> j) => AiScenario(
+    id: j['id']?.toString() ?? j['slug']?.toString() ?? '',
+    title: j['title']?.toString() ?? 'Practice scenario',
+    setting: j['setting']?.toString() ?? j['description']?.toString() ?? '',
+    level: j['cefr_level']?.toString() ?? j['level']?.toString() ?? 'A1',
+    goal:
+        j['goal']?.toString() ??
+        j['mini_goal']?.toString() ??
+        'Have a natural conversation',
+    aiRole: j['ai_role']?.toString() ?? 'Tutor',
+    learnerRole: j['learner_role']?.toString() ?? 'student',
+  );
+}
+
+class AiCallReport {
+  final String topic, focusTip;
+  final String? scenarioId, learnerRole;
+  final List<dynamic> corrections, vocabulary;
+  final bool goalCompleted;
+  final String? culturalNote;
+  const AiCallReport({
+    required this.topic,
+    required this.focusTip,
+    required this.corrections,
+    required this.vocabulary,
+    required this.goalCompleted,
+    this.scenarioId,
+    this.learnerRole,
+    this.culturalNote,
+  });
+  factory AiCallReport.fromJson(Map<String, dynamic> j) => AiCallReport(
+    topic: j['topic']?.toString() ?? 'AI practice',
+    focusTip: j['focus_tip']?.toString() ?? '',
+    corrections: (j['corrections'] as List?) ?? const [],
+    vocabulary: (j['vocabulary'] as List?) ?? const [],
+    goalCompleted: j['goal_completed'] == true,
+    scenarioId: j['scenario_id']?.toString(),
+    learnerRole: j['learner_role']?.toString(),
+    culturalNote: j['cultural_note']?.toString(),
+  );
+}
+
 class MatchQueueResult {
   final String ticketId;
   final String status;
@@ -142,20 +195,76 @@ class SocialApi {
     String? level,
     String callKind = 'audio',
     bool smartMatch = false,
+    String? aiRole,
+    String? learnerRole,
   }) async {
     final data = await _api.post('/social/speaking-calls', {
       'topic': topic,
       if (level != null && level.isNotEmpty) 'level': level,
       'call_kind': callKind,
       'smart_match': smartMatch,
+      if (aiRole != null) 'ai_role': aiRole,
+      if (learnerRole != null) 'learner_role': learnerRole,
     });
     return SpeakingCallSession.fromJson(data);
   }
 
+  Future<List<AiScenario>> getAiScenarios() async {
+    final items = await _api.getList('/ai-calls/scenarios');
+    return items
+        .whereType<Map>()
+        .map((e) => AiScenario.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  Future<AiCallReport> createAiCallReport({
+    required String callId,
+    String? topic,
+    required List<Map<String, String>> transcript,
+    String? goal,
+    String? scenarioId,
+    String? learnerRole,
+  }) async {
+    final data = await _api.post('/social/ai-calls/$callId/report', {
+      'call_id': callId,
+      'topic': topic,
+      'transcript': transcript,
+      if (goal != null) 'goal': goal,
+      if (scenarioId != null) 'scenario_id': scenarioId,
+      if (learnerRole != null) 'learner_role': learnerRole,
+    });
+    return AiCallReport.fromJson(data);
+  }
+
   Future<SpeakingCallSession> createAiCall({
     String topic = 'Everyday French',
+    double speed = 1.0,
+    String? level,
+    bool immersion = false,
+    String explanationLanguage = 'English',
+    String voice = 'maya',
+    String immersionMode = 'balanced',
+    String? scenarioId,
+    String? learnerRole,
+    String personality = 'Warm',
+    String mood = 'Encouraging',
+    String register = 'Natural',
+    bool curveball = false,
   }) async {
-    final data = await _api.post('/social/ai-calls', {'topic': topic});
+    final data = await _api.post('/social/ai-calls', {
+      'topic': topic,
+      'tts_speed': speed,
+      if (level != null && level.isNotEmpty) 'level': level,
+      'immersion_mode': immersion ? 'full_french' : immersionMode,
+      'explanation_language': explanationLanguage,
+      'voice_id': voice,
+      'personality': personality,
+      'mood': mood,
+      'register': register,
+      if (scenarioId != null) 'scenario_id': scenarioId,
+      if (learnerRole != null) 'learner_role': learnerRole,
+      'curveball': curveball,
+    });
     return SpeakingCallSession.fromJson(data);
   }
 

@@ -7,11 +7,11 @@ import '../models/course_model.dart';
 import '../models/progress_model.dart';
 import '../services/content_api.dart';
 import '../services/outbox_manager.dart';
+import '../services/product_analytics.dart';
 import '../services/progress_api.dart';
 import '../services/sync_manager.dart';
 import '../services/api_client.dart';
 import '../services/starter_curriculum_loader.dart';
-import '../services/product_analytics.dart';
 
 enum ContentStatus { idle, loading, loaded, error }
 
@@ -296,7 +296,23 @@ class ContentProvider extends ChangeNotifier {
   /// local Drift store, falling back to a direct network call if both
   /// misses -- e.g. before the first sync has ever run).
   Future<LessonDetailModel?> getLessonDetail(String lessonId) async {
-    if (_lessonCache.containsKey(lessonId)) return _lessonCache[lessonId];
+    final startedAt = DateTime.now();
+    Future<LessonDetailModel?> record(LessonDetailModel? detail, String layer) async {
+      await ProductAnalytics.instance.event(
+        'lesson_open',
+        parameters: {
+          'lesson_id': lessonId,
+          'cache_layer': layer,
+          'latency_ms': DateTime.now().difference(startedAt).inMilliseconds,
+          'payload_bytes': detail == null ? 0 : detail.blocks.length + detail.questions.length,
+        },
+      );
+      return detail;
+    }
+
+    if (_lessonCache.containsKey(lessonId)) {
+      return record(_lessonCache[lessonId], 'memory');
+    }
     try {
       final cachedRow = await _db.getLesson(lessonId);
       if (cachedRow?.detailJson != null) {
@@ -304,7 +320,7 @@ class ContentProvider extends ChangeNotifier {
         final detail = LessonDetailModel.fromJson(json);
         _lessonCache[lessonId] = detail;
         _lastLessonLoadError = null;
-        return detail;
+        return await record(detail, 'sqlite');
       }
 
       final json = await _syncManager.fetchAndCacheLessonDetail(lessonId);
@@ -312,7 +328,7 @@ class ContentProvider extends ChangeNotifier {
       _lessonCache[lessonId] = detail;
       _lastLessonLoadError = null;
       notifyListeners();
-      return detail;
+      return await record(detail, 'network');
     } on ApiException catch (e) {
       if (kDebugMode) debugPrint('getLessonDetail error: ${e.message}');
       _lastLessonLoadError = e.userMessage;

@@ -33,4 +33,21 @@ void main() {
       expect(asset, contains('Bonjour and salut'));
     },
   );
+
+  test('outbox stores pending writes and retries failed writes', () async {
+    final database = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final id = await database.queueMutation(
+      operation: 'complete_lesson',
+      lessonId: 'lesson-1',
+      idempotencyKey: 'key-1',
+      requestPayloadJson: '{"score":1}',
+    );
+    expect((await database.getPendingOutboxEntries()).single.localId, id);
+    await database.markOutboxEntryFailed(id, 'temporary failure');
+    expect(await database.getFailedOutboxCount(), 1);
+    await database.retryFailedOutbox();
+    expect(await database.getFailedOutboxCount(), 0);
+    expect((await database.getPendingOutboxEntries()).single.retryCount, 1);
+  });
 }

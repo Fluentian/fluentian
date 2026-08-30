@@ -11,9 +11,38 @@ import '../core/app_localization.dart';
 import '../core/theme.dart';
 import '../services/api_client.dart';
 import '../services/social_api.dart';
+import 'ai_call_report_screen.dart';
+
+class AiCallSettings {
+  final double speed;
+  final String? level;
+  final bool immersion;
+  final String explanationLanguage;
+  final String voice;
+  final String personality;
+  final String mood;
+  final String register;
+  final String? scenarioId;
+  final String? learnerRole;
+  final bool curveball;
+  const AiCallSettings({
+    this.speed = 1.0,
+    this.level,
+    this.immersion = false,
+    this.explanationLanguage = 'English',
+    this.voice = 'maya',
+    this.personality = 'Warm',
+    this.mood = 'Encouraging',
+    this.register = 'Natural',
+    this.scenarioId,
+    this.learnerRole,
+    this.curveball = false,
+  });
+}
 
 class AiLiveCallScreen extends StatefulWidget {
-  const AiLiveCallScreen({super.key});
+  final AiCallSettings settings;
+  const AiLiveCallScreen({super.key, this.settings = const AiCallSettings()});
 
   @override
   State<AiLiveCallScreen> createState() => _AiLiveCallScreenState();
@@ -55,7 +84,19 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
     }
 
     try {
-      final call = await SocialApi.instance.createAiCall();
+      final call = await SocialApi.instance.createAiCall(
+        speed: widget.settings.speed,
+        level: widget.settings.level,
+        immersion: widget.settings.immersion,
+        explanationLanguage: widget.settings.explanationLanguage,
+        voice: widget.settings.voice,
+        personality: widget.settings.personality,
+        mood: widget.settings.mood,
+        register: widget.settings.register,
+        scenarioId: widget.settings.scenarioId,
+        learnerRole: widget.settings.learnerRole,
+        curveball: widget.settings.curveball,
+      );
       if (!mounted) return;
 
       final session = Session.fromFixedTokenSource(
@@ -249,6 +290,19 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
     _isLeaving = true;
     _timer?.cancel();
     final session = _session;
+    final transcript =
+        session?.messages
+            .map(
+              (m) => <String, String>{
+                'role': m.content is UserTranscript || m.content is UserInput
+                    ? 'user'
+                    : 'assistant',
+                'content': m.content.text,
+              },
+            )
+            .toList() ??
+        const <Map<String, String>>[];
+    final callId = session?.room.name;
     _session = null;
     session?.removeListener(_onSessionChanged);
     try {
@@ -260,6 +314,26 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
         await session?.dispose();
       } catch (_) {
         // Disposal is best-effort after a transport failure.
+      }
+      if (mounted && callId != null && transcript.isNotEmpty) {
+        try {
+          final report = await SocialApi.instance.createAiCallReport(
+            callId: callId,
+            topic: widget.settings.scenarioId,
+            scenarioId: widget.settings.scenarioId,
+            learnerRole: widget.settings.learnerRole,
+            transcript: transcript,
+          );
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => AiCallReportScreen(report: report),
+              ),
+            );
+            return;
+          }
+        } catch (_) {}
       }
       if (mounted) Navigator.pop(context);
     }

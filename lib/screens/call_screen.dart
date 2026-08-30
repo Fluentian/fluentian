@@ -19,6 +19,9 @@ class CallScreen extends StatefulWidget {
   final bool smartMatch;
   final bool isAiTutor;
   final String? liveRoomId;
+  final String? aiRole;
+  final String? learnerRole;
+  final String? miniGoal;
 
   const CallScreen({
     super.key,
@@ -28,6 +31,9 @@ class CallScreen extends StatefulWidget {
     this.smartMatch = false,
     this.isAiTutor = false,
     this.liveRoomId,
+    this.aiRole,
+    this.learnerRole,
+    this.miniGoal,
   });
 
   @override
@@ -206,6 +212,8 @@ class _CallScreenState extends State<CallScreen> {
               level: widget.level,
               callKind: widget.isVideo ? 'video' : 'audio',
               smartMatch: widget.smartMatch,
+              aiRole: widget.aiRole,
+              learnerRole: widget.learnerRole,
             );
       // _waitForMatch's poll can resolve isMatched=true after this screen
       // was already popped (e.g. user tapped Cancel right as another user's
@@ -273,13 +281,13 @@ class _CallScreenState extends State<CallScreen> {
             : 'Joining ${widget.topic}...';
       });
 
-      await room.connect(
-        session.serverUrl,
-        session.roomToken,
-        connectOptions: const ConnectOptions(
-          autoSubscribe: true,
-        ),
-      ).timeout(const Duration(seconds: 25));
+      await room
+          .connect(
+            session.serverUrl,
+            session.roomToken,
+            connectOptions: const ConnectOptions(autoSubscribe: true),
+          )
+          .timeout(const Duration(seconds: 25));
 
       try {
         await room.localParticipant?.setMicrophoneEnabled(true);
@@ -534,15 +542,21 @@ class _CallScreenState extends State<CallScreen> {
   void _startPingMonitoring() {
     _pingTimer?.cancel();
     _measurePing();
-    _pingTimer = Timer.periodic(const Duration(seconds: 3), (_) => _measurePing());
+    _pingTimer = Timer.periodic(
+      const Duration(seconds: 3),
+      (_) => _measurePing(),
+    );
   }
 
   Future<void> _measurePing() async {
     if (!mounted) return;
     final sw = Stopwatch()..start();
     try {
-      final client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
-      final req = await client.getUrl(Uri.parse('https://live.binovatechnologies.com'));
+      final client = HttpClient()
+        ..connectionTimeout = const Duration(seconds: 2);
+      final req = await client.getUrl(
+        Uri.parse('https://live.binovatechnologies.com'),
+      );
       final res = await req.close();
       await res.drain();
       sw.stop();
@@ -795,6 +809,15 @@ class _CallScreenState extends State<CallScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
                 ),
+                if (widget.miniGoal != null) ...[
+                  const SizedBox(height: 2),
+                  LText(
+                    'Goal: ${widget.miniGoal}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(color: FluentianColors.accent, fontSize: 11, fontWeight: FontWeight.w700),
+                  ),
+                ],
               ],
             ),
           ),
@@ -1289,7 +1312,10 @@ class _CallScreenState extends State<CallScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(8),
