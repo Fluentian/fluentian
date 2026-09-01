@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
 import '../core/theme.dart';
 import '../widgets/common_widgets.dart';
 import '../models/course_model.dart';
@@ -80,6 +82,7 @@ class _McqScreenState extends State<McqScreen>
 
   // Speaking variables
   _RecordState _recordState = _RecordState.idle;
+  final AudioRecorder _recorder = AudioRecorder();
   late AnimationController _pulseCtrl;
 
   // Audio state variables
@@ -138,6 +141,7 @@ class _McqScreenState extends State<McqScreen>
 
   @override
   void dispose() {
+    _recorder.dispose();
     _audioPlayer.dispose();
     _ttsService.stop();
     _pulseCtrl.dispose();
@@ -251,7 +255,11 @@ class _McqScreenState extends State<McqScreen>
     }
   }
 
-  void _startRecording() {
+  Future<void> _startRecording() async {
+    if (!await _recorder.hasPermission()) return;
+    final directory = await getTemporaryDirectory();
+    final path = '${directory.path}/speaking_${DateTime.now().microsecondsSinceEpoch}.m4a';
+    await _recorder.start(const RecordConfig(), path: path);
     setState(() {
       _recordState = _RecordState.recording;
     });
@@ -304,7 +312,12 @@ class _McqScreenState extends State<McqScreen>
     }
   }
 
-  void _stopRecording() {
+  Future<void> _stopRecording() async {
+    final path = await _recorder.stop();
+    if (path == null || path.isEmpty) {
+      if (mounted) setState(() => _recordState = _RecordState.idle);
+      return;
+    }
     _pulseCtrl.stop();
     setState(() {
       _recordState = _RecordState.analyzing;

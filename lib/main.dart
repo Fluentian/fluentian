@@ -95,6 +95,8 @@ class FluentianApp extends StatelessWidget {
                   ]
                 : const [],
             theme: theme,
+            darkTheme: FluentianTheme.darkTheme,
+            themeMode: ThemeMode.system,
             locale: localeController.locale,
             supportedLocales: AppLocaleController.supportedLocales,
             localizationsDelegates: GlobalMaterialLocalizations.delegates,

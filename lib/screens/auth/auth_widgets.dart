@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/theme.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class AuthColors {
-  static const primary = Color(0xFF0F172A); // Deep slate midnight
-  static const primaryBlue = Color(0xFF1D4ED8); // Royal French Blue accent
-  static const pageBg = Color(0xFFFFFFFF); // Clean pure white canvas
-  static const cardBg = Color(0xFFFFFFFF);
-  static const heading = Color(0xFF0F172A);
-  static const body = Color(0xFF334155);
-  static const placeholder = Color(0xFF94A3B8);
-  static const border = Color(0xFFE2E8F0);
-  static const inputBg = Color(0xFFF8FAFC);
-  static const errorText = Color(0xFFE11D48);
-  static const errorBg = Color(0xFFFFF1F2);
-  static const success = Color(0xFF10B981);
+  static const primary = FluentianColors.primaryDark;
+  static const primaryBlue = FluentianColors.primary;
+  static const pageBg = FluentianColors.white;
+  static const cardBg = FluentianColors.cardBg;
+  static const heading = FluentianColors.textPrimary;
+  static const body = FluentianColors.textSecondary;
+  static const placeholder = Color(0xFF64748B);
+  static const border = FluentianColors.border;
+  static const inputBg = FluentianColors.pageBg;
+  static const errorText = FluentianColors.error;
+  static const errorBg = FluentianColors.errorTint;
+  static const success = FluentianColors.success;
   static const disabledBtn = Color(0xFF94A3B8);
 }
 

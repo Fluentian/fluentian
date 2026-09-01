@@ -11,6 +11,7 @@ import '../core/app_localization.dart';
 import '../core/theme.dart';
 import '../services/api_client.dart';
 import '../services/social_api.dart';
+import '../services/product_analytics.dart';
 import 'ai_call_report_screen.dart';
 
 class AiCallSettings {
@@ -84,6 +85,12 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
     }
 
     try {
+      if (widget.settings.scenarioId != null) {
+        ProductAnalytics.instance.scenarioStarted(widget.settings.scenarioId!);
+      } else if (widget.settings.speed != 1.0 || widget.settings.voice != 'maya' ||
+          widget.settings.personality != 'Warm' || widget.settings.mood != 'Encouraging') {
+        ProductAnalytics.instance.aiCallCustomized();
+      }
       final call = await SocialApi.instance.createAiCall(
         speed: widget.settings.speed,
         level: widget.settings.level,
