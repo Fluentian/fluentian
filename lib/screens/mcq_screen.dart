@@ -260,6 +260,7 @@ class _McqScreenState extends State<McqScreen>
     final directory = await getTemporaryDirectory();
     final path = '${directory.path}/speaking_${DateTime.now().microsecondsSinceEpoch}.m4a';
     await _recorder.start(const RecordConfig(), path: path);
+    if (!mounted) return;
     setState(() {
       _recordState = _RecordState.recording;
     });
