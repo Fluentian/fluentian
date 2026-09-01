@@ -1421,7 +1421,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1446,7 +1446,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                       decoration: BoxDecoration(
                         color: _step >= 1
                             ? FluentianColors.error
-                            : Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -1456,7 +1456,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     _step == 0 ? 'Step 1 of 2' : 'Step 2 of 2',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                   ),
                 ],
@@ -1468,10 +1468,10 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: FluentianColors.error.withOpacity(0.08),
+                    color: FluentianColors.error.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: FluentianColors.error.withOpacity(0.3),
+                      color: FluentianColors.error.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
@@ -1499,7 +1499,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: FluentianColors.error.withOpacity(0.1),
+                        color: FluentianColors.error.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -1522,7 +1522,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                           Text(
                             'Please select why you are closing your account',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                           ),
                         ],
@@ -1545,8 +1545,8 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? FluentianColors.error.withOpacity(0.08)
-                            : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                            ? FluentianColors.error.withValues(alpha: 0.08)
+                            : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isSelected
@@ -1585,7 +1585,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     style: FilledButton.styleFrom(
                       backgroundColor: _selectedReason != null && !_isProcessing
                           ? FluentianColors.error
-                          : FluentianColors.error.withOpacity(0.4),
+                          : FluentianColors.error.withValues(alpha: 0.4),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -1638,7 +1638,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     child: Text(
                       'Cancel',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -1651,7 +1651,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: FluentianColors.error.withOpacity(0.1),
+                        color: FluentianColors.error.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -1674,7 +1674,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                           Text(
                             'We sent a 6-digit code to verify your request.',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                           ),
                         ],
@@ -1689,7 +1689,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
@@ -1729,7 +1729,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                       fontSize: 22,
                     ),
                     filled: true,
-                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -1737,7 +1737,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
-                        color: FluentianColors.error.withOpacity(0.6),
+                        color: FluentianColors.error.withValues(alpha: 0.6),
                         width: 1.5,
                       ),
                     ),
@@ -1775,7 +1775,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     child: Text(
                       'Didn\'t receive code? Resend',
                       style: TextStyle(
-                        color: FluentianColors.error.withOpacity(0.9),
+                        color: FluentianColors.error.withValues(alpha: 0.9),
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
@@ -1794,7 +1794,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                         style: FilledButton.styleFrom(
                           backgroundColor: canSubmit
                               ? FluentianColors.error
-                              : FluentianColors.error.withOpacity(0.4),
+                              : FluentianColors.error.withValues(alpha: 0.4),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -1853,7 +1853,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     child: Text(
                       'Back to reasons',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -1995,7 +1995,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: FluentianColors.primary.withOpacity(0.08),
+                                color: FluentianColors.primary.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: const Icon(
@@ -2049,18 +2049,18 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                             return Container(
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? FluentianColors.primary.withOpacity(0.04)
+                                    ? FluentianColors.primary.withValues(alpha: 0.04)
                                     : Colors.white,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                   color: isSelected
-                                      ? FluentianColors.primary.withOpacity(0.5)
+                                      ? FluentianColors.primary.withValues(alpha: 0.5)
                                       : const Color(0xFFE2E8F0),
                                   width: isSelected ? 1.8 : 1.0,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.02),
+                                    color: Colors.black.withValues(alpha: 0.02),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -2251,7 +2251,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: FluentianColors.primary.withOpacity(0.08),
+                    color: FluentianColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -2290,7 +2290,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                   style: IconButton.styleFrom(
                     backgroundColor: isPlayingCurrent
                         ? FluentianColors.primary
-                        : FluentianColors.primary.withOpacity(0.1),
+                        : FluentianColors.primary.withValues(alpha: 0.1),
                   ),
                   icon: Icon(
                     isPlayingCurrent

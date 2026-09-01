@@ -1252,7 +1252,7 @@ class _ShimmerBoxState extends State<ShimmerBox>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: const Color(0xFFCBD5E1).withOpacity(opacity),
+            color: const Color(0xFFCBD5E1).withValues(alpha: opacity),
             borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
         );
