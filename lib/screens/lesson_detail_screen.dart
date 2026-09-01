@@ -483,7 +483,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     const SizedBox(width: 8),
                     LText(
                       _currentStep < blockCount
-                          ? (_currentStep == 0 ? 'Start Lesson' : 'Next Lesson')
+                          ? (_currentStep == 0 ? 'Start Lesson' : 'Next Section')
                           : quizQuestions.isEmpty
                           ? 'Complete Lesson'
                           : 'Continue to Quiz',

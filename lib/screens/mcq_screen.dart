@@ -115,6 +115,19 @@ class _McqScreenState extends State<McqScreen>
         .toList(growable: false);
   }
 
+  String _friendlyQuestionKind(String kind) => switch (kind) {
+    'mcq_single' => 'Choose one answer',
+    'mcq_multi' => 'Choose all that apply',
+    'speech_record' => 'Speaking practice',
+    'fill_blank' => 'Complete the sentence',
+    'short_text' => 'Write your answer',
+    'dictation' => 'Type what you hear',
+    'match_pairs' => 'Match the pairs',
+    'reorder' => 'Build the sentence',
+    'translation' => 'Translate the sentence',
+    _ => 'Practice question',
+  };
+
   QuestionModel get _currentQ => _activeQuestions[_currentIndex];
 
   @override
@@ -1111,7 +1124,7 @@ class _McqScreenState extends State<McqScreen>
                       _buildWordAssemblyHeader(q)
                     else ...[
                       LText(
-                        q.questionKind.replaceAll('_', ' ').toUpperCase(),
+                        _friendlyQuestionKind(q.questionKind),
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
