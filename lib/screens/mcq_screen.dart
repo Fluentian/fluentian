@@ -933,6 +933,7 @@ class _McqScreenState extends State<McqScreen>
       int? finalHeartsRemaining;
       int? finalStreakDays;
       bool streakFreezeEarned = false;
+      bool completionPendingSync = false;
 
       bool isPassed = true;
 
@@ -957,6 +958,7 @@ class _McqScreenState extends State<McqScreen>
             heartsSpent: _persistedHeartSpends,
           );
           isPassed = result?.lessonCompleted ?? (score >= 0.6);
+          completionPendingSync = result == null;
           if (result != null) {
             finalXpEarned = result.xpEarned;
             finalNewXpTotal = result.newXpTotal;
@@ -1011,6 +1013,7 @@ class _McqScreenState extends State<McqScreen>
             streakDays: finalStreakDays,
             streakFreezeEarned: streakFreezeEarned,
             isPassed: isPassed,
+            completionPendingSync: completionPendingSync,
           ),
         ),
       );
@@ -1317,19 +1320,25 @@ class _McqScreenState extends State<McqScreen>
           onTap: _state == _AnswerState.unanswered
               ? () => setState(() => _selected = i)
               : null,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: 14),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: bg,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: border,
-                width: isSelected || isCorrect || isWrong ? 2 : 1,
-              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: border, width: 2),
+              // A solid, blur-less bottom edge gives the tile physical depth so
+              // it reads as a tappable object, not a rectangle drawn on paper.
+              boxShadow: [
+                BoxShadow(
+                  color: fluentianDarken(border, 0.06),
+                  offset: const Offset(0, 3),
+                  blurRadius: 0,
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -1416,19 +1425,23 @@ class _McqScreenState extends State<McqScreen>
                   });
                 }
               : null,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: 14),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: bg,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: border,
-                width: isSelected || isCorrect || isWrong ? 2 : 1,
-              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: border, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: fluentianDarken(border, 0.06),
+                  offset: const Offset(0, 3),
+                  blurRadius: 0,
+                ),
+              ],
             ),
             child: Row(
               children: [

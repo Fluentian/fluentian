@@ -439,8 +439,16 @@ class _FluentianPressableState extends State<FluentianPressable> {
   }
 }
 
-/// Primary CTA button
-class FluentianButton extends StatelessWidget {
+/// Darken a color (used for the 3D "edge" beneath chunky buttons/tiles).
+Color fluentianDarken(Color c, [double amount = 0.18]) {
+  final hsl = HSLColor.fromColor(c);
+  return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
+}
+
+/// Primary CTA button — a chunky, "pushable" 3D button (Duolingo-style): a
+/// solid face sitting on a darker bottom edge that visibly depresses on press.
+/// Public API is unchanged so every existing call site upgrades for free.
+class FluentianButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final IconData? icon;
@@ -461,44 +469,75 @@ class FluentianButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (gradient != null) {
-      return Container(
-        width: double.infinity,
-        height: 56,
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(FluentianRadius.medium),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onPressed,
-            borderRadius: BorderRadius.circular(FluentianRadius.medium),
-            child: Center(
-              child: _buttonChild(textColor ?? FluentianColors.textPrimary),
-            ),
-          ),
-        ),
-      );
-    }
+  State<FluentianButton> createState() => _FluentianButtonState();
+}
 
-    if (isOutlined) {
+class _FluentianButtonState extends State<FluentianButton> {
+  static const double _faceHeight = 54;
+  static const double _edgeHeight = 4;
+  bool _pressed = false;
+
+  bool get _enabled => widget.onPressed != null;
+
+  void _setPressed(bool value) {
+    if (!_enabled || _pressed == value) return;
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Outlined stays a flat secondary control — chunkiness is for primary CTAs.
+    if (widget.isOutlined) {
       return OutlinedButton(
-        onPressed: onPressed,
+        onPressed: widget.onPressed,
         child: _buttonChild(FluentianColors.primary),
       );
     }
 
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: backgroundColor != null
-          ? ElevatedButton.styleFrom(
-              backgroundColor: backgroundColor,
-              foregroundColor: textColor ?? FluentianColors.white,
-            )
-          : null,
-      child: _buttonChild(textColor ?? FluentianColors.white),
+    final Color faceColor = _enabled
+        ? (widget.backgroundColor ?? FluentianColors.primary)
+        : FluentianColors.border;
+    final Color edgeColor = fluentianDarken(faceColor, 0.16);
+    final Color fg = _enabled
+        ? (widget.textColor ?? FluentianColors.white)
+        : FluentianColors.textSecondary;
+    final radius = BorderRadius.circular(FluentianRadius.card);
+
+    final face = AnimatedContainer(
+      duration: const Duration(milliseconds: 70),
+      curve: Curves.easeOut,
+      transform: Matrix4.translationValues(0, _pressed ? _edgeHeight : 0, 0),
+      height: _faceHeight,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: widget.gradient,
+        color: widget.gradient == null ? faceColor : null,
+        borderRadius: radius,
+        boxShadow: _enabled
+            ? [
+                BoxShadow(
+                  color: edgeColor,
+                  offset: Offset(0, _pressed ? 0 : _edgeHeight),
+                  blurRadius: 0,
+                ),
+              ]
+            : null,
+      ),
+      child: Center(child: _buttonChild(fg)),
+    );
+
+    return GestureDetector(
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) {
+        _setPressed(false);
+        widget.onPressed?.call();
+      },
+      onTapCancel: () => _setPressed(false),
+      // Reserve the edge height so the layout never jumps as the face depresses.
+      child: SizedBox(
+        height: _faceHeight + _edgeHeight,
+        child: Align(alignment: Alignment.topCenter, child: face),
+      ),
     );
   }
 
@@ -507,17 +546,17 @@ class FluentianButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (icon != null) ...[
-          Icon(icon, size: 19, color: color),
+        if (widget.icon != null) ...[
+          Icon(widget.icon, size: 19, color: color),
           const SizedBox(width: 8),
         ],
         Flexible(
           child: LText(
-            text,
+            widget.text,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               fontSize: 17,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
               color: color,
             ),
           ),
