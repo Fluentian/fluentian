@@ -43,17 +43,17 @@ class _SplashScreenState extends State<SplashScreen>
     _orbitCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 12000),
-    )..repeat();
+    );
 
     _pulseCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2800),
-    )..repeat();
+    );
 
     _shimmerCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
-    )..repeat();
+    );
 
     _badgeScale = Tween<double>(begin: 0.3, end: 1.0).animate(
       CurvedAnimation(
