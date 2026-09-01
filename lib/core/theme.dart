@@ -114,6 +114,26 @@ class FluentianShadows {
 }
 
 class FluentianTheme {
+  static ThemeData get darkTheme => ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: FluentianColors.darkPageBg,
+    colorScheme: const ColorScheme.dark(
+      primary: FluentianColors.accent,
+      onPrimary: FluentianColors.darkPageBg,
+      secondary: FluentianColors.secondaryLight,
+      surface: FluentianColors.darkCardBg,
+      onSurface: Colors.white,
+      error: FluentianColors.error,
+    ),
+    textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: FluentianColors.darkPageBg,
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
+  );
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,

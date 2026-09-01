@@ -83,6 +83,8 @@ class FluentianApp extends StatelessWidget {
               FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
             ],
             theme: theme,
+            darkTheme: FluentianTheme.darkTheme,
+            themeMode: ThemeMode.system,
             locale: localeController.locale,
             supportedLocales: AppLocaleController.supportedLocales,
             localizationsDelegates: GlobalMaterialLocalizations.delegates,
