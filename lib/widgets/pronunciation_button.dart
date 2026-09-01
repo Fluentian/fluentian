@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 
+import 'package:provider/provider.dart';
+
 import '../core/app_localization.dart';
 import '../core/theme.dart';
+import '../providers/auth_provider.dart';
 import '../services/tts_service.dart';
 
 /// Compact "Listen" / "Slow" pill pair for hearing how a French word or
@@ -30,7 +33,9 @@ class _PronunciationButtonState extends State<PronunciationButton> {
       _activeSpeed = speed;
     });
     try {
-      await _ttsService.speak(widget.text, language: widget.language, speed: speed);
+      final user = context.read<AuthProvider>().user;
+      final voiceId = user?.preferredVoiceId ?? 'claire';
+      await _ttsService.speak(widget.text, language: widget.language, speed: speed, voiceId: voiceId);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(

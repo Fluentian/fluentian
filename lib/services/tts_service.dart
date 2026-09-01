@@ -49,15 +49,16 @@ class LocalTtsCacheManager {
     return File('${cacheDir.path}/$hash.mp3');
   }
 
-  static String getStreamUrl(String text, {String voiceId = 'claire', double speed = 1.0}) {
+  static String getStreamUrl(String text, {String voiceId = 'claire', double speed = 1.0, String language = 'fr-FR'}) {
     final encodedText = Uri.encodeComponent(text.trim());
     final encodedVoice = Uri.encodeComponent(voiceId.trim());
     final normalizedSpeed = speed.toStringAsFixed(2);
-    return '${ApiClient.baseUrl}/content/tts/stream?text=$encodedText&voice_id=$encodedVoice&speed=$normalizedSpeed';
+    final langCode = language.toLowerCase().startsWith('en') ? 'en' : (language.toLowerCase().startsWith('es') ? 'es' : 'fr');
+    return '${ApiClient.baseUrl}/content/tts/stream?text=$encodedText&voice_id=$encodedVoice&speed=$normalizedSpeed&language=$langCode';
   }
 
   /// Predictive background pre-fetch for upcoming lesson / quiz questions
-  static void prefetch(List<String> texts, {String voiceId = 'claire', double speed = 1.0}) {
+  static void prefetch(List<String> texts, {String voiceId = 'claire', double speed = 1.0, String language = 'fr-FR'}) {
     for (final text in texts) {
       final clean = text.trim();
       if (clean.isEmpty) continue;
@@ -65,7 +66,7 @@ class LocalTtsCacheManager {
         try {
           final cacheFile = await getCacheFile(voiceId, speed, clean);
           if (await cacheFile.exists() && (await cacheFile.length()) > 0) return;
-          final streamUrl = getStreamUrl(clean, voiceId: voiceId, speed: speed);
+          final streamUrl = getStreamUrl(clean, voiceId: voiceId, speed: speed, language: language);
           final client = HttpClient();
           final request = await client.getUrl(Uri.parse(streamUrl));
           final response = await request.close();
@@ -123,32 +124,33 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
       if (kDebugMode) debugPrint('Local TTS disk cache check error: $e');
     }
 
-    // 2. ZERO-WAIT STREAMING PATH: Direct HTTP Chunked Audio Stream (~80-120ms to first audio byte)
+    // 2. SINGLE-FETCH AUDIO STREAM: Download once directly to cache file and play, avoiding double-fetch
     try {
       _speaking = true;
-      final streamUrl = LocalTtsCacheManager.getStreamUrl(cleanText, voiceId: voiceId, speed: effectiveSpeed);
+      final cacheFile = await LocalTtsCacheManager.getCacheFile(voiceId, effectiveSpeed, cleanText);
+      final streamUrl = LocalTtsCacheManager.getStreamUrl(
+        cleanText,
+        voiceId: voiceId,
+        speed: effectiveSpeed,
+        language: language,
+      );
 
-      // Start streaming playback immediately on the very first byte chunk
+      final client = HttpClient();
+      final request = await client.getUrl(Uri.parse(streamUrl));
+      final response = await request.close();
+      if (response.statusCode == 200) {
+        final bytes = await response.fold<List<int>>([], (acc, chunk) => acc..addAll(chunk));
+        if (bytes.isNotEmpty) {
+          await cacheFile.writeAsBytes(bytes);
+          await _audioPlayer.setFilePath(cacheFile.path);
+          await _audioPlayer.play();
+          _speaking = false;
+          return;
+        }
+      }
+
+      // Fallback to streaming player directly if direct download didn't return 200
       await _audioPlayer.setUrl(streamUrl);
-
-      // Cache audio stream to local disk asynchronously in background (non-blocking)
-      unawaited(() async {
-        try {
-          final cacheFile = await LocalTtsCacheManager.getCacheFile(voiceId, effectiveSpeed, cleanText);
-          if (!await cacheFile.exists()) {
-            final client = HttpClient();
-            final request = await client.getUrl(Uri.parse(streamUrl));
-            final response = await request.close();
-            if (response.statusCode == 200) {
-              final bytes = await response.fold<List<int>>([], (acc, chunk) => acc..addAll(chunk));
-              if (bytes.isNotEmpty) {
-                await cacheFile.writeAsBytes(bytes);
-              }
-            }
-          }
-        } catch (_) {}
-      }());
-
       await _audioPlayer.play();
       _speaking = false;
     } catch (e) {
@@ -226,13 +228,13 @@ class NativeDeviceTtsProvider implements BaseTtsProvider {
 
     double pitch = 1.0;
     if (vId == 'maya' || vId == 'claire') {
-      pitch = 1.30;
+      pitch = 1.04;
     } else if (vId == 'sofia' || vId == 'elodie') {
-      pitch = 1.45;
+      pitch = 1.06;
     } else if (vId == 'sami' || vId == 'antoine') {
-      pitch = 0.74;
+      pitch = 0.96;
     } else if (vId == 'daniel' || vId == 'lucas') {
-      pitch = 0.82;
+      pitch = 0.94;
     }
     await _tts.setPitch(pitch);
 

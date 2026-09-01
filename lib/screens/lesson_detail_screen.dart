@@ -304,7 +304,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
-              value: blockCount == 0 ? 0 : 0.18,
+              value: context.watch<ContentProvider>().isLessonCompleted(widget.lessonId)
+                  ? 1.0
+                  : (blockCount == 0 ? 1.0 : 0.0),
               minHeight: 8,
               backgroundColor: Colors.white.withValues(alpha: 0.16),
               valueColor: const AlwaysStoppedAnimation(Colors.white),
@@ -312,7 +314,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           ),
           const SizedBox(height: 8),
           LText(
-            'Read, listen, ask AI, then prove it in the quiz.',
+            context.watch<ContentProvider>().isLessonCompleted(widget.lessonId)
+                ? 'Lesson completed! Practice anytime to reinforce skills.'
+                : 'Read, listen, ask AI, then prove it in the quiz.',
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -1088,6 +1092,268 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             ],
           ),
         );
+      case 'audio':
+      case 'audio_clip':
+        final caption = block.blockPayload['caption']?.toString() ??
+            block.blockPayload['title']?.toString() ??
+            'Audio';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            boxShadow: [FluentianShadows.subtle],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: FluentianColors.primaryTint,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: const Icon(Iconsax.play, color: FluentianColors.primary),
+                  onPressed: () => _playBlockAudioOrTts(block),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LText(
+                      caption,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: FluentianColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    LText(
+                      'Tap to listen',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: FluentianColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      case 'image':
+      case 'photo':
+        final url = block.blockPayload['url']?.toString() ??
+            block.blockPayload['image_url']?.toString() ??
+            '';
+        final caption = block.blockPayload['caption']?.toString() ??
+            block.blockPayload['alt']?.toString() ??
+            '';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            boxShadow: [FluentianShadows.subtle],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (url.isNotEmpty)
+                Image.network(
+                  url,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 160,
+                    color: Colors.grey.shade100,
+                    child: const Center(
+                      child: Icon(Iconsax.image, color: Colors.grey, size: 40),
+                    ),
+                  ),
+                ),
+              if (caption.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: LText(
+                    caption,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: FluentianColors.textSecondary,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      case 'dialogue':
+      case 'conversation':
+        final rawLines = block.blockPayload['lines'] ??
+            block.blockPayload['dialogue'] ??
+            block.blockPayload['turns'];
+        final List<Map<String, dynamic>> lines = [];
+        if (rawLines is List) {
+          for (final item in rawLines) {
+            if (item is Map) {
+              lines.add(Map<String, dynamic>.from(item));
+            }
+          }
+        }
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            boxShadow: [FluentianShadows.subtle],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Iconsax.messages_1, color: FluentianColors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  LText(
+                    'CONVERSATION',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: FluentianColors.primary,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              ...lines.map((line) {
+                final speaker = line['speaker']?.toString() ?? '';
+                final text = line['text']?.toString() ?? line['target']?.toString() ?? '';
+                final translation = line['translation']?.toString() ?? line['base']?.toString() ?? '';
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (speaker.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          margin: const EdgeInsets.only(right: 8, top: 2),
+                          decoration: BoxDecoration(
+                            color: FluentianColors.primaryTint,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: LText(
+                            speaker,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: FluentianColors.primary,
+                            ),
+                          ),
+                        ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            LText(
+                              text,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: FluentianColors.textPrimary,
+                              ),
+                            ),
+                            if (translation.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              LText(
+                                translation,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: FluentianColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Iconsax.volume_high, size: 18, color: FluentianColors.primary),
+                        onPressed: () => _speakText(text),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      case 'video':
+      case 'video_clip':
+        final url = block.blockPayload['url']?.toString() ??
+            block.blockPayload['video_url']?.toString() ??
+            '';
+        final caption = block.blockPayload['caption']?.toString() ??
+            block.blockPayload['title']?.toString() ??
+            'Video clip';
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            boxShadow: [FluentianShadows.subtle],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: FluentianColors.secondaryTint,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Iconsax.video_play, color: FluentianColors.secondary),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LText(
+                      caption,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: FluentianColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    LText(
+                      url.isNotEmpty ? url : 'Video content',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: FluentianColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
       case 'ai_hint':
         return const SizedBox.shrink();
       default:
@@ -1118,12 +1384,15 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   Future<void> _speakText(String text, {String language = 'fr-FR'}) async {
     if (text.trim().isEmpty) return;
     try {
-      final ttsSpeed = context.read<AuthProvider>().user?.ttsSpeed ?? 1.0;
+      final user = context.read<AuthProvider>().user;
+      final ttsSpeed = user?.ttsSpeed ?? 1.0;
+      final voiceId = user?.preferredVoiceId ?? 'claire';
       await _audioPlayer.stop();
       await _ttsService.speak(
         text,
         language: language,
         speed: ttsSpeed,
+        voiceId: voiceId,
       );
     } catch (_) {
       if (mounted) {

@@ -50,7 +50,9 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      HapticFeedback.heavyImpact();
+      if (context.read<AuthProvider>().user?.hapticFeedbackEnabled ?? true) {
+        HapticFeedback.heavyImpact();
+      }
       if (context.read<AuthProvider>().user?.soundEnabled ?? true) {
         SoundEffectService.instance.play(
           widget.isPassed ? SoundEffect.result : SoundEffect.wrong,

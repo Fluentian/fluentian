@@ -308,12 +308,15 @@ class _McqScreenState extends State<McqScreen>
 
   Future<void> _speakCurrentQuestion() async {
     try {
-      final ttsSpeed = context.read<AuthProvider>().user?.ttsSpeed ?? 1.0;
+      final user = context.read<AuthProvider>().user;
+      final ttsSpeed = user?.ttsSpeed ?? 1.0;
+      final voiceId = user?.preferredVoiceId ?? 'claire';
       await _audioPlayer.stop();
       await _ttsService.speak(
         _currentQ.textToSpeak,
         language: _currentQ.ttsLanguage,
         speed: ttsSpeed,
+        voiceId: voiceId,
       );
     } catch (_) {
       if (mounted) {
@@ -326,11 +329,14 @@ class _McqScreenState extends State<McqScreen>
 
   Future<void> _speakQuestionSlow() async {
     try {
+      final user = context.read<AuthProvider>().user;
+      final voiceId = user?.preferredVoiceId ?? 'claire';
       await _audioPlayer.stop();
       await _ttsService.speak(
         _currentQ.textToSpeak,
         language: _currentQ.ttsLanguage,
         speed: 0.65,
+        voiceId: voiceId,
       );
     } catch (_) {
       if (mounted) {
@@ -735,10 +741,12 @@ class _McqScreenState extends State<McqScreen>
     final bool hasMissingAccents =
         correct && !exactMatch && cleanUser == cleanCorrect && userAnswerText.trim().isNotEmpty;
 
+    var advanced = false;
+
     showModalBottomSheet(
       context: context,
-      isDismissible: false,
-      enableDrag: false,
+      isDismissible: true,
+      enableDrag: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -904,6 +912,7 @@ class _McqScreenState extends State<McqScreen>
                             // because _McqScreenState rebuilds. The actual
                             // double-submit guard lives in _onNext itself.
                             setSheetState(() => sheetSubmitting = true);
+                            advanced = true;
                             _onNext(correct);
                           },
                     style: ElevatedButton.styleFrom(
@@ -934,7 +943,12 @@ class _McqScreenState extends State<McqScreen>
           ),
         );
       },
-    ).whenComplete(() => _resultSheetOpen = false);
+    ).whenComplete(() {
+      _resultSheetOpen = false;
+      if (!advanced && mounted) {
+        _onNext(correct);
+      }
+    });
   }
 
   Future<void> _onNext(bool correct) async {
