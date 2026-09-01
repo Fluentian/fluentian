@@ -28,4 +28,11 @@ class ProductAnalytics {
       event('lesson_started', parameters: {'lesson_id': lessonId});
   Future<void> lessonCompleted(String lessonId) =>
       event('lesson_completed', parameters: {'lesson_id': lessonId});
+  Future<void> aiCallCustomized() => event('ai_call_customized');
+  Future<void> scenarioStarted(String id) =>
+      event('scenario_started', parameters: {'scenario_id': id});
+  Future<void> scenarioGoalCompleted(String id) =>
+      event('scenario_goal_completed', parameters: {'scenario_id': id});
+  Future<void> feedbackReportViewed(String id) =>
+      event('feedback_report_viewed', parameters: {'call_id': id});
 }

@@ -7,6 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_timezone
   flutter_webrtc
   livekit_client
+  record_linux
   rive_native
   sqlite3_flutter_libs
   url_launcher_linux
