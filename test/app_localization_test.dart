@@ -6,11 +6,21 @@ void main() {
     test('translates shared static navigation copy to Amharic', () {
       expect(AppCopy.translate('am', 'Settings'), 'ቅንብሮች');
       expect(AppCopy.translate('am', 'Sign in'), 'ግባ');
+      expect(AppCopy.translate('am', 'Learn'), 'ተማር');
+      expect(AppCopy.translate('am', 'Community'), 'ማህበረሰብ');
     });
 
     test('translates shared static navigation copy to Afaan Oromo', () {
       expect(AppCopy.translate('om', 'Settings'), 'Qindaa’inoota');
       expect(AppCopy.translate('om', 'Sign in'), 'Seeni');
+      expect(AppCopy.translate('om', 'Learn'), 'Baradhu');
+      expect(AppCopy.translate('om', 'Community'), 'Hawaasa');
+    });
+
+    test('localizes queued completion status', () {
+      const pending = 'Saved offline — XP will update after sync';
+      expect(AppCopy.translate('am', pending), isNot(pending));
+      expect(AppCopy.translate('om', pending), isNot(pending));
     });
 
     test('localizes the speaking-room permission disclosure', () {

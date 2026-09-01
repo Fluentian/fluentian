@@ -23,6 +23,7 @@ class AuthProvider extends ChangeNotifier {
   bool _hasSeenIntro = false;
   bool _hasCompletedSetup = false;
   String? _unverifiedEmail;
+  String? _pendingRegistrationLanguage;
   int _maxHearts = 5;
   DateTime? _nextHeartRefillAt;
 
@@ -40,7 +41,10 @@ class AuthProvider extends ChangeNotifier {
 
   final _authApi = AuthApi.instance;
   final _apiClient = ApiClient.instance;
-  final _firebaseAuth = firebase_auth.FirebaseAuth.instance;
+  // Resolve lazily so Android-only Firebase configuration does not make the
+  // iOS shell crash while constructing the signed-out app.
+  firebase_auth.FirebaseAuth get _firebaseAuth =>
+      firebase_auth.FirebaseAuth.instance;
   final _googleSignIn = GoogleSignIn(
     // The web OAuth 2.0 client ID (client_type 3) from google-services.json.
     // Required by google_sign_in v6+ to request an idToken from Google,
@@ -129,6 +133,7 @@ class AuthProvider extends ChangeNotifier {
     required String username,
     required String email,
     required String password,
+    required String languageCode,
   }) async {
     _setLoading(true);
     _unverifiedEmail = null;
@@ -139,6 +144,7 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
       );
+      _pendingRegistrationLanguage = languageCode;
       _unverifiedEmail = email;
       _errorMessage = null;
       await AppLogger.instance.info(
@@ -182,13 +188,29 @@ class AuthProvider extends ChangeNotifier {
         email: _unverifiedEmail!,
         otp: otp,
       );
-      _user = res.user;
-      _nextHeartRefillAt = res.user.nextHeartRefillAt;
-      _hasCompletedSetup = _hasFinishedSetup(res.user);
-      await _apiClient.saveUser(res.user);
+      var verifiedUser = res.user;
+      final languageCode = _pendingRegistrationLanguage;
+      if (languageCode != null &&
+          verifiedUser.baseLanguageCode != languageCode) {
+        try {
+          verifiedUser = await _authApi.updateUser({
+            'base_language_code': languageCode,
+          });
+        } catch (e) {
+          // Verification succeeded. Keep the selected language locally even
+          // if the profile update must be retried later from Settings.
+          verifiedUser = verifiedUser.copyWith(baseLanguageCode: languageCode);
+          if (kDebugMode) debugPrint('Could not persist signup language: $e');
+        }
+      }
+      _user = verifiedUser;
+      _nextHeartRefillAt = verifiedUser.nextHeartRefillAt;
+      _hasCompletedSetup = _hasFinishedSetup(verifiedUser);
+      await _apiClient.saveUser(verifiedUser);
       _status = AuthStatus.authenticated;
       _errorMessage = null;
       _unverifiedEmail = null;
+      _pendingRegistrationLanguage = null;
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.userMessage;

@@ -25,26 +25,34 @@ import 'package:google_fonts/google_fonts.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = true;
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  FlutterError.onError = (details) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(details);
-  };
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+  var firebaseEnabled = false;
+  if (DefaultFirebaseOptions.isConfiguredForCurrentPlatform) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    firebaseEnabled = true;
+    FlutterError.onError = (details) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
     ),
   );
-  runApp(const FluentianApp());
+  runApp(FluentianApp(firebaseEnabled: firebaseEnabled));
   ConnectivitySyncService.instance.start();
 }
 
 class FluentianApp extends StatelessWidget {
-  const FluentianApp({super.key});
+  final bool firebaseEnabled;
+
+  const FluentianApp({super.key, this.firebaseEnabled = false});
 
   @override
   Widget build(BuildContext context) {
@@ -79,18 +87,25 @@ class FluentianApp extends StatelessWidget {
           return MaterialApp(
             title: 'Fluentian',
             debugShowCheckedModeBanner: false,
-            navigatorObservers: [
-              FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
-            ],
+            navigatorObservers: firebaseEnabled
+                ? [
+                    FirebaseAnalyticsObserver(
+                      analytics: FirebaseAnalytics.instance,
+                    ),
+                  ]
+                : const [],
             theme: theme,
             locale: localeController.locale,
             supportedLocales: AppLocaleController.supportedLocales,
             localizationsDelegates: GlobalMaterialLocalizations.delegates,
             builder: (context, child) {
               final media = MediaQuery.of(context);
+              final systemScale = media.textScaler.scale(1);
               return MediaQuery(
                 data: media.copyWith(
-                  textScaler: TextScaler.linear(fontScale),
+                  // The learner preference adjusts, rather than replaces, the
+                  // operating-system accessibility setting.
+                  textScaler: TextScaler.linear(systemScale * fontScale),
                   disableAnimations: reduceAnimations,
                 ),
                 child: child ?? const SizedBox.shrink(),

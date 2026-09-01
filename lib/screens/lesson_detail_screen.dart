@@ -445,6 +445,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                           timeSeconds: 5,
                           correctCount: 0,
                           totalQuestions: 0,
+                          completionPendingSync: result == null,
                         ),
                       ),
                     );

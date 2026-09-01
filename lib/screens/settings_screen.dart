@@ -1079,7 +1079,7 @@ class _TimeRow extends StatelessWidget {
       enabled: enabled,
       onTap: enabled ? onTap : null,
       trailing: LText(
-        time,
+        '$time · device time',
         style: GoogleFonts.inter(
           fontSize: 14,
           fontWeight: FontWeight.w700,

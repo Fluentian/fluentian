@@ -44,9 +44,10 @@ class OnboardingScaffold extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_rounded),
+                  IconButton(
+                    tooltip: context.tr('Back'),
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_rounded),
                   ),
                   const Spacer(),
                   LText(
@@ -145,85 +146,97 @@ class OnboardingOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: selected ? FluentianColors.primaryTint : FluentianColors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? FluentianColors.primary : FluentianColors.border,
-            width: selected ? 2 : 1,
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: context.tr(label),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: selected
+                ? FluentianColors.primaryTint
+                : FluentianColors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected
+                  ? FluentianColors.primary
+                  : FluentianColors.border,
+              width: selected ? 2 : 1,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: FluentianColors.primary.withValues(alpha: .15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: FluentianColors.primary.withValues(alpha: .15),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+          child: Row(
+            children: [
+              if (iconData != null) ...[
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? FluentianColors.primary
+                        : FluentianColors.pageBg,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ]
-              : null,
-        ),
-        child: Row(
-          children: [
-            if (iconData != null) ...[
-              AnimatedContainer(
+                  child: Icon(
+                    iconData,
+                    size: 22,
+                    color: selected
+                        ? Colors.white
+                        : FluentianColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: 14),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LText(
+                      label,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: FluentianColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    LText(
+                      description,
+                      style: GoogleFonts.inter(
+                        fontSize: 12.5,
+                        color: FluentianColors.textSecondary,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AnimatedScale(
                 duration: const Duration(milliseconds: 200),
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? FluentianColors.primary
-                      : FluentianColors.pageBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  iconData,
+                scale: selected ? 1 : 0,
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: FluentianColors.primary,
                   size: 22,
-                  color: selected ? Colors.white : FluentianColors.textSecondary,
                 ),
               ),
-              const SizedBox(width: 14),
             ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  LText(
-                    label,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: FluentianColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  LText(
-                    description,
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      color: FluentianColors.textSecondary,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            AnimatedScale(
-              duration: const Duration(milliseconds: 200),
-              scale: selected ? 1 : 0,
-              child: const Icon(
-                Icons.check_circle_rounded,
-                color: FluentianColors.primary,
-                size: 22,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

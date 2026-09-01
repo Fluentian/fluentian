@@ -23,6 +23,7 @@ class LessonCompleteScreen extends StatefulWidget {
   final int? streakDays;
   final bool streakFreezeEarned;
   final bool isPassed;
+  final bool completionPendingSync;
 
   const LessonCompleteScreen({
     super.key,
@@ -36,6 +37,7 @@ class LessonCompleteScreen extends StatefulWidget {
     this.streakDays,
     this.streakFreezeEarned = false,
     this.isPassed = true,
+    this.completionPendingSync = false,
   });
 
   @override
@@ -166,7 +168,9 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                           ),
                           const SizedBox(height: 8),
                           LText(
-                            isPassed
+                            isPassed && widget.completionPendingSync
+                                ? 'Saved offline — XP will update after sync'
+                                : isPassed
                                 ? '$previousXp -> $newXpTotal total XP'
                                 : '60% required to earn XP & advance',
                             style: GoogleFonts.inter(

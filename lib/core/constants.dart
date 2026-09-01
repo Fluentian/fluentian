@@ -93,6 +93,9 @@ class DailyGoal {
   ];
 }
 
+/// Converts the learner's time preference into short lesson sessions.
+int lessonsForDailyGoalMinutes(int minutes) => (minutes / 5).ceil().clamp(1, 8);
+
 /// Why a learner is studying French — drives content personalization.
 enum LearningMotivation {
   immigrationExam(
@@ -137,13 +140,22 @@ enum LearningMotivation {
   final String description;
   final IconData iconData;
 
-  const LearningMotivation(this.code, this.label, this.description, this.iconData);
+  const LearningMotivation(
+    this.code,
+    this.label,
+    this.description,
+    this.iconData,
+  );
 }
 
 /// Self-reported prior exposure to French, collected before any placement test.
 enum PriorFrenchExposure {
   none('none', 'Never studied it', "I'm starting from zero"),
-  aLittle('a_little', 'A little exposure', 'A few words or phrases here and there'),
+  aLittle(
+    'a_little',
+    'A little exposure',
+    'A few words or phrases here and there',
+  ),
   studiedBefore(
     'studied_before',
     'Studied it before',

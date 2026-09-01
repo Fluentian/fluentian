@@ -51,64 +51,70 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
         children: List.generate(DailyGoal.goals.length, (i) {
           final goal = DailyGoal.goals[i];
           final selected = _selectedIndex == i;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedIndex = i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              decoration: BoxDecoration(
-                color: selected
-                    ? FluentianColors.primaryTint
-                    : FluentianColors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
+          return Semantics(
+            button: true,
+            selected: selected,
+            label: '${context.tr(goal.label)}, ${goal.xp} XP, ${goal.duration}',
+            child: InkWell(
+              onTap: () => setState(() => _selectedIndex = i),
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
                   color: selected
-                      ? FluentianColors.primary
-                      : FluentianColors.border,
-                  width: selected ? 2 : 1,
+                      ? FluentianColors.primaryTint
+                      : FluentianColors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: selected
+                        ? FluentianColors.primary
+                        : FluentianColors.border,
+                    width: selected ? 2 : 1,
+                  ),
                 ),
-              ),
-              child: Stack(
-                children: [
-                  if (selected)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Icon(
-                        Icons.check_circle_rounded,
-                        color: FluentianColors.primary,
-                        size: 20,
+                child: Stack(
+                  children: [
+                    if (selected)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Icon(
+                          Icons.check_circle_rounded,
+                          color: FluentianColors.primary,
+                          size: 20,
+                        ),
+                      ),
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            goal.iconData,
+                            size: 32,
+                            color: FluentianColors.primary,
+                          ),
+                          const SizedBox(height: 8),
+                          LText(
+                            '${goal.xp} XP',
+                            style: GoogleFonts.inter(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: FluentianColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          LText(
+                            '${goal.label} · ${goal.duration}',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: FluentianColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          goal.iconData,
-                          size: 32,
-                          color: FluentianColors.primary,
-                        ),
-                        const SizedBox(height: 8),
-                        LText(
-                          '${goal.xp} XP',
-                          style: GoogleFonts.inter(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: FluentianColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        LText(
-                          '${goal.label} · ${goal.duration}',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: FluentianColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

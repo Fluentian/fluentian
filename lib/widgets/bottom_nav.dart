@@ -38,7 +38,7 @@ class FluentianBottomNav extends StatelessWidget {
           return Semantics(
             button: true,
             selected: isActive,
-            label: _tabs[index].label,
+            label: context.tr(_tabs[index].label),
             excludeSemantics: true,
             child: GestureDetector(
             onTap: () => onTap(index),

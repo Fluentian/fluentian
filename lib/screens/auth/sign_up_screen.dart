@@ -26,8 +26,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _usernameEdited = false;
   int _step = 0;
   String _selectedLang = 'English';
+  bool _languageInitialized = false;
 
   static const _stepCount = 4;
+
+  String get _selectedLanguageCode => switch (_selectedLang) {
+    'Amharic' => 'am',
+    'Afaan Oromo' => 'om',
+    _ => 'en',
+  };
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_languageInitialized) return;
+    final code = context.read<AppLocaleController>().locale.languageCode;
+    _selectedLang = switch (code) {
+      'am' => 'Amharic',
+      'om' => 'Afaan Oromo',
+      _ => 'English',
+    };
+    _languageInitialized = true;
+  }
 
   @override
   void initState() {
@@ -151,6 +171,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       username: username,
       email: email,
       password: password,
+      languageCode: _selectedLanguageCode,
     );
 
     if (!mounted) return;
@@ -262,9 +283,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget _buildLangOption(String name) {
     final isSelected = _selectedLang == name;
     return InkWell(
-      onTap: () {
+      onTap: () async {
         setState(() => _selectedLang = name);
         Navigator.pop(context);
+        await context.read<AppLocaleController>().setLocale(
+          Locale(_selectedLanguageCode),
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),

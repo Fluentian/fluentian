@@ -6,8 +6,9 @@ class ReferralService {
   static final instance = ReferralService._();
 
   Future<void> shareInvite(String username) async {
-    final code = username.trim().toLowerCase();
-    final link = 'https://fluentianapp.binovatechnologies.com/invite/$code';
+    // Until referral attribution has a public route, share the stable landing
+    // page rather than a personalized URL that returns 404.
+    const link = 'https://fluentianapp.binovatechnologies.com/';
     await ProductAnalytics.instance.event('invite_share_started');
     await Share.share(
       'Join me on Fluentian and learn French together! $link',

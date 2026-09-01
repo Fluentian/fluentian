@@ -13,6 +13,7 @@ import '../services/outbox_manager.dart';
 import '../services/notifications_api.dart';
 import '../core/theme.dart';
 import '../core/app_localization.dart';
+import '../core/constants.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/bottom_nav.dart';
 import 'profile_screen.dart';
@@ -217,7 +218,12 @@ class _HomeContentState extends State<_HomeContent> {
           final nextUnit = nextLesson == null
               ? null
               : _unitForLesson(content, nextLesson.id);
-          const dailyLessonGoal = 3;
+          // A lesson is designed as an approximately five-minute session.
+          // Derive this challenge from the goal chosen during onboarding or
+          // Settings instead of silently replacing it with three lessons.
+          final dailyLessonGoal = lessonsForDailyGoalMinutes(
+            user?.dailyGoalMinutes ?? 15,
+          );
           final lessonsToday = content.lessonsCompletedToday.clamp(
             0,
             dailyLessonGoal,

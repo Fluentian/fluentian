@@ -110,6 +110,8 @@ class AppCopy {
 
   static const Map<String, Map<String, String>> _copy = {
     'am': {
+      'Learn': 'ተማር',
+      'Community': 'ማህበረሰብ',
       'Home': 'መነሻ',
       'Explore': 'ያስሱ',
       'Live': 'ቀጥታ',
@@ -126,6 +128,8 @@ class AppCopy {
       'Accessibility': 'ተደራሽነት',
       'Privacy & account': 'ግላዊነት እና መለያ',
       'Daily goal': 'የዕለት ግብ',
+      'Saved offline — XP will update after sync':
+          'ከመስመር ውጭ ተቀምጧል — XP ከማመሳሰል በኋላ ይዘምናል',
       'Phonetic hints': 'የአነባበብ ጥቆማዎች',
       'Speaking exercises': 'የንግግር ልምምዶች',
       'Auto-play lesson audio': 'የትምህርት ድምፅን በራስ-ሰር አጫውት',
@@ -258,6 +262,8 @@ class AppCopy {
           'የAI አስተማሪው አሁን አይገኝም። እባክዎ እንደገና ይሞክሩ።',
     },
     'om': {
+      'Learn': 'Baradhu',
+      'Community': 'Hawaasa',
       'Home': 'Mana',
       'Explore': 'Qoradhu',
       'Live': 'Kallattiin',
@@ -274,6 +280,8 @@ class AppCopy {
       'Accessibility': 'Argamummaa',
       'Privacy & account': 'Iccitii fi herrega',
       'Daily goal': 'Galma guyyaa',
+      'Saved offline — XP will update after sync':
+          'Sarara ala kuufame — XP erga wal-simsiifamee booda haaromfama',
       'Phonetic hints': 'Gorsa sagalee',
       'Speaking exercises': 'Shaakala dubbii',
       'Auto-play lesson audio': 'Sagalee barnootaa ofumaan taphachiisi',
