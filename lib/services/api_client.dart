@@ -96,8 +96,8 @@ class ApiClient {
   /// burst can open at once, and idleTimeout keeps them warm across screens.
   static final http.Client _client = IOClient(
     HttpClient()
-      ..maxConnectionsPerHost = 4
-      ..idleTimeout = const Duration(seconds: 30)
+      ..maxConnectionsPerHost = 2
+      ..idleTimeout = const Duration(minutes: 3)
       ..connectionTimeout = const Duration(seconds: 15),
   );
 
