@@ -88,6 +88,7 @@ class ApiClient {
       ? _configuredBaseUrl
       : defaultBaseUrl;
   static final Uri _baseUri = Uri.parse(_baseUrl);
+  static String get baseUrl => _baseUrl;
 
   /// One shared client for ALL requests so TLS connections are REUSED
   /// (HTTP keep-alive). Opening a NEW connection to the Hetzner box stalls

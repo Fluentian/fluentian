@@ -53,7 +53,7 @@ class LocalTtsCacheManager {
     final encodedText = Uri.encodeComponent(text.trim());
     final encodedVoice = Uri.encodeComponent(voiceId.trim());
     final normalizedSpeed = speed.toStringAsFixed(2);
-    return '${ApiClient.defaultBaseUrl}/content/tts/stream?text=$encodedText&voice_id=$encodedVoice&speed=$normalizedSpeed';
+    return '${ApiClient.baseUrl}/content/tts/stream?text=$encodedText&voice_id=$encodedVoice&speed=$normalizedSpeed';
   }
 
   /// Predictive background pre-fetch for upcoming lesson / quiz questions
@@ -92,7 +92,6 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
 
   bool _speaking = false;
   String _lastText = '';
-  bool _isSlowMode = false;
 
   @override
   bool get isSpeaking => _speaking || _fallback.isSpeaking;
@@ -109,17 +108,7 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
 
     await stop();
 
-    // Smart Slow Replay Logic:
-    double effectiveSpeed = speed;
-    if (_lastText == cleanText) {
-      _isSlowMode = !_isSlowMode;
-      if (_isSlowMode) {
-        effectiveSpeed = (speed * 0.75).clamp(0.5, 0.9);
-      }
-    } else {
-      _lastText = cleanText;
-      _isSlowMode = false;
-    }
+    final effectiveSpeed = speed.clamp(0.6, 1.6);
 
     // 1. ULTRA-FAST PATH: Check Device Local Audio File Disk Cache (0ms latency, 0 network requests)
     try {
@@ -127,7 +116,6 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
       if (await cacheFile.exists() && (await cacheFile.length()) > 0) {
         _speaking = true;
         await _audioPlayer.setFilePath(cacheFile.path);
-        await _audioPlayer.setSpeed(effectiveSpeed);
         await _audioPlayer.play();
         _speaking = false;
         return;
@@ -143,7 +131,6 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
 
       // Start streaming playback immediately on the very first byte chunk
       await _audioPlayer.setUrl(streamUrl);
-      await _audioPlayer.setSpeed(effectiveSpeed);
 
       // Cache audio stream to local disk asynchronously in background (non-blocking)
       unawaited(() async {
