@@ -65,6 +65,22 @@ class _McqScreenState extends State<McqScreen>
   late final AudioPlayer _audioPlayer;
   final TtsService _ttsService = TtsService.instance;
 
+  void _selectionHaptic() {
+    if (context.read<AuthProvider>().user?.hapticFeedbackEnabled ?? true) {
+      HapticFeedback.selectionClick();
+    }
+  }
+
+  void _impactHaptic(bool correct) {
+    if (context.read<AuthProvider>().user?.hapticFeedbackEnabled ?? true) {
+      if (correct) {
+        HapticFeedback.lightImpact();
+      } else {
+        HapticFeedback.heavyImpact();
+      }
+    }
+  }
+
   // Controllers
   final TextEditingController _textController = TextEditingController();
 
@@ -263,7 +279,7 @@ class _McqScreenState extends State<McqScreen>
     setState(() {
       _recordState = _RecordState.recording;
     });
-    HapticFeedback.mediumImpact();
+    _selectionHaptic();
     // Honor reduced-motion: skip the pulsing ring when animations are off.
     if (!MediaQuery.of(context).disableAnimations) {
       _pulseCtrl.repeat(reverse: true);
@@ -666,10 +682,7 @@ class _McqScreenState extends State<McqScreen>
     // Tactile confirmation of the result: a light tick for correct, a
     // firmer buzz for wrong.
     if (isCorrect) {
-      HapticFeedback.lightImpact();
-    } else {
-      HapticFeedback.heavyImpact();
-    }
+    _impactHaptic(isCorrect);
 
     var shouldSpendHeart = false;
     setState(() {
