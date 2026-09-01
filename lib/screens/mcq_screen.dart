@@ -694,7 +694,6 @@ class _McqScreenState extends State<McqScreen>
 
     // Tactile confirmation of the result: a light tick for correct, a
     // firmer buzz for wrong.
-    if (isCorrect) {
     _impactHaptic(isCorrect);
 
     var shouldSpendHeart = false;
