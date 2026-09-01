@@ -91,7 +91,6 @@ class CartesiaCloudTtsProvider implements BaseTtsProvider {
   final BaseTtsProvider _fallback = NativeDeviceTtsProvider();
 
   bool _speaking = false;
-  String _lastText = '';
 
   @override
   bool get isSpeaking => _speaking || _fallback.isSpeaking;
