@@ -948,6 +948,9 @@ class _McqScreenState extends State<McqScreen>
       int? finalStreakDays;
       bool streakFreezeEarned = false;
       bool completionPendingSync = false;
+      // Prefer the server's authoritative graded score for display; the local
+      // `score` counts ungraded speaking prompts and can contradict isPassed.
+      double displayScore = score;
 
       bool isPassed = true;
 
@@ -979,6 +982,7 @@ class _McqScreenState extends State<McqScreen>
             finalHeartsRemaining = result.heartsRemaining;
             finalStreakDays = result.streakDays;
             streakFreezeEarned = result.streakFreezeEarned;
+            if (result.score != null) displayScore = result.score!;
           }
         }
       } on ApiException catch (e) {
@@ -1020,7 +1024,7 @@ class _McqScreenState extends State<McqScreen>
             lessonId: widget.lessonId,
             xpEarned: finalXpEarned,
             newXpTotal: finalNewXpTotal ?? 0,
-            accuracy: score,
+            accuracy: displayScore,
             timeSeconds: timeSeconds,
             correctCount: _correctCount,
             totalQuestions: questions.length,

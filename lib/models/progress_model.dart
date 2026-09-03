@@ -148,6 +148,11 @@ class CompleteLessonResult {
   final bool lessonCompleted;
   final bool unitCompleted;
 
+  /// Authoritative graded score (0.0-1.0) from the server. Null when the
+  /// backend predates this field. Prefer this over the client's local tally
+  /// for display, since the local tally counts ungraded speaking prompts.
+  final double? score;
+
   const CompleteLessonResult({
     required this.xpEarned,
     required this.newXpTotal,
@@ -157,6 +162,7 @@ class CompleteLessonResult {
     required this.heartsRemaining,
     required this.lessonCompleted,
     required this.unitCompleted,
+    this.score,
   });
 
   factory CompleteLessonResult.fromJson(Map<String, dynamic> json) =>
@@ -169,6 +175,7 @@ class CompleteLessonResult {
         heartsRemaining: json['hearts_remaining'] as int? ?? 5,
         lessonCompleted: json['lesson_completed'] as bool? ?? false,
         unitCompleted: json['unit_completed'] as bool? ?? false,
+        score: (json['score'] as num?)?.toDouble(),
       );
 }
 
