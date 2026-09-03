@@ -1,6 +1,46 @@
 import 'api_client.dart';
 import '../core/livekit_config.dart';
 
+// ── AI-tutor enum contract ──────────────────────────────────────────────
+// The backend (schemas/social.py::CreateAiCallRequest) constrains personality,
+// mood and register to fixed Literal sets — sending anything else is a 422 and
+// the call never reaches the tutor agent. The UI keeps friendly labels; these
+// maps are the single translation point so the two vocabularies can't drift.
+const Map<String, String> _kPersonalityEnum = {
+  'warm': 'friendly',
+  'direct': 'strict_examiner',
+  'playful': 'chatty_friend',
+};
+const Set<String> _kPersonalityValid = {
+  'encouraging', 'strict_examiner', 'chatty_friend', 'formal_professional',
+  'patient', 'challenging', 'friendly',
+};
+
+const Map<String, String> _kMoodEnum = {
+  'encouraging': 'cheerful',
+  'calm': 'calm',
+  'energetic': 'energetic',
+};
+const Set<String> _kMoodValid = {
+  'calm', 'cheerful', 'serious', 'neutral', 'energetic', 'playful',
+};
+
+const Map<String, String> _kRegisterEnum = {
+  'natural': 'standard',
+  'formal': 'vous',
+  'casual': 'tu',
+};
+const Set<String> _kRegisterValid = {'tu', 'vous', 'standard', 'formal', 'casual'};
+
+/// Resolve a UI label (or an already-valid enum) to a backend enum value,
+/// falling back to [fallback] so an unmapped label degrades gracefully
+/// instead of failing server-side validation.
+String _aiEnum(String raw, Map<String, String> labels, Set<String> valid, String fallback) {
+  final key = raw.trim().toLowerCase();
+  if (valid.contains(key)) return key;
+  return labels[key] ?? fallback;
+}
+
 class SpeakingCallSession {
   final String roomToken;
   final String providerRoomName;
@@ -210,7 +250,7 @@ class SocialApi {
   }
 
   Future<List<AiScenario>> getAiScenarios() async {
-    final items = await _api.getList('/ai-calls/scenarios');
+    final items = await _api.getList('/social/ai-calls/scenarios');
     return items
         .whereType<Map>()
         .map((e) => AiScenario.fromJson(Map<String, dynamic>.from(e)))
@@ -254,13 +294,15 @@ class SocialApi {
     final data = await _api.post('/social/ai-calls', {
       'topic': topic,
       'tts_speed': speed,
-      if (level != null && level.isNotEmpty) 'level': level,
+      // Backend `level` here is a lowercase CEFR Literal (a0..c2); the UI picker
+      // stores it uppercase ("A1"), so normalise to avoid a 422.
+      if (level != null && level.isNotEmpty) 'level': level.toLowerCase(),
       'immersion_mode': immersion ? 'full_french' : immersionMode,
       'explanation_language': explanationLanguage,
       'voice_id': voice,
-      'personality': personality,
-      'mood': mood,
-      'register': register,
+      'personality': _aiEnum(personality, _kPersonalityEnum, _kPersonalityValid, 'friendly'),
+      'mood': _aiEnum(mood, _kMoodEnum, _kMoodValid, 'cheerful'),
+      'register': _aiEnum(register, _kRegisterEnum, _kRegisterValid, 'standard'),
       if (scenarioId != null) 'scenario_id': scenarioId,
       if (learnerRole != null) 'learner_role': learnerRole,
       'curveball': curveball,

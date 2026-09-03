@@ -113,7 +113,14 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
           roomName: call.providerRoomName,
         ),
         options: SessionOptions(
-          preConnectAudio: true,
+          // preConnectAudio publishes a buffered mic track on participant-join,
+          // a second publisher offer whose m-line order flutter_webrtc 1.4.0
+          // rejects ("order of m-lines in subsequent offer doesn't match") —
+          // the negotiation fails and the tutor never receives audio. Connect
+          // first, then enable the mic (the sequence the speaking rooms already
+          // use reliably). We only lose ~1-2s of pre-connect buffering, and
+          // _waitForAgent blocks until the tutor is ready regardless.
+          preConnectAudio: false,
           agentConnectTimeout: const Duration(seconds: 25),
         ),
       );
