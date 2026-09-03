@@ -255,14 +255,14 @@ class ProfileScreen extends StatelessWidget {
               ),
               _MetricCard(
                 icon: Iconsax.calendar_1,
-                label: 'Last 7 days',
+                label: 'This week',
                 value: '$weeklyXp XP',
                 color: FluentianColors.info,
               ),
               _MetricCard(
                 icon: Iconsax.flash_15,
                 label: 'Streak',
-                value: '$streak days',
+                value: '$streak ${streak == 1 ? 'day' : 'days'}',
                 color: FluentianColors.warning,
               ),
               _MetricCard(
@@ -329,7 +329,7 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           LText(
-                            '$streak Days',
+                            '$streak ${streak == 1 ? 'Day' : 'Days'}',
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -722,12 +722,18 @@ class _InviteCard extends StatelessWidget {
               children: [
                 LText(
                   'Learn together',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: FluentianColors.textPrimary,
+                  ),
                 ),
                 SizedBox(height: 3),
                 LText(
                   'Invite a friend and keep each other motivated.',
-                  style: TextStyle(fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: FluentianColors.textSecondary,
+                  ),
                 ),
               ],
             ),

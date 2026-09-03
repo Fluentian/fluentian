@@ -107,12 +107,9 @@ class _SocialScreenState extends State<SocialScreen> {
             const SizedBox(height: 16),
             _buildHero(),
             const SizedBox(height: 18),
-            _LeaderboardLaunchCard(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LeaderboardScreen()),
-              ),
-            ),
-            const SizedBox(height: 18),
+            // The live "Weekly league" standing is rendered by
+            // _buildLeagueStrip() inside _buildContent(); a second static
+            // launch card here duplicated the same title and destination.
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
               child: _loading
@@ -2404,79 +2401,4 @@ class _TinyStepperButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _LeaderboardLaunchCard extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _LeaderboardLaunchCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) => Material(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(18),
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: FluentianColors.secondary.withValues(alpha: .22),
-          ),
-          boxShadow: [FluentianShadows.subtle],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: FluentianColors.warningTint,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(
-                Iconsax.cup5,
-                color: FluentianColors.warning,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  LText(
-                    'Weekly league',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      color: FluentianColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  LText(
-                    'Climb with XP · First place earns bonus XP',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: FluentianColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Iconsax.arrow_right_3,
-              color: FluentianColors.secondary,
-              size: 19,
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
 }

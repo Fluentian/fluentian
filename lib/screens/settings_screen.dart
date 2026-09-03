@@ -61,7 +61,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         surfaceTintColor: Colors.transparent,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+        // Add the system navigation-bar inset so the last row (Sound effects)
+        // is not hidden behind the Android nav bar.
+        padding: EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          28 + MediaQuery.of(context).viewPadding.bottom,
+        ),
         children: [
           _AccountHeader(onEdit: () => _showProfileEditor(context)),
           const SizedBox(height: 16),
@@ -827,21 +834,21 @@ class _AccountHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                LText(
+                  user.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
-                    Flexible(
-                      child: LText(
-                        user.displayName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     if (user.isFounder)
                       Container(
                         margin: const EdgeInsets.only(right: 6),
