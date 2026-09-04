@@ -532,8 +532,13 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
 
   Future<void> _speak(String text) async {
     try {
-      final speed = context.read<AuthProvider>().user?.ttsSpeed ?? 1.0;
-      await TtsService.instance.speak(text, speed: speed);
+      final settingsUser = context.read<AuthProvider>().user;
+      final speed = settingsUser?.ttsSpeed ?? 1.0;
+      await TtsService.instance.speak(
+        text,
+        speed: speed,
+        voiceId: settingsUser?.preferredVoiceId ?? 'claire',
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

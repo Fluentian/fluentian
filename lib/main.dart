@@ -152,6 +152,7 @@ class _AppRootState extends State<_AppRoot> {
               notificationsEnabled: user.notificationsEnabled,
               learningReminderEnabled: user.learningReminderEnabled,
               reminderTime: user.reminderTime,
+              timezone: user.timezone,
             );
             RemotePushService.instance.configure(
               enabled: user.notificationsEnabled,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +6,7 @@ import '../core/app_localization.dart';
 import '../core/theme.dart';
 import '../providers/content_provider.dart';
 import '../widgets/common_widgets.dart';
+import '../services/haptics.dart';
 
 class StreakCelebrationScreen extends StatefulWidget {
   final int streakDays;
@@ -68,7 +68,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) HapticFeedback.heavyImpact();
+      if (mounted) Haptics.heavy(context);
     });
   }
 

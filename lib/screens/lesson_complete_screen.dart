@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -11,6 +10,7 @@ import '../services/sound_effect_service.dart';
 import '../widgets/common_widgets.dart';
 import 'lesson_detail_screen.dart';
 import 'streak_celebration_screen.dart';
+import '../services/haptics.dart';
 
 class LessonCompleteScreen extends StatefulWidget {
   final String lessonId;
@@ -52,7 +52,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      HapticFeedback.heavyImpact();
+      Haptics.heavy(context);
       if (context.read<AuthProvider>().user?.soundEnabled ?? true) {
         SoundEffectService.instance.play(
           widget.isPassed ? SoundEffect.result : SoundEffect.wrong,

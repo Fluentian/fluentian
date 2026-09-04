@@ -1119,12 +1119,16 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
   Future<void> _speakText(String text, {String language = 'fr-FR'}) async {
     if (text.trim().isEmpty) return;
     try {
-      final ttsSpeed = context.read<AuthProvider>().user?.ttsSpeed ?? 1.0;
+      // The voice the learner picked in Settings was saved but never passed
+      // here, so every word played in the default voice regardless.
+      final settingsUser = context.read<AuthProvider>().user;
+      final ttsSpeed = settingsUser?.ttsSpeed ?? 1.0;
       await _audioPlayer.stop();
       await _ttsService.speak(
         text,
         language: language,
         speed: ttsSpeed,
+        voiceId: settingsUser?.preferredVoiceId ?? 'claire',
       );
     } catch (_) {
       if (mounted) {

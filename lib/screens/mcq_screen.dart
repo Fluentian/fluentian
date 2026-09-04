@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -19,6 +18,7 @@ import '../services/tts_service.dart';
 import '../services/api_client.dart';
 import '../widgets/ai_tutor_sheet.dart';
 import 'lesson_complete_screen.dart';
+import '../services/haptics.dart';
 
 enum _RecordState { idle, recording, analyzing, result }
 
@@ -265,7 +265,7 @@ class _McqScreenState extends State<McqScreen>
     setState(() {
       _recordState = _RecordState.recording;
     });
-    HapticFeedback.mediumImpact();
+    Haptics.medium(context);
     // Honor reduced-motion: skip the pulsing ring when animations are off.
     if (!MediaQuery.of(context).disableAnimations) {
       _pulseCtrl.repeat(reverse: true);
@@ -281,12 +281,14 @@ class _McqScreenState extends State<McqScreen>
 
   Future<void> _speakCurrentQuestion() async {
     try {
-      final ttsSpeed = context.read<AuthProvider>().user?.ttsSpeed ?? 1.0;
+      final settingsUser = context.read<AuthProvider>().user;
+      final ttsSpeed = settingsUser?.ttsSpeed ?? 1.0;
       await _audioPlayer.stop();
       await _ttsService.speak(
         _currentQ.textToSpeak,
         language: _currentQ.ttsLanguage,
         speed: ttsSpeed,
+        voiceId: settingsUser?.preferredVoiceId ?? 'claire',
       );
     } catch (_) {
       if (mounted) {
@@ -668,9 +670,9 @@ class _McqScreenState extends State<McqScreen>
     // Tactile confirmation of the result: a light tick for correct, a
     // firmer buzz for wrong.
     if (isCorrect) {
-      HapticFeedback.lightImpact();
+      Haptics.light(context);
     } else {
-      HapticFeedback.heavyImpact();
+      Haptics.heavy(context);
     }
 
     var shouldSpendHeart = false;

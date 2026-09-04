@@ -712,7 +712,26 @@ class AuthProvider extends ChangeNotifier {
     );
     notifyListeners();
     try {
-      await _authApi.updateSettings(data);
+      // Not every control on the Settings screen is a UserSettings column.
+      // daily_goal_minutes lives on the user row and preferred_voice_id on the
+      // profile, and PATCH /users/me/settings silently ignored both -- the
+      // switch appeared to save, then reverted on the next /users/me fetch.
+      final settingsPayload = Map<String, dynamic>.from(data)
+        ..remove('daily_goal_minutes')
+        ..remove('preferred_voice_id');
+      if (settingsPayload.isNotEmpty) {
+        await _authApi.updateSettings(settingsPayload);
+      }
+      if (data.containsKey('daily_goal_minutes')) {
+        await _authApi.updateUser({
+          'daily_goal_minutes': data['daily_goal_minutes'],
+        });
+      }
+      if (data.containsKey('preferred_voice_id')) {
+        await _authApi.updateProfile({
+          'preferred_voice_id': data['preferred_voice_id'],
+        });
+      }
       final updated = _user;
       if (updated != null) {
         await _apiClient.saveUser(updated);

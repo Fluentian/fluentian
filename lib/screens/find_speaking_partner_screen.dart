@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../core/theme.dart';
 import 'call_screen.dart';
+import '../services/haptics.dart';
 
 /// Shown before entering the random-partner match queue. Lets the learner
 /// choose audio-only or video before searching begins -- previously this
@@ -103,7 +103,7 @@ class _FindSpeakingPartnerScreenState extends State<FindSpeakingPartnerScreen> {
                       subtitle: 'Voice only',
                       selected: !_cameraOn,
                       onTap: () => setState(() {
-                        HapticFeedback.selectionClick();
+                        Haptics.selection(context);
                         _cameraOn = false;
                       }),
                     ),
@@ -116,7 +116,7 @@ class _FindSpeakingPartnerScreenState extends State<FindSpeakingPartnerScreen> {
                       subtitle: 'Face to face',
                       selected: _cameraOn,
                       onTap: () => setState(() {
-                        HapticFeedback.selectionClick();
+                        Haptics.selection(context);
                         _cameraOn = true;
                       }),
                     ),

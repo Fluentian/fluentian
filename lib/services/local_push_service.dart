@@ -22,6 +22,11 @@ class LocalPushService {
   bool _notificationsEnabled = true;
   bool _learningReminderEnabled = true;
   String _reminderTime = '08:00';
+  // The learner's chosen IANA zone. Scheduling used tz.local (the *device*
+  // zone) unconditionally, so the Timezone picker in Settings changed nothing:
+  // someone in Addis on a phone still set to another zone got their reminder
+  // at the wrong hour.
+  String? _timezone;
   static const _dailyReminderId = 1001;
   String? _configurationKey;
 
@@ -70,17 +75,19 @@ class LocalPushService {
     required bool notificationsEnabled,
     required bool learningReminderEnabled,
     required String reminderTime,
+    String? timezone,
   }) async {
     await initialize();
 
     final configurationKey =
-        '$notificationsEnabled|$learningReminderEnabled|$reminderTime';
+        '$notificationsEnabled|$learningReminderEnabled|$reminderTime|$timezone';
     if (_configurationKey == configurationKey) return;
     _configurationKey = configurationKey;
 
     _notificationsEnabled = notificationsEnabled;
     _learningReminderEnabled = learningReminderEnabled;
     _reminderTime = reminderTime;
+    _timezone = timezone;
 
     if (_notificationsEnabled) {
       startPolling();
@@ -154,15 +161,29 @@ class LocalPushService {
     }
   }
 
+  /// The learner's configured zone, falling back to the device's.
+  tz.Location get _reminderLocation {
+    final name = _timezone;
+    if (name != null && name.isNotEmpty) {
+      try {
+        return tz.getLocation(name);
+      } catch (_) {
+        // An unknown zone name must not stop the reminder being scheduled.
+      }
+    }
+    return tz.local;
+  }
+
   Future<void> _scheduleDailyReminder() async {
     final parts = _reminderTime.split(':');
     final hour = int.tryParse(parts.first);
     final minute = parts.length > 1 ? int.tryParse(parts[1]) : 0;
     if (hour == null || minute == null) return;
 
-    final now = tz.TZDateTime.now(tz.local);
+    final location = _reminderLocation;
+    final now = tz.TZDateTime.now(location);
     var scheduled = tz.TZDateTime(
-      tz.local,
+      location,
       now.year,
       now.month,
       now.day,
