@@ -45,6 +45,8 @@ class OfflineMediaService {
     var total = 0;
     for (final url in urls) {
       try {
+        // Best-effort: this is a download-size *estimate*, so an unreachable
+        // asset just contributes 0 rather than failing the whole estimate.
         final response = await http.head(Uri.parse(url));
         total += int.tryParse(response.headers['content-length'] ?? '') ?? 0;
       } catch (_) {}

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -5,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
+import '../core/endpoints.dart';
 import 'app_logger.dart';
 
 /// Central exception class for all API errors.
@@ -82,8 +84,7 @@ class ApiClient {
     'API_BASE_URL',
     defaultValue: '',
   );
-  static const String defaultBaseUrl =
-      'https://api.fluentianapp.binovatechnologies.com/api/v1';
+  static const String defaultBaseUrl = '${Endpoints.apiHost}/api/v1';
   static final String _baseUrl = _configuredBaseUrl.isNotEmpty
       ? _configuredBaseUrl
       : defaultBaseUrl;
@@ -249,21 +250,34 @@ class ApiClient {
     Map<String, dynamic>? body,
   }) => _request('DELETE', path, body: body, auth: auth);
 
+  /// A 401 triggers one refresh and one retry, never more. Both `_request`
+  /// and `getList` used to recurse into themselves with no counter, so a
+  /// server that kept answering 401 while refresh kept succeeding produced an
+  /// unbounded retry loop.
+  static const int _maxAuthRetries = 1;
+
   /// Generic list response helper (returns list not map).
-  Future<List<dynamic>> getList(String path, {bool auth = true}) async {
+  Future<List<dynamic>> getList(
+    String path, {
+    bool auth = true,
+    int authRetries = 0,
+  }) async {
     final start = DateTime.now();
     final uri = Uri.parse('$_baseUrl$path');
     try {
       final headers = await _buildHeaders(auth: auth);
       final response = await _client
           .get(uri, headers: headers)
-          .timeout(const Duration(seconds: 15));
+          .timeout(_requestTimeout);
       await _logResponse('GET', uri, response.statusCode, start);
 
-      if (response.statusCode == 401 && auth && !path.contains('/auth/')) {
+      if (response.statusCode == 401 &&
+          auth &&
+          authRetries < _maxAuthRetries &&
+          !path.contains('/auth/')) {
         final refreshed = await _tryRefreshToken();
         if (refreshed) {
-          return await getList(path, auth: auth);
+          return await getList(path, auth: auth, authRetries: authRetries + 1);
         }
       }
 
@@ -278,6 +292,15 @@ class ApiClient {
     } on SocketException catch (e) {
       await _logError('GET', uri, start, e);
       throw const NetworkException();
+    } on TimeoutException catch (e) {
+      // Was unhandled here (only _request mapped it), so a slow response threw
+      // a raw TimeoutException past every screen's ApiException/NetworkException
+      // handling.
+      await _logError('GET', uri, start, e);
+      throw const NetworkException('Request timed out. Please try again.');
+    } on http.ClientException catch (e) {
+      await _logError('GET', uri, start, e);
+      throw const NetworkException('Connection refused. Is the backend running?');
     } on HttpException catch (e) {
       await _logError('GET', uri, start, e);
       throw const NetworkException('Unable to reach server.');
@@ -300,6 +323,14 @@ class ApiClient {
     }
   }
 
+  /// Refresh got a *shorter* deadline (10s) than the 15s request it exists to
+  /// rescue. On this backend a cold TLS handshake alone has been measured near
+  /// 14s, so refresh timed out first, returned false, and the caller surfaced
+  /// the original 401 -- signing the user out while their credentials were
+  /// perfectly valid. It now gets at least as long as a normal request.
+  static const Duration _requestTimeout = Duration(seconds: 15);
+  static const Duration _refreshTimeout = Duration(seconds: 20);
+
   Future<bool> _refreshTokensOnce() async {
     final refreshToken = await getRefreshToken();
     if (refreshToken == null || refreshToken.isEmpty) return false;
@@ -315,7 +346,7 @@ class ApiClient {
             },
             body: jsonEncode({'refresh_token': refreshToken}),
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(_refreshTimeout);
 
       if (response.statusCode == 200) {
         final data =
@@ -327,8 +358,23 @@ class ApiClient {
           return true;
         }
       }
-    } catch (_) {}
-    return false;
+      // A 401/403 here means the refresh token really is dead; anything else
+      // (5xx, timeout, socket drop) is transient and must not read as
+      // "signed out". The caller distinguishes them via the thrown type.
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        return false;
+      }
+      throw const NetworkException('Could not refresh your session.');
+    } on NetworkException {
+      rethrow;
+    } on TimeoutException {
+      throw const NetworkException('Could not refresh your session.');
+    } on SocketException {
+      throw const NetworkException('Could not refresh your session.');
+    } catch (e) {
+      await AppLogger.instance.error('Token refresh failed', e);
+      return false;
+    }
   }
 
   Future<Map<String, dynamic>> _request(
@@ -337,6 +383,7 @@ class ApiClient {
     Map<String, dynamic>? body,
     bool auth = true,
     Map<String, String>? extraHeaders,
+    int authRetries = 0,
   }) async {
     final start = DateTime.now();
     final uri = Uri.parse('$_baseUrl$path');
@@ -349,19 +396,19 @@ class ApiClient {
         case 'GET':
           response = await _client
               .get(uri, headers: headers)
-              .timeout(const Duration(seconds: 15));
+              .timeout(_requestTimeout);
         case 'POST':
           response = await _client
               .post(uri, headers: headers, body: jsonEncode(body))
-              .timeout(const Duration(seconds: 15));
+              .timeout(_requestTimeout);
         case 'PUT':
           response = await _client
               .put(uri, headers: headers, body: jsonEncode(body))
-              .timeout(const Duration(seconds: 15));
+              .timeout(_requestTimeout);
         case 'PATCH':
           response = await _client
               .patch(uri, headers: headers, body: jsonEncode(body))
-              .timeout(const Duration(seconds: 15));
+              .timeout(_requestTimeout);
         case 'DELETE':
           response = await _client
               .delete(
@@ -369,14 +416,17 @@ class ApiClient {
                 headers: headers,
                 body: body == null ? null : jsonEncode(body),
               )
-              .timeout(const Duration(seconds: 15));
+              .timeout(_requestTimeout);
         default:
           throw ApiException(0, 'Unknown HTTP method: $method');
       }
 
       await _logResponse(method, uri, response.statusCode, start);
 
-      if (response.statusCode == 401 && auth && !path.contains('/auth/')) {
+      if (response.statusCode == 401 &&
+          auth &&
+          authRetries < _maxAuthRetries &&
+          !path.contains('/auth/')) {
         final refreshed = await _tryRefreshToken();
         if (refreshed) {
           return await _request(
@@ -385,6 +435,7 @@ class ApiClient {
             body: body,
             auth: auth,
             extraHeaders: extraHeaders,
+            authRetries: authRetries + 1,
           );
         }
       }
@@ -399,17 +450,16 @@ class ApiClient {
     } on HttpException catch (e) {
       await _logError(method, uri, start, e);
       throw const NetworkException('Unable to reach server.');
+    } on TimeoutException catch (e) {
+      // Was matched by `e.toString().contains('TimeoutException')` in a bare
+      // catch, which also swallowed the stack trace of anything it matched.
+      await _logError(method, uri, start, e);
+      throw const NetworkException('Request timed out. Please try again.');
     } on http.ClientException catch (e) {
       await _logError(method, uri, start, e);
       throw const NetworkException(
         'Connection refused. Is the backend running?',
       );
-    } catch (e) {
-      if (e.toString().contains('TimeoutException')) {
-        await _logError(method, uri, start, e);
-        throw const NetworkException('Request timed out. Please try again.');
-      }
-      rethrow;
     }
   }
 

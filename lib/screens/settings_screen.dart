@@ -18,6 +18,7 @@ import 'offline_downloads_screen.dart';
 import '../models/user_model.dart';
 import '../widgets/user_avatar.dart';
 import '../widgets/avatar_picker_sheet.dart';
+import '../core/endpoints.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -476,7 +477,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Navigator.of(context).push(
       LegalDocumentScreen.route(
         title: slug == 'privacy' ? 'Privacy policy' : 'Terms and conditions',
-        url: 'https://api.fluentianapp.binovatechnologies.com/$slug',
+        url: Endpoints.legalPage(slug),
       ),
     );
   }

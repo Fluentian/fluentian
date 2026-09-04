@@ -1,5 +1,6 @@
 import 'package:share_plus/share_plus.dart';
 import 'product_analytics.dart';
+import '../core/endpoints.dart';
 
 class ReferralService {
   ReferralService._();
@@ -8,7 +9,7 @@ class ReferralService {
   Future<void> shareInvite(String username) async {
     // Until referral attribution has a public route, share the stable landing
     // page rather than a personalized URL that returns 404.
-    const link = 'https://fluentianapp.binovatechnologies.com/';
+    final link = Endpoints.referralLink;
     await ProductAnalytics.instance.event('invite_share_started');
     await Share.share(
       'Join me on Fluentian and learn French together! $link',

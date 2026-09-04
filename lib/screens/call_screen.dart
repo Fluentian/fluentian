@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../core/theme.dart';
 import '../services/api_client.dart';
 import '../services/social_api.dart';
+import '../core/endpoints.dart';
 
 class CallScreen extends StatefulWidget {
   final String topic;
@@ -306,6 +307,8 @@ class _CallScreenState extends State<CallScreen> {
       }
 
       try {
+        // Best-effort: some devices reject the route change; the call still
+        // works on the default output.
         await room.setSpeakerOn(_speakerOn);
       } catch (_) {}
 
@@ -555,7 +558,7 @@ class _CallScreenState extends State<CallScreen> {
       final client = HttpClient()
         ..connectionTimeout = const Duration(seconds: 2);
       final req = await client.getUrl(
-        Uri.parse('https://live.binovatechnologies.com'),
+        Uri.parse(Endpoints.liveKitHost),
       );
       final res = await req.close();
       await res.drain();

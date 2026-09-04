@@ -151,6 +151,7 @@ class _McqScreenState extends State<McqScreen>
 
   void _initQuestion() {
     try {
+      // Best-effort: nothing may be playing yet on the first question.
       _audioPlayer.stop();
     } catch (_) {}
 

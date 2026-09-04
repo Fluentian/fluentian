@@ -11,6 +11,7 @@ import '../services/product_analytics.dart';
 import '../services/progress_api.dart';
 import '../services/sync_manager.dart';
 import '../services/api_client.dart';
+import '../services/app_logger.dart';
 import '../services/starter_curriculum_loader.dart';
 
 enum ContentStatus { idle, loading, loaded, error }
@@ -562,7 +563,12 @@ class ContentProvider extends ChangeNotifier {
     try {
       _stats = await _progressApi.getMyStats();
       notifyListeners();
-    } catch (_) {}
+    } catch (e) {
+      // Keep the previously loaded stats rather than blanking the UI, but do
+      // not fail silently: a persistently stale XP/streak header is a real
+      // symptom and this was the only place it could be observed.
+      await AppLogger.instance.error('Could not refresh user stats', e);
+    }
   }
 
   /// Get due SRS questions

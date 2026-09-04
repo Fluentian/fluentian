@@ -288,6 +288,8 @@ class AuthProvider extends ChangeNotifier {
     _setLoading(true);
     try {
       try {
+        // Best-effort: clears any stale Google session so the account picker
+        // is shown. Failing here is fine -- sign-in below is what matters.
         await _googleSignIn.signOut();
       } catch (_) {}
       final googleUser = await _googleSignIn.signIn();

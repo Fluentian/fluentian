@@ -8,6 +8,7 @@ import '../legal_document_screen.dart';
 import 'auth_widgets.dart';
 import 'otp_verification_screen.dart';
 import 'sign_in_screen.dart';
+import '../../core/endpoints.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -778,14 +779,14 @@ class _TermsAgreementTextState extends State<_TermsAgreementText> {
       ..onTap = () => Navigator.of(context).push(
         LegalDocumentScreen.route(
           title: 'Terms and conditions',
-          url: 'https://api.fluentianapp.binovatechnologies.com/terms',
+          url: Endpoints.terms,
         ),
       );
     _privacyRecognizer = TapGestureRecognizer()
       ..onTap = () => Navigator.of(context).push(
         LegalDocumentScreen.route(
           title: 'Privacy policy',
-          url: 'https://api.fluentianapp.binovatechnologies.com/privacy',
+          url: Endpoints.privacy,
         ),
       );
   }

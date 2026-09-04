@@ -133,6 +133,8 @@ class MediaCacheManager {
     final entries = await _db.getMediaCacheEntriesForLesson(lessonId);
     for (final entry in entries) {
       try {
+        // Best-effort: the DB row is removed either way, so a file that is
+        // already gone or locked must not abort the eviction loop.
         final file = File(entry.localPath);
         if (await file.exists()) await file.delete();
       } catch (_) {}

@@ -8,6 +8,7 @@ import 'auth_widgets.dart';
 import 'sign_up_screen.dart';
 import 'forgot_password_screen.dart';
 import 'otp_verification_screen.dart';
+import '../../core/endpoints.dart';
 
 class SignInScreen extends StatefulWidget {
   final String? initialEmail;
@@ -288,7 +289,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             LegalDocumentScreen.route(
                               title: 'Privacy policy',
                               url:
-                                  'https://api.fluentianapp.binovatechnologies.com/privacy',
+                                  Endpoints.privacy,
                             ),
                           ),
                           icon: const Icon(Icons.shield_outlined, size: 16, color: AuthColors.placeholder),
