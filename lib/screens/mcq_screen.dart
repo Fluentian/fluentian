@@ -351,35 +351,50 @@ class _McqScreenState extends State<McqScreen>
     }
   }
 
+  /// Colours for matched pairs.
+  ///
+  /// This is one of the few places in the app where five distinct hues do
+  /// real work -- they are what tells you which left item you joined to which
+  /// right one -- so the hues stay. What changed is where they come from.
+  /// They were Chakra UI's defaults, which belong to no palette here, and two
+  /// of the five were both blues a shade apart. The fourth pair also set
+  /// #B7791F on #FEFCBF: 3.45:1, under the 4.5:1 floor, so one pair in five
+  /// was hard to read.
+  ///
+  /// These are the system's five semantic inks on their own tints, each
+  /// measured, and each still carries its circled numeral so the pairing is
+  /// never conveyed by colour alone.
   static final List<_PairColorStyle> _pairColors = [
     const _PairColorStyle(
-      bg: Color(0xFFEAF2F8),
-      border: Color(0xFF2C5E90),
-      text: Color(0xFF072D52),
+      bg: FluentianColors.primaryTint,
+      border: FluentianColors.primary,
+      text: FluentianColors.primary, // 11.74:1
       badge: '①',
     ),
     const _PairColorStyle(
-      bg: Color(0xFFEBF8FF),
-      border: Color(0xFF63B3ED),
-      text: Color(0xFF2B6CB0),
+      bg: FluentianColors.secondaryTint,
+      border: FluentianColors.secondary,
+      text: FluentianColors.secondary, // 5.99:1
       badge: '②',
     ),
     const _PairColorStyle(
-      bg: Color(0xFFE6FFFA),
-      border: Color(0xFF4FD1C5),
-      text: Color(0xFF2C7A7B),
+      bg: FluentianColors.accentTint,
+      border: FluentianColors.accent,
+      text: FluentianColors.accent, // 5.37:1
       badge: '③',
     ),
     const _PairColorStyle(
-      bg: Color(0xFFFEFCBF),
-      border: Color(0xFFF6E05E),
-      text: Color(0xFFB7791F),
+      bg: FluentianColors.warningTint,
+      border: FluentianColors.warning,
+      text: FluentianColors.warning, // 5.34:1
       badge: '④',
     ),
     const _PairColorStyle(
-      bg: Color(0xFFFFF5F5),
-      border: Color(0xFFFEB2B2),
-      text: Color(0xFF9B2C2C),
+      bg: FluentianColors.errorTint,
+      // A touch darker than the system error so this pair clears 4.5:1 on
+      // its own tint -- the stock #C0301A lands at 4.33:1 here.
+      border: Color(0xFF9E2715),
+      text: Color(0xFF9E2715), // 5.78:1
       badge: '⑤',
     ),
   ];
@@ -738,15 +753,35 @@ class _McqScreenState extends State<McqScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                LText(
-                  correct ? 'Correct' : 'Not quite',
-                  style: GoogleFonts.ibmPlexSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: correct
-                        ? FluentianColors.success
-                        : FluentianColors.error,
-                  ),
+                // The verdict is the single most-seen moment in the app, and
+                // it was carried by a colour and a word. Success and error are
+                // only 1.53:1 apart in luminance by design, so the mark is
+                // what makes the two states unmistakable at a glance -- and
+                // the only thing that works at all in greyscale.
+                Row(
+                  children: [
+                    Icon(
+                      correct
+                          ? Icons.check_circle_rounded
+                          : Icons.cancel_rounded,
+                      size: 22,
+                      color: correct
+                          ? FluentianColors.success
+                          : FluentianColors.error,
+                    ),
+                    const SizedBox(width: 8),
+                    LText(
+                      correct ? 'Correct' : 'Not quite',
+                      style: GoogleFonts.bricolageGrotesque(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.4,
+                        color: correct
+                            ? FluentianColors.success
+                            : FluentianColors.error,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 if (correct && hasMissingAccents) ...[
@@ -757,14 +792,14 @@ class _McqScreenState extends State<McqScreen>
                       color: FluentianColors.warningTint,
                       borderRadius: BorderRadius.circular(0),
                       border: Border.all(
-                        color: FluentianColors.warning.withValues(alpha: 0.5),
+                        color: FluentianColors.warning,
                       ),
                     ),
                     child: Row(
                       children: [
                         const Icon(
                           Iconsax.info_circle5,
-                          color: Color(0xFFD97706),
+                          color: FluentianColors.warning,
                           size: 18,
                         ),
                         const SizedBox(width: 8),
@@ -774,7 +809,7 @@ class _McqScreenState extends State<McqScreen>
                             style: GoogleFonts.ibmPlexSans(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF92400E),
+                              color: FluentianColors.textPrimary,
                             ),
                           ),
                         ),
@@ -809,7 +844,7 @@ class _McqScreenState extends State<McqScreen>
                       color: FluentianColors.successTint,
                       borderRadius: BorderRadius.circular(0),
                       border: Border.all(
-                        color: FluentianColors.success.withValues(alpha: 0.3),
+                        color: FluentianColors.success,
                       ),
                     ),
                     child: Row(

@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../services/learning_api.dart';
 import '../services/sound_effect_service.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/tibeb_band.dart';
 import 'lesson_detail_screen.dart';
 import 'streak_celebration_screen.dart';
 import '../services/haptics.dart';
@@ -89,37 +90,34 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                   minHeight: constraints.maxHeight - 48,
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 12),
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isPassed
-                            ? FluentianColors.successTint
-                            : FluentianColors.warningTint,
-                      ),
-                      child: Icon(
-                        isPassed
-                            ? Iconsax.tick_circle
-                            : Iconsax.refresh_2,
-                        size: 42,
-                        color: isPassed
-                            ? FluentianColors.success
-                            : FluentianColors.warning,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    LText(
-                      isPassed ? 'Lesson complete' : 'Keep practicing!',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.ibmPlexSans(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: FluentianColors.textPrimary,
-                      ),
+                    // Was an 80px tinted circle over centred type -- the
+                    // congratulations screen every app ships. The band is
+                    // this app's own completion mark, and the page reads
+                    // down one left edge like the rest of the flow.
+                    const TibebBand(height: 16),
+                    const SizedBox(height: 22),
+                    Row(
+                      children: [
+                        Icon(
+                          isPassed
+                              ? Icons.check_circle_rounded
+                              : Icons.refresh_rounded,
+                          size: 24,
+                          color: isPassed
+                              ? FluentianColors.success
+                              : FluentianColors.warning,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: LText(
+                            isPassed ? 'Lesson complete' : 'Keep practicing',
+                            style: Theme.of(context).textTheme.displayMedium,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     LText(
@@ -128,45 +126,41 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                               ? 'Nice work.'
                               : 'Nice work, ${user.displayName}.')
                           : 'You scored $accuracyPercent%. Score at least 60% to pass and unlock the next lesson.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.ibmPlexSans(
-                        fontSize: 15,
-                        color: FluentianColors.textSecondary,
-                        height: 1.4,
-                      ),
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 28),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: isPassed
-                            ? FluentianColors.primaryGradient
-                            : LinearGradient(
-                                colors: [
-                                  FluentianColors.primary.withValues(alpha: 0.85),
-                                  FluentianColors.darkNav,
-                                ],
-                              ),
-                        borderRadius: BorderRadius.circular(0),
+                      // The one gradient that survived the flattening pass,
+                      // plus a second hand-rolled one for the failed state.
+                      // Flat ink now; the score is the thing to look at, so
+                      // it is set big in the display face and nothing else
+                      // competes with it.
+                      decoration: const BoxDecoration(
+                        color: FluentianColors.primary,
                       ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            isPassed ? Iconsax.flash_15 : Iconsax.timer_1,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                          const SizedBox(height: 6),
-                          LText(
-                            isPassed ? '+$xpEarned XP' : '$accuracyPercent% Score',
-                            style: GoogleFonts.ibmPlexSans(
-                              fontSize: 38,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                          Text(
+                            context.tr(isPassed ? 'XP EARNED' : 'YOUR SCORE'),
+                            style: FluentianTheme.label(
+                              color: FluentianColors.onInkAccent,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
+                          Text(
+                            isPassed ? '+$xpEarned' : '$accuracyPercent%',
+                            style: GoogleFonts.bricolageGrotesque(
+                              fontSize: 52,
+                              height: 1.0,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -1.5,
+                              color: FluentianColors.onInk,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
                           LText(
                             isPassed && widget.completionPendingSync
                                 ? 'Saved offline — XP will update after sync'
@@ -175,7 +169,8 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                                 : '60% required to earn XP & advance',
                             style: GoogleFonts.ibmPlexSans(
                               fontSize: 13,
-                              color: Colors.white.withValues(alpha: 0.85),
+                              height: 1.4,
+                              color: FluentianColors.onInkMuted,
                             ),
                           ),
                         ],
@@ -192,22 +187,13 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                             horizontal: 16,
                             vertical: 14,
                           ),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                            ),
-                            borderRadius: BorderRadius.circular(0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: FluentianColors.warning
-                                    .withValues(alpha: 0.35),
-                                blurRadius: 0,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                          // White on #F59E0B measured 2.15:1. The system's
+                          // warning brown carries white at 6.75:1, and it is
+                          // one colour rather than an amber ramp.
+                          decoration: const BoxDecoration(
+                            color: FluentianColors.warning,
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Icon(
                                 Iconsax.flash_15,
@@ -222,11 +208,8 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                                     isPassed
                                         ? 'STREAK INCREASED'
                                         : 'DAILY PRACTICE RECORDED',
-                                    style: GoogleFonts.ibmPlexSans(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.5,
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                    style: FluentianTheme.label(
+                                      color: Colors.white,
                                     ),
                                   ),
                                   LText(

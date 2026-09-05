@@ -228,13 +228,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [FluentianColors.primaryDark, FluentianColors.primary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(0),
+      decoration: const BoxDecoration(
+        color: FluentianColors.primary,
         boxShadow: [FluentianShadows.card],
       ),
       child: Column(
@@ -882,16 +877,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         return Container(
           margin: const EdgeInsets.only(bottom: 20),
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Colors.white, FluentianColors.pageBg],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(0),
-            border: Border.all(
-              color: FluentianColors.primary.withValues(alpha: 0.1),
-            ),
+          decoration: const BoxDecoration(
+            color: FluentianColors.cardBg,
+            border: Border.fromBorderSide(FluentianBorders.hairline),
             boxShadow: [FluentianShadows.subtle],
           ),
           child: Row(

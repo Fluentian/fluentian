@@ -6,6 +6,7 @@ import '../core/app_localization.dart';
 import '../core/theme.dart';
 import '../providers/content_provider.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/tibeb_band.dart';
 import '../services/haptics.dart';
 
 class StreakCelebrationScreen extends StatefulWidget {
@@ -25,46 +26,34 @@ class StreakCelebrationScreen extends StatefulWidget {
 
 class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
     with TickerProviderStateMixin {
-  late AnimationController _flameCtrl;
-  late AnimationController _pulseCtrl;
-
-  late Animation<double> _flameScale;
-  late Animation<double> _textOpacity;
-  late Animation<double> _badgeScale;
+  late AnimationController _ctrl;
+  late Animation<double> _count;
+  late Animation<double> _fade;
+  late Animation<double> _weave;
 
   @override
   void initState() {
     super.initState();
 
-    _flameCtrl = AnimationController(
+    _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1300),
     );
 
-    _pulseCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
+    // The number counting up is the whole celebration: it is the one thing
+    // on screen the learner earned, and watching it land is more satisfying
+    // than any amount of decoration around it.
+    _count = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.0, 0.62, curve: Curves.easeOutCubic),
     );
-
-    _flameScale = Tween<double>(begin: 0.2, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _flameCtrl,
-        curve: const Interval(0.0, 0.65, curve: Curves.elasticOut),
-      ),
+    _weave = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.1, 0.85, curve: Curves.easeInOutCubic),
     );
-
-    _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _flameCtrl,
-        curve: const Interval(0.35, 0.75, curve: Curves.easeIn),
-      ),
-    );
-
-    _badgeScale = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _flameCtrl,
-        curve: const Interval(0.55, 1.0, curve: Curves.easeOutBack),
-      ),
+    _fade = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.5, 1.0, curve: Curves.easeOut),
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -75,325 +64,200 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Honor reduced-motion: show the final celebratory frame without the
-    // elastic entrance or the looping pulse rings.
+    // Honor reduced-motion: land on the final frame without the count-up.
     if (MediaQuery.of(context).disableAnimations) {
-      _flameCtrl.value = 1.0;
-      _pulseCtrl.stop();
-    } else {
-      if (_flameCtrl.status == AnimationStatus.dismissed) {
-        _flameCtrl.forward();
-      }
-      if (!_pulseCtrl.isAnimating) _pulseCtrl.repeat();
+      _ctrl.value = 1.0;
+    } else if (_ctrl.status == AnimationStatus.dismissed) {
+      _ctrl.forward();
     }
   }
 
   @override
   void dispose() {
-    _flameCtrl.dispose();
-    _pulseCtrl.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final daysActive = context.watch<ContentProvider>().weeklyActiveDays;
-    final dayLabels = const ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     final todayIndex = DateTime.now().weekday - 1;
+    final days = widget.streakDays;
 
     return Scaffold(
       backgroundColor: FluentianColors.primaryDark,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Spacer(),
 
-              // 1. Central Animated Flame & Pulse Rings
-              SizedBox(
-                width: 260,
-                height: 260,
-                child: Stack(
-                  alignment: Alignment.center,
+              // Was three looping pulse rings behind a 128px amber-to-red
+              // gradient circle, a spread glow, an elastic bounce and a
+              // floating "+1 STREAK!" badge -- five effects competing to say
+              // one thing. The number says it.
+              Text(
+                context.tr('DAY STREAK').toUpperCase(),
+                style: FluentianTheme.label(
+                  color: FluentianColors.onInkAccent,
+                ),
+              ),
+              const SizedBox(height: 8),
+              AnimatedBuilder(
+                animation: _count,
+                builder: (context, _) {
+                  final shown = (days * _count.value).round().clamp(
+                    days > 0 ? 1 : 0,
+                    days,
+                  );
+                  return Text(
+                    '$shown',
+                    style: GoogleFonts.bricolageGrotesque(
+                      fontSize: 116,
+                      height: 0.86,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -5,
+                      color: FluentianColors.onInk,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 18),
+              AnimatedBuilder(
+                animation: _weave,
+                builder: (context, _) =>
+                    TibebBand(height: 16, progress: _weave.value),
+              ),
+              const SizedBox(height: 22),
+
+              FadeTransition(
+                opacity: _fade,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Concentric Expanding Pulse Rings
-                    ...List.generate(3, (index) {
-                      return AnimatedBuilder(
-                        animation: _pulseCtrl,
-                        builder: (context, child) {
-                          final delay = index * 0.33;
-                          final progress = (_pulseCtrl.value + delay) % 1.0;
-                          final size = 110.0 + (progress * 140.0);
-                          final opacity = (1.0 - progress) * 0.35;
+                    LText(
+                      days <= 1
+                          ? 'You started a streak today. Come back tomorrow to make it two.'
+                          : 'You kept it alive today. Practice tomorrow to make it ${days + 1}.',
+                      style: GoogleFonts.ibmPlexSans(
+                        fontSize: 15,
+                        height: 1.45,
+                        color: FluentianColors.onInkMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 26),
 
-                          return Container(
-                            width: size,
-                            height: size,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: FluentianColors.warning.withValues(
-                                alpha: opacity.clamp(0.0, 1.0),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    }),
-
-                    // Main Flame Icon Card
-                    AnimatedBuilder(
-                      animation: _flameCtrl,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _flameScale.value,
-                          child: Container(
-                            width: 128,
-                            height: 128,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Color(0xFFF59E0B), Color(0xFFDC2626)],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: FluentianColors.warning
-                                      .withValues(alpha: 0.5),
-                                  blurRadius: 0,
-                                  spreadRadius: 4,
-                                  offset: const Offset(0, 12),
+                    // The week, as squares on a rule. Circles-in-a-row is the
+                    // habit-tracker default; this reads as a printed week.
+                    Text(
+                      context.tr('THIS WEEK'),
+                      style: FluentianTheme.label(
+                        color: FluentianColors.onInkMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: List.generate(7, (i) {
+                        final isActive = daysActive[i] || i == todayIndex;
+                        final isToday = i == todayIndex;
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(right: i == 6 ? 0 : 6),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    // White on the warning brown is 6.75:1.
+                                    color: isActive
+                                        ? FluentianColors.warning
+                                        : FluentianColors.darkCard,
+                                    border: Border.all(
+                                      color: isToday
+                                          ? FluentianColors.onInk
+                                          : FluentianColors.darkBorder,
+                                      width: isToday ? 2 : 1,
+                                    ),
+                                  ),
+                                  child: isActive
+                                      ? const Icon(
+                                          Icons.check_rounded,
+                                          color: Colors.white,
+                                          size: 18,
+                                        )
+                                      : const SizedBox.shrink(),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  dayLabels[i],
+                                  style: FluentianTheme.label(
+                                    color: isToday
+                                        ? FluentianColors.onInk
+                                        : FluentianColors.onInkMuted,
+                                  ),
                                 ),
                               ],
                             ),
-                            child: const Center(
-                              child: Icon(
-                                Iconsax.flash_15,
-                                size: 72,
-                                color: Colors.white,
-                              ),
-                            ),
                           ),
                         );
-                      },
+                      }),
                     ),
 
-                    // Floating "+1" Badge Overlay
-                    Positioned(
-                      top: 20,
-                      right: 35,
-                      child: AnimatedBuilder(
-                        animation: _flameCtrl,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _badgeScale.value,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: FluentianColors.success,
-                                borderRadius: BorderRadius.circular(0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: FluentianColors.success.withValues(
-                                      alpha: 0.4,
-                                    ),
-                                    blurRadius: 0,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
+                    if (widget.streakFreezeEarned) ...[
+                      const SizedBox(height: 22),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: const BoxDecoration(
+                          color: FluentianColors.darkCard,
+                          border: Border(
+                            left: BorderSide(
+                              color: FluentianColors.onInkAccent,
+                              width: 3,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            // Was FluentianColors.accent on this navy: 2.17:1.
+                            const Icon(
+                              Iconsax.shield_tick,
+                              color: FluentianColors.onInkAccent,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
                               child: LText(
-                                '+1 STREAK!',
+                                '1 streak freeze active, protecting missed days',
                                 style: GoogleFonts.ibmPlexSans(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                                  height: 1.35,
+                                  color: FluentianColors.onInk,
                                 ),
                               ),
                             ),
-                          );
-                        },
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const Spacer(flex: 2),
 
-              // 2. Animated Counter & Text Title
-              AnimatedBuilder(
-                animation: _flameCtrl,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: _textOpacity.value,
-                    child: Column(
-                      children: [
-                        LText(
-                          '${widget.streakDays} DAY STREAK',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.ibmPlexSans(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.5,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withValues(alpha: 0.4),
-                                blurRadius: 0,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        LText(
-                          'You completed a lesson today and kept your streak alive. Practice tomorrow to make it ${widget.streakDays + 1} days!',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.ibmPlexSans(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.white.withValues(alpha: 0.8),
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 32),
-
-              // 3. Weekly Heatmap Days Row (M T W T F S S)
-              AnimatedBuilder(
-                animation: _flameCtrl,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: _textOpacity.value,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 18,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(0),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.15),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: List.generate(7, (index) {
-                          final isActive = daysActive[index] || index == todayIndex;
-                          final isToday = index == todayIndex;
-
-                          return Column(
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isActive
-                                      ? FluentianColors.warning
-                                      : Colors.white.withValues(alpha: 0.1),
-                                  border: isToday
-                                      ? Border.all(color: Colors.white, width: 2)
-                                      : null,
-                                ),
-                                child: Center(
-                                  child: isActive
-                                      ? const Icon(
-                                          Iconsax.flash_15,
-                                          color: Colors.white,
-                                          size: 18,
-                                        )
-                                      : LText(
-                                          dayLabels[index],
-                                          style: GoogleFonts.ibmPlexSans(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white.withValues(
-                                              alpha: 0.5,
-                                            ),
-                                          ),
-                                        ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              LText(
-                                dayLabels[index],
-                                style: GoogleFonts.ibmPlexSans(
-                                  fontSize: 11,
-                                  fontWeight: isToday
-                                      ? FontWeight.w800
-                                      : FontWeight.w500,
-                                  color: isToday
-                                      ? FluentianColors.warning
-                                      : Colors.white.withValues(alpha: 0.6),
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              if (widget.streakFreezeEarned) ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: FluentianColors.infoTint.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(0),
-                    border: Border.all(
-                      color: FluentianColors.accent.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Iconsax.shield_tick,
-                        color: FluentianColors.accent,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      LText(
-                        '1 streak freeze active, protecting missed days',
-                        style: GoogleFonts.ibmPlexSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              const Spacer(),
-
-              // 4. Continue Button
               FluentianButton(
-                text: 'CONTINUE TO ROADMAP',
+                text: 'Continue',
                 icon: Iconsax.arrow_right_3,
                 onPressed: () => Navigator.of(context).pop(),
               ),
-
-              const SizedBox(height: 12),
             ],
           ),
         ),
