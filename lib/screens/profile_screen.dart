@@ -680,12 +680,7 @@ class _SectionLabel extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 4),
     child: LText(
       text,
-      style: GoogleFonts.ibmPlexSans(
-        fontSize: 11,
-        letterSpacing: 1.1,
-        fontWeight: FontWeight.w700,
-        color: FluentianColors.textSecondary,
-      ),
+      style: FluentianTheme.label(color: FluentianColors.textSecondary),
     ),
   );
 }

@@ -312,7 +312,7 @@ class _MessageBubble extends StatelessWidget {
                 time,
                 style: GoogleFonts.ibmPlexSans(
                   fontSize: 10,
-                  color: isMe ? Colors.white70 : FluentianColors.textSecondary,
+                  color: isMe ? FluentianColors.onInkMuted : FluentianColors.textSecondary,
                 ),
               ),
             ],

@@ -132,12 +132,7 @@ class _OfflineDownloadsScreenState extends State<OfflineDownloadsScreen> {
                         padding: const EdgeInsets.only(left: 4, bottom: 8),
                         child: LText(
                           course.code,
-                          style: GoogleFonts.ibmPlexSans(
-                            fontSize: 11,
-                            letterSpacing: 1,
-                            fontWeight: FontWeight.w700,
-                            color: FluentianColors.textSecondary,
-                          ),
+                          style: FluentianTheme.label(color: FluentianColors.textSecondary),
                         ),
                       ),
                       ...units.map(

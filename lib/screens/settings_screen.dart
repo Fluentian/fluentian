@@ -934,12 +934,7 @@ class _SettingsGroup extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: LText(
             title,
-            style: GoogleFonts.ibmPlexSans(
-              fontSize: 11,
-              letterSpacing: 1,
-              fontWeight: FontWeight.w700,
-              color: FluentianColors.textSecondary,
-            ),
+            style: FluentianTheme.label(color: FluentianColors.textSecondary),
           ),
         ),
         Material(

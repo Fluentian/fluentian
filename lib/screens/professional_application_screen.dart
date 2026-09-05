@@ -222,12 +222,7 @@ class _ProfessionalApplicationScreenState
       padding: const EdgeInsets.only(bottom: 16),
       child: LText(
         title.toUpperCase(),
-        style: GoogleFonts.ibmPlexSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: FluentianColors.primary,
-          letterSpacing: 1.2,
-        ),
+        style: FluentianTheme.label(color: FluentianColors.primary),
       ),
     );
   }

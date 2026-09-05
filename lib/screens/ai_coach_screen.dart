@@ -363,7 +363,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                       ),
                       child: Icon(
                         Iconsax.send_1,
-                        color: _isLoading ? Colors.white38 : Colors.white,
+                        color: _isLoading ? FluentianColors.onInkMuted : Colors.white,
                         size: 20,
                       ),
                     ),
@@ -498,7 +498,7 @@ class _CoachMarkdownResponse extends StatelessWidget {
           border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
         codeblockPadding: const EdgeInsets.all(10),
-        blockquote: baseStyle.copyWith(color: Colors.white70),
+        blockquote: baseStyle.copyWith(color: FluentianColors.onInkMuted),
         blockquoteDecoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(0),

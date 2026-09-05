@@ -1145,12 +1145,7 @@ class _McqScreenState extends State<McqScreen>
                     else ...[
                       LText(
                         q.questionKind.replaceAll('_', ' ').toUpperCase(),
-                        style: GoogleFonts.ibmPlexSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: FluentianColors.primary,
-                          letterSpacing: 1.2,
-                        ),
+                        style: FluentianTheme.label(size: 12, color: FluentianColors.primary),
                       ),
                       const SizedBox(height: 12),
                       LText(

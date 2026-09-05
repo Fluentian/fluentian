@@ -160,12 +160,7 @@ class OpportunityDetailScreen extends StatelessWidget {
                                 opportunity.type.toUpperCase(),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.ibmPlexSans(
-                                  color: typeColor,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 10,
-                                  letterSpacing: 0.5,
-                                ),
+                                style: FluentianTheme.label(size: 10, color: typeColor),
                               ),
                             ),
                           ),

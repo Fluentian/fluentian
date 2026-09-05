@@ -665,7 +665,7 @@ class _AiTutorCard extends StatelessWidget {
                   LText(
                     'Your private AI French tutor',
                     style: GoogleFonts.ibmPlexSans(
-                      color: Colors.white70,
+                      color: FluentianColors.onInkMuted,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -681,12 +681,7 @@ class _AiTutorCard extends StatelessWidget {
               ),
               child: LText(
                 'ALWAYS READY',
-                style: GoogleFonts.ibmPlexSans(
-                  color: FluentianColors.onInkSuccess,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: .7,
-                ),
+                style: FluentianTheme.label(size: 9, color: FluentianColors.onInkSuccess),
               ),
             ),
           ],
@@ -695,7 +690,7 @@ class _AiTutorCard extends StatelessWidget {
         LText(
           'Speak naturally, type when it is easier, and get gentle corrections matched to your level.',
           style: GoogleFonts.ibmPlexSans(
-            color: Colors.white70,
+            color: FluentianColors.onInkMuted,
             fontSize: 12,
             height: 1.45,
           ),
@@ -775,7 +770,7 @@ class _MatchCard extends StatelessWidget {
                   LText(
                     'Private · 2 people · ${room.eligibilityLabel}',
                     style: GoogleFonts.ibmPlexSans(
-                      color: Colors.white70,
+                      color: FluentianColors.onInkMuted,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),

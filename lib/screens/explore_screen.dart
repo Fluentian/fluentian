@@ -486,12 +486,7 @@ class _WordContext extends StatelessWidget {
             const SizedBox(width: 7),
             LText(
               label,
-              style: GoogleFonts.ibmPlexSans(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-                color: FluentianColors.primary,
-              ),
+              style: FluentianTheme.label(size: 10, color: FluentianColors.primary),
             ),
           ],
         ),
@@ -595,12 +590,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                           children: [
                             LText(
                               'SAVED WORD',
-                              style: GoogleFonts.ibmPlexSans(
-                                color: Colors.white70,
-                                fontSize: 10,
-                                letterSpacing: 1.2,
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: FluentianTheme.label(size: 10, color: FluentianColors.onInkMuted),
                             ),
                             const SizedBox(height: 6),
                             LText(
@@ -616,7 +606,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                               LText(
                                 item.translation,
                                 style: GoogleFonts.ibmPlexSans(
-                                  color: Colors.white70,
+                                  color: FluentianColors.onInkMuted,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -1122,7 +1112,7 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
                     count: widget.media.length,
                     currentIndex: _currentMedia,
                     activeColor: Colors.white,
-                    inactiveColor: Colors.white54,
+                    inactiveColor: FluentianColors.onInkMuted,
                     onTap: _goToMedia,
                   ),
                 ],
@@ -1179,7 +1169,7 @@ class _VideoMediaState extends State<_VideoMedia> {
       return Container(
         color: FluentianColors.darkCard,
         child: const Center(
-          child: Icon(Iconsax.video_slash, color: Colors.white70, size: 44),
+          child: Icon(Iconsax.video_slash, color: FluentianColors.onInkMuted, size: 44),
         ),
       );
     }

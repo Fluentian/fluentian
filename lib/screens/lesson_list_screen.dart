@@ -487,12 +487,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
             children: [
               LText(
                 level.toUpperCase(),
-                style: GoogleFonts.ibmPlexSans(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: FluentianColors.primary,
-                  letterSpacing: 0.55,
-                ),
+                style: FluentianTheme.label(size: 10, color: FluentianColors.primary),
               ),
               const SizedBox(height: 3),
               LText(
@@ -592,12 +587,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                     isFocused
                         ? 'CURRENT CHAPTER · ${unit.unitKind.toUpperCase()}'
                         : 'CHAPTER ${unit.unitNo} · ${unit.unitKind.toUpperCase()}',
-                    style: GoogleFonts.ibmPlexSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white.withValues(alpha: 0.7),
-                      letterSpacing: 1.0,
-                    ),
+                    style: FluentianTheme.label(size: 12, color: Colors.white.withValues(alpha: 0.7)),
                   ),
                   const SizedBox(height: 4),
                   LText(
@@ -1125,12 +1115,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
               ),
               child: LText(
                 'REVIEW',
-                style: GoogleFonts.ibmPlexSans(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: FluentianColors.primary,
-                  letterSpacing: 0.5,
-                ),
+                style: FluentianTheme.label(size: 10, color: FluentianColors.primary),
               ),
             ),
           ),
@@ -1151,11 +1136,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
       ),
       child: LText(
         'START',
-        style: GoogleFonts.ibmPlexSans(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
-        ),
+        style: FluentianTheme.label(size: 10),
       ),
     );
   }
@@ -1210,12 +1191,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                         const SizedBox(width: 6),
                         LText(
                           kindText.toUpperCase(),
-                          style: GoogleFonts.ibmPlexSans(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: kindColor,
-                            letterSpacing: 0.5,
-                          ),
+                          style: FluentianTheme.label(size: 10, color: kindColor),
                         ),
                       ],
                     ),

@@ -49,7 +49,7 @@ class _FindSpeakingPartnerScreenState extends State<FindSpeakingPartnerScreen> {
                 alignment: Alignment.topLeft,
                 child: IconButton(
                   tooltip: context.tr('Close'),
-                  icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                  icon: const Icon(Icons.close_rounded, color: FluentianColors.onInkMuted),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -81,17 +81,12 @@ class _FindSpeakingPartnerScreenState extends State<FindSpeakingPartnerScreen> {
               LText(
                 'Meet another learner and practice French naturally.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 14),
+                style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 14),
               ),
               const SizedBox(height: 40),
               LText(
                 'HOW DO YOU WANT TO CONNECT?',
-                style: GoogleFonts.ibmPlexSans(
-                  color: Colors.white38,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
-                ),
+                style: FluentianTheme.label(color: FluentianColors.onInkMuted),
               ),
               const SizedBox(height: 14),
               Row(
@@ -221,7 +216,7 @@ class _ModeCard extends StatelessWidget {
                       icon,
                       color: selected
                           ? FluentianColors.darkNav
-                          : Colors.white60,
+                          : FluentianColors.onInkMuted,
                       size: 24,
                     ),
                   ),
@@ -231,7 +226,7 @@ class _ModeCard extends StatelessWidget {
                     style: GoogleFonts.ibmPlexSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: selected ? Colors.white : Colors.white70,
+                      color: selected ? Colors.white : FluentianColors.onInkMuted,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -240,7 +235,7 @@ class _ModeCard extends StatelessWidget {
                     style: GoogleFonts.ibmPlexSans(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white38,
+                      color: FluentianColors.onInkMuted,
                     ),
                   ),
                 ],

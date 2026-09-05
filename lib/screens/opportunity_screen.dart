@@ -417,12 +417,7 @@ class _OpportunityCard extends StatelessWidget {
                                   opportunity.type.toUpperCase(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.ibmPlexSans(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                    color: typeColor,
-                                    letterSpacing: 0.5,
-                                  ),
+                                  style: FluentianTheme.label(color: typeColor),
                                 ),
                               ),
                             ],

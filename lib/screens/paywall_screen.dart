@@ -46,7 +46,7 @@ class PaywallScreen extends StatelessWidget {
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 15,
                     height: 1.5,
-                    color: Colors.white70,
+                    color: FluentianColors.onInkMuted,
                   ),
                 ),
                 const SizedBox(height: 28),

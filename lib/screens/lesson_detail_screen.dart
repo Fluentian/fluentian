@@ -514,12 +514,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               ),
               child: LText(
                 'STEP $step OF $total',
-                style: GoogleFonts.ibmPlexSans(
-                  color: FluentianColors.primary,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.7,
-                ),
+                style: FluentianTheme.label(size: 10, color: FluentianColors.primary),
               ),
             ),
             const Spacer(),
@@ -983,12 +978,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   const SizedBox(width: 8),
                   LText(
                     'GRAMMAR RULE',
-                    style: GoogleFonts.ibmPlexSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: FluentianColors.primary,
-                      letterSpacing: 1.0,
-                    ),
+                    style: FluentianTheme.label(color: FluentianColors.primary),
                   ),
                 ],
               ),
@@ -1035,12 +1025,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                           children: [
                             LText(
                               'EXAMPLE',
-                              style: GoogleFonts.ibmPlexSans(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: FluentianColors.textSecondary,
-                                letterSpacing: 0.5,
-                              ),
+                              style: FluentianTheme.label(size: 9, color: FluentianColors.textSecondary),
                             ),
                             const SizedBox(height: 4),
                             LText(

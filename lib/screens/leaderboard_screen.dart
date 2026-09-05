@@ -254,12 +254,7 @@ class _LeagueHero extends StatelessWidget {
                 ),
                 child: LText(
                   _timeLabel.toUpperCase(),
-                  style: GoogleFonts.ibmPlexSans(
-                    fontSize: 10,
-                    letterSpacing: .7,
-                    fontWeight: FontWeight.w700,
-                    color: FluentianColors.accent,
-                  ),
+                  style: FluentianTheme.label(size: 10, color: FluentianColors.accent),
                 ),
               ),
               const SizedBox(height: 14),
@@ -672,12 +667,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LText(
     text,
-    style: GoogleFonts.ibmPlexSans(
-      fontSize: 10,
-      letterSpacing: .9,
-      fontWeight: FontWeight.w700,
-      color: FluentianColors.textSecondary,
-    ),
+    style: FluentianTheme.label(size: 10, color: FluentianColors.textSecondary),
   );
 }
 

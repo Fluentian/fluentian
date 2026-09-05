@@ -446,7 +446,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
               ),
               LText(
                 'Private French tutor',
-                style: GoogleFonts.ibmPlexSans(color: Colors.white54, fontSize: 10),
+                style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 10),
               ),
             ],
           ),
@@ -461,7 +461,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
           child: Text(
             time,
             style: GoogleFonts.ibmPlexSans(
-              color: Colors.white70,
+              color: FluentianColors.onInkMuted,
               fontSize: 11,
               fontWeight: FontWeight.w800,
               fontFeatures: const [FontFeature.tabularFigures()],
@@ -518,12 +518,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
           child: Text(
             _agentStatus,
             key: ValueKey(_agentStatus),
-            style: GoogleFonts.ibmPlexSans(
-              color: _agentColor,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.7,
-            ),
+            style: FluentianTheme.label(size: 10, color: _agentColor),
           ),
         ),
       ],
@@ -541,7 +536,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
                 : 'Say bonjour, or choose a way to begin.',
             textAlign: TextAlign.center,
             style: GoogleFonts.ibmPlexSans(
-              color: Colors.white54,
+              color: FluentianColors.onInkMuted,
               fontSize: 12,
               height: 1.45,
             ),
@@ -574,7 +569,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
                             child: Text(
                               prompt,
                               style: GoogleFonts.ibmPlexSans(
-                                color: Colors.white70,
+                                color: FluentianColors.onInkMuted,
                                 fontSize: 12,
                                 height: 1.35,
                               ),
@@ -655,7 +650,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
                 hintText: context.tr('Type to Marie…'),
                 counterText: '',
                 hintStyle: GoogleFonts.ibmPlexSans(
-                  color: Colors.white38,
+                  color: FluentianColors.onInkMuted,
                   fontSize: 13,
                 ),
                 border: InputBorder.none,
@@ -727,7 +722,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
             _error!,
             textAlign: TextAlign.center,
             style: GoogleFonts.ibmPlexSans(
-              color: Colors.white70,
+              color: FluentianColors.onInkMuted,
               fontSize: 13,
               height: 1.45,
             ),
@@ -810,7 +805,7 @@ class _CallControl extends StatelessWidget {
             LText(
               label,
               style: GoogleFonts.ibmPlexSans(
-                color: Colors.white54,
+                color: FluentianColors.onInkMuted,
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
               ),

@@ -256,12 +256,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                               children: [
                                 LText(
                                   'PERFECT TRIAL BONUS',
-                                  style: GoogleFonts.ibmPlexSans(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
-                                    color: FluentianColors.info,
-                                  ),
+                                  style: FluentianTheme.label(color: FluentianColors.info),
                                 ),
                                 LText(
                                   '+1 Streak Freeze Earned (Max 3)',

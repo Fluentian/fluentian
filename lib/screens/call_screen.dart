@@ -101,14 +101,14 @@ class _SafetyAction extends StatelessWidget {
                   LText(
                     subtitle,
                     style: GoogleFonts.ibmPlexSans(
-                      color: Colors.white54,
+                      color: FluentianColors.onInkMuted,
                       fontSize: 10,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Colors.white38),
+            const Icon(Icons.chevron_right_rounded, color: FluentianColors.onInkMuted),
           ],
         ),
       ),
@@ -610,7 +610,7 @@ class _CallScreenState extends State<CallScreen> {
           Text(
             '$_pingMs ms',
             style: GoogleFonts.ibmPlexSans(
-              color: Colors.white70,
+              color: FluentianColors.onInkMuted,
               fontSize: 11,
               fontWeight: FontWeight.w700,
             ),
@@ -707,7 +707,7 @@ class _CallScreenState extends State<CallScreen> {
             alignment: Alignment.topLeft,
             child: IconButton(
               tooltip: context.tr('Close'),
-              icon: const Icon(Icons.close_rounded, color: Colors.white70),
+              icon: const Icon(Icons.close_rounded, color: FluentianColors.onInkMuted),
               onPressed: _leave,
             ),
           ),
@@ -733,12 +733,12 @@ class _CallScreenState extends State<CallScreen> {
           LText(
             _status,
             textAlign: TextAlign.center,
-            style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 13),
+            style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 13),
           ),
           const SizedBox(height: 6),
           LText(
             'You can leave anytime',
-            style: GoogleFonts.ibmPlexSans(color: Colors.white38, fontSize: 12),
+            style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 12),
           ),
           const SizedBox(height: 40),
           AnimatedSwitcher(
@@ -750,7 +750,7 @@ class _CallScreenState extends State<CallScreen> {
                 '"${_languageLearningQuotes[_quoteIndex]}"',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.ibmPlexSans(
-                  color: Colors.white70,
+                  color: FluentianColors.onInkMuted,
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
                   height: 1.5,
@@ -810,7 +810,7 @@ class _CallScreenState extends State<CallScreen> {
                   _status,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 12),
+                  style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 12),
                 ),
                 if (widget.miniGoal != null) ...[
                   const SizedBox(height: 2),
@@ -899,7 +899,7 @@ class _CallScreenState extends State<CallScreen> {
                         LText(
                           'You are always in control of your room',
                           style: GoogleFonts.ibmPlexSans(
-                            color: Colors.white60,
+                            color: FluentianColors.onInkMuted,
                             fontSize: 12,
                           ),
                         ),
@@ -931,18 +931,13 @@ class _CallScreenState extends State<CallScreen> {
               const SizedBox(height: 18),
               LText(
                 'PEOPLE IN THIS ROOM',
-                style: GoogleFonts.ibmPlexSans(
-                  color: Colors.white54,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1,
-                ),
+                style: FluentianTheme.label(size: 10, color: FluentianColors.onInkMuted),
               ),
               const SizedBox(height: 10),
               if (participants.isEmpty)
                 LText(
                   'No other participants are connected yet.',
-                  style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 13),
+                  style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 13),
                 )
               else
                 ...participants.map(
@@ -979,7 +974,7 @@ class _CallScreenState extends State<CallScreen> {
                       child: LText(
                         'Reports are confidential. Blocking prevents future direct matching and is saved to your account.',
                         style: GoogleFonts.ibmPlexSans(
-                          color: Colors.white60,
+                          color: FluentianColors.onInkMuted,
                           fontSize: 11,
                           height: 1.4,
                         ),
@@ -1281,7 +1276,7 @@ class _CallScreenState extends State<CallScreen> {
                 ? 'Guided French conversation'
                 : '$_matchedLevel guided French conversation',
             textAlign: TextAlign.center,
-            style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 13),
+            style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 13),
           ),
           if (!compact) ...[const SizedBox(height: 30), _buildWaveform()],
         ],
@@ -1346,7 +1341,7 @@ class _CallScreenState extends State<CallScreen> {
                 height: 126,
                 color: FluentianColors.darkCard,
                 child: _localVideoTrack == null
-                    ? const Icon(Iconsax.video_slash, color: Colors.white54)
+                    ? const Icon(Iconsax.video_slash, color: FluentianColors.onInkMuted)
                     : VideoTrackRenderer(
                         _localVideoTrack!,
                         fit: VideoViewFit.cover,
@@ -1397,7 +1392,7 @@ class _CallScreenState extends State<CallScreen> {
                 height: 200,
                 color: FluentianColors.darkCard,
                 child: _localVideoTrack == null
-                    ? const Icon(Iconsax.video_slash, color: Colors.white54)
+                    ? const Icon(Iconsax.video_slash, color: FluentianColors.onInkMuted)
                     : VideoTrackRenderer(
                         _localVideoTrack!,
                         fit: VideoViewFit.cover,
@@ -1457,7 +1452,7 @@ class _CallScreenState extends State<CallScreen> {
             _roomName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.ibmPlexSans(color: Colors.white38, fontSize: 11),
+            style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 11),
           ),
         ],
       ),
@@ -1499,7 +1494,7 @@ class _CallScreenState extends State<CallScreen> {
           const SizedBox(height: 6),
           LText(
             'Use one prompt, then pass the turn.',
-            style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 13),
+            style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 13),
           ),
           const SizedBox(height: 18),
           if (_matchReason != null) ...[
@@ -1516,7 +1511,7 @@ class _CallScreenState extends State<CallScreen> {
             _roomName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.ibmPlexSans(color: Colors.white38, fontSize: 11),
+            style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, fontSize: 11),
           ),
         ],
       ),
@@ -1538,7 +1533,7 @@ class _CallScreenState extends State<CallScreen> {
           Expanded(
             child: LText(
               prompt,
-              style: GoogleFonts.ibmPlexSans(color: Colors.white70, height: 1.35),
+              style: GoogleFonts.ibmPlexSans(color: FluentianColors.onInkMuted, height: 1.35),
             ),
           ),
         ],
@@ -1570,7 +1565,7 @@ class _CallScreenState extends State<CallScreen> {
             child: LText(
               _matchReason!,
               style: GoogleFonts.ibmPlexSans(
-                color: Colors.white70,
+                color: FluentianColors.onInkMuted,
                 fontSize: 12,
                 height: 1.35,
                 fontWeight: FontWeight.w700,
@@ -1853,7 +1848,7 @@ class _StatusPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white70, size: 16),
+          Icon(icon, color: FluentianColors.onInkMuted, size: 16),
           const SizedBox(width: 6),
           LText(
             label,
@@ -1895,7 +1890,7 @@ class _MiniStat extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.ibmPlexSans(
-                color: Colors.white70,
+                color: FluentianColors.onInkMuted,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
               ),
@@ -1925,12 +1920,12 @@ class _SmallAction extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.white70, size: 17),
+          Icon(icon, color: FluentianColors.onInkMuted, size: 17),
           const SizedBox(width: 7),
           LText(
             label,
             style: GoogleFonts.ibmPlexSans(
-              color: Colors.white70,
+              color: FluentianColors.onInkMuted,
               fontSize: 12,
               fontWeight: FontWeight.w800,
             ),

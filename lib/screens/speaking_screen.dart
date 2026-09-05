@@ -107,12 +107,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                     const SizedBox(height: 20),
                     LText(
                       'SAY THIS IN FRENCH',
-                      style: GoogleFonts.ibmPlexSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: FluentianColors.textSecondary,
-                        letterSpacing: 1,
-                      ),
+                      style: FluentianTheme.label(size: 12, color: FluentianColors.textSecondary),
                     ),
                     const SizedBox(height: 16),
                     LText(
