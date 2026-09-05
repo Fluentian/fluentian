@@ -301,7 +301,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
 
   Future<void> _leave() async {
     if (_isLeaving) return;
-    _isLeaving = true;
+    setState(() => _isLeaving = true);
     _timer?.cancel();
     final session = _session;
     final transcript =
@@ -319,38 +319,41 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
     final callId = session?.room.name;
     _session = null;
     session?.removeListener(_onSessionChanged);
+
+    // Mute mic & audio immediately for instantaneous feeling
     try {
-      await session?.end().timeout(const Duration(seconds: 3));
-    } catch (_) {
-      // A failed or half-open room must never trap the learner on this screen.
-    } finally {
-      try {
-        await session?.dispose();
-      } catch (_) {
-        // Disposal is best-effort after a transport failure.
-      }
-      if (mounted && callId != null && transcript.isNotEmpty) {
-        try {
-          final report = await SocialApi.instance.createAiCallReport(
-            callId: callId,
-            topic: widget.settings.scenarioId,
-            scenarioId: widget.settings.scenarioId,
-            learnerRole: widget.settings.learnerRole,
-            transcript: transcript,
-          );
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => AiCallReportScreen(report: report),
-              ),
-            );
-            return;
-          }
-        } catch (_) {}
-      }
-      if (mounted) Navigator.pop(context);
+      unawaited(session?.room.localParticipant?.setMicrophoneEnabled(false));
+      unawaited(session?.room.setSpeakerOn(false));
+    } catch (_) {}
+
+    // Dispose LiveKit transport asynchronously without stalling UI
+    if (session != null) {
+      unawaited(_disposeSession(session));
     }
+
+    if (mounted && callId != null && transcript.isNotEmpty) {
+      // Start AI report generation in the background and navigate immediately
+      final reportFuture = SocialApi.instance.createAiCallReport(
+        callId: callId,
+        topic: widget.settings.scenarioId,
+        scenarioId: widget.settings.scenarioId,
+        learnerRole: widget.settings.learnerRole,
+        transcript: transcript,
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AiCallReportScreen(
+            reportFuture: reportFuture,
+            topic: widget.settings.scenarioId,
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (mounted) Navigator.pop(context);
   }
 
   Future<void> _disposeSession(Session session) async {
