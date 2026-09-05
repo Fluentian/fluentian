@@ -16,6 +16,7 @@ import '../core/app_localization.dart';
 import '../core/constants.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/bottom_nav.dart';
+import '../widgets/tibeb_band.dart';
 import 'profile_screen.dart';
 import 'lesson_list_screen.dart';
 import 'lesson_detail_screen.dart';
@@ -437,7 +438,7 @@ class _HomeContentState extends State<_HomeContent> {
                                         ? FluentianColors.success.withValues(
                                             alpha: .12,
                                           )
-                                        : const Color(0xFFFFF7ED),
+                                        : FluentianColors.warningTint,
                                     borderRadius: BorderRadius.circular(0),
                                   ),
                                   child: Icon(
@@ -457,13 +458,12 @@ class _HomeContentState extends State<_HomeContent> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      LText(
-                                        'DAILY CHALLENGE',
-                                        style: GoogleFonts.ibmPlexSans(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w900,
-                                          color: FluentianColors.warning,
-                                          letterSpacing: 0,
+                                      Text(
+                                        context.tr('DAILY CHALLENGE'),
+                                        style: FluentianTheme.label(
+                                          color: dailyChallengeComplete
+                                              ? FluentianColors.success
+                                              : FluentianColors.warning,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -475,7 +475,7 @@ class _HomeContentState extends State<_HomeContent> {
                                         overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.ibmPlexSans(
                                           fontSize: 16,
-                                          fontWeight: FontWeight.w800,
+                                          fontWeight: FontWeight.w700,
                                           color: FluentianColors.textPrimary,
                                         ),
                                       ),
@@ -486,19 +486,20 @@ class _HomeContentState extends State<_HomeContent> {
                                   radius: 24,
                                   lineWidth: 5,
                                   percent: lessonsToday / dailyLessonGoal,
-                                  center: LText(
+                                  center: Text(
                                     '$lessonsToday/$dailyLessonGoal',
-                                    style: GoogleFonts.ibmPlexSans(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w900,
-                                      color: FluentianColors.warning,
+                                    style: FluentianTheme.label(
+                                      color: dailyChallengeComplete
+                                          ? FluentianColors.success
+                                          : FluentianColors.warning,
                                     ),
                                   ),
                                   progressColor: dailyChallengeComplete
                                       ? FluentianColors.success
                                       : FluentianColors.warning,
-                                  backgroundColor: FluentianColors.warning
-                                      .withValues(alpha: 0.15),
+                                  backgroundColor: dailyChallengeComplete
+                                      ? FluentianColors.successTint
+                                      : FluentianColors.warningTint,
                                 ),
                               ],
                             ),
@@ -595,7 +596,7 @@ class _NoCoursesCard extends StatelessWidget {
                 'Your journey is being prepared',
                 style: GoogleFonts.ibmPlexSans(
                   fontSize: 15,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: FluentianColors.textPrimary,
                 ),
               ),
@@ -625,7 +626,7 @@ class _AllCaughtUpCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFFF0FBF5),
+      color: FluentianColors.successTint,
       borderRadius: BorderRadius.circular(0),
       child: InkWell(
         onTap: onTap,
@@ -634,19 +635,14 @@ class _AllCaughtUpCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(0),
-            border: Border.all(
-              color: FluentianColors.success.withValues(alpha: .18),
-            ),
+            border: Border.all(color: FluentianColors.success),
           ),
           child: Row(
             children: [
               Container(
                 width: 42,
                 height: 42,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
+                decoration: const BoxDecoration(color: FluentianColors.white),
                 child: const Icon(
                   Iconsax.tick_circle5,
                   color: FluentianColors.success,
@@ -663,7 +659,7 @@ class _AllCaughtUpCard extends StatelessWidget {
                       'You’re all caught up',
                       style: GoogleFonts.ibmPlexSans(
                         fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: FluentianColors.textPrimary,
                       ),
                     ),
@@ -723,52 +719,45 @@ class _ContinueJourneyCard extends StatelessWidget {
         : 'CHAPTER $chapterNumber · CURRENT MISSION';
     return Container(
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        gradient: FluentianColors.headerGradient,
-        borderRadius: BorderRadius.circular(0),
-        boxShadow: [
-          BoxShadow(
-            color: FluentianColors.primary.withValues(alpha: .22),
-            blurRadius: 0,
-            offset: const Offset(0, 9),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: FluentianColors.primary,
       ),
       child: Stack(
         children: [
-          Positioned(
-            right: -22,
-            top: -26,
-            child: Icon(
-              Iconsax.map_1,
-              size: 158,
-              color: Colors.white.withValues(alpha: .07),
-            ),
+          // Was a 158px map glyph bled off the corner at 7% white -- the
+          // faded-watermark-icon move, filling space with something nobody
+          // can quite see. The band is the app's own mark and it means
+          // something: it is the progress language.
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: TibebBand(height: 10),
           ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                LText(
-                  chapterLabel,
-                  style: GoogleFonts.ibmPlexSans(
-                    fontSize: 11,
-                    letterSpacing: 1,
-                    fontWeight: FontWeight.w900,
-                    color: FluentianColors.accent,
+                // The French blue measured 2.17:1 against this navy card --
+                // legible to nobody. Now the on-ink accent, at 8.59:1.
+                Text(
+                  context.tr(chapterLabel),
+                  style: FluentianTheme.label(
+                    color: FluentianColors.onInkAccent,
                   ),
                 ),
-                const SizedBox(height: 7),
+                const SizedBox(height: 8),
                 LText(
                   lesson.title,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.ibmPlexSans(
-                    fontSize: 21,
-                    height: 1.18,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                  style: GoogleFonts.bricolageGrotesque(
+                    fontSize: 22,
+                    height: 1.12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    color: FluentianColors.onInk,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -777,12 +766,12 @@ class _ContinueJourneyCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.ibmPlexSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withValues(alpha: .7),
+                    fontSize: 13.5,
+                    height: 1.35,
+                    color: FluentianColors.onInkMuted,
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
                 Row(
                   children: [
                     _MissionDetail(
@@ -808,7 +797,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                         ),
                         textStyle: GoogleFonts.ibmPlexSans(
                           fontSize: 14,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -833,15 +822,11 @@ class _MissionDetail extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Icon(icon, size: 16, color: Colors.white.withValues(alpha: .72)),
-      const SizedBox(width: 5),
-      LText(
+      Icon(icon, size: 15, color: FluentianColors.onInkMuted),
+      const SizedBox(width: 6),
+      Text(
         text,
-        style: GoogleFonts.ibmPlexSans(
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          color: Colors.white.withValues(alpha: .82),
-        ),
+        style: FluentianTheme.label(color: FluentianColors.onInkMuted),
       ),
     ],
   );
@@ -855,15 +840,7 @@ class _HomeSectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: LText(
-      text,
-      style: GoogleFonts.ibmPlexSans(
-        fontSize: 11,
-        letterSpacing: 1.1,
-        fontWeight: FontWeight.w900,
-        color: FluentianColors.textSecondary,
-      ),
-    ),
+    child: Text(context.tr(text), style: FluentianTheme.label()),
   );
 }
 
@@ -905,25 +882,11 @@ class _HomeHero extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: FluentianColors.headerGradient,
           borderRadius: BorderRadius.circular(0),
-          boxShadow: [
-            BoxShadow(
-              color: FluentianColors.primary.withValues(alpha: .18),
-              blurRadius: 0,
-              offset: const Offset(0, 7),
-            ),
-          ],
         ),
         child: Stack(
           children: [
-            Positioned(
-              right: -20,
-              bottom: -36,
-              child: Icon(
-                Iconsax.flash_15,
-                color: Colors.white.withValues(alpha: .08),
-                size: 175,
-              ),
-            ),
+            // Second 175px watermark glyph, gone for the same reason as the
+            // first.
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
               child: Column(
@@ -936,13 +899,10 @@ class _HomeHero extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            LText(
-                              greeting.toUpperCase(),
-                              style: GoogleFonts.ibmPlexSans(
-                                fontSize: 11,
-                                letterSpacing: 1,
-                                fontWeight: FontWeight.w900,
-                                color: FluentianColors.accent,
+                            Text(
+                              context.tr(greeting).toUpperCase(),
+                              style: FluentianTheme.label(
+                                color: FluentianColors.onInkAccent,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -950,10 +910,11 @@ class _HomeHero extends StatelessWidget {
                               displayName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.ibmPlexSans(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
+                              style: GoogleFonts.bricolageGrotesque(
+                                fontSize: 25,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.6,
+                                color: FluentianColors.onInk,
                               ),
                             ),
                           ],
@@ -981,9 +942,8 @@ class _HomeHero extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.ibmPlexSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: .76),
+                      fontSize: 13.5,
+                      color: FluentianColors.onInkMuted,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1009,36 +969,34 @@ class _HomeHero extends StatelessWidget {
                   const SizedBox(height: 18),
                   Row(
                     children: [
-                      LText(
-                        'LEVEL PROGRESS',
-                        style: GoogleFonts.ibmPlexSans(
-                          fontSize: 10,
-                          letterSpacing: .8,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white.withValues(alpha: .7),
+                      // .7 white on this navy is 3.28:1 -- under the 4.5:1
+                      // a label this small needs.
+                      Text(
+                        context.tr('LEVEL PROGRESS'),
+                        style: FluentianTheme.label(
+                          color: FluentianColors.onInkMuted,
                         ),
                       ),
                       const Spacer(),
-                      LText(
+                      Text(
                         '${_compactNumber(xp)} XP',
-                        style: GoogleFonts.ibmPlexSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
+                        style: FluentianTheme.label(
+                          size: 12,
+                          color: FluentianColors.onInk,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(99),
-                    child: LinearProgressIndicator(
-                      value: levelProgress,
-                      minHeight: 7,
-                      backgroundColor: Colors.white.withValues(alpha: .2),
-                      valueColor: const AlwaysStoppedAnimation(
-                        FluentianColors.accent,
-                      ),
+                  // Squared, and filled with the on-ink accent: the French
+                  // blue was 2.17:1 here, below the 3:1 a UI component needs
+                  // to be seen at all.
+                  LinearProgressIndicator(
+                    value: levelProgress,
+                    minHeight: 7,
+                    backgroundColor: FluentianColors.darkBorder,
+                    valueColor: const AlwaysStoppedAnimation(
+                      FluentianColors.onInkAccent,
                     ),
                   ),
                 ],
@@ -1070,23 +1028,22 @@ class _HeroPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .13),
-      borderRadius: BorderRadius.circular(99),
-      border: Border.all(color: Colors.white.withValues(alpha: .15)),
+    decoration: const BoxDecoration(
+      color: FluentianColors.darkCard,
+      border: Border.fromBorderSide(
+        BorderSide(color: FluentianColors.darkBorder),
+      ),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: FluentianColors.warning, size: 15),
-        const SizedBox(width: 5),
-        LText(
+        // Was the warning brown (#7F5200) on a translucent navy pill --
+        // effectively invisible.
+        Icon(icon, color: FluentianColors.onInkAccent, size: 15),
+        const SizedBox(width: 6),
+        Text(
           text,
-          style: GoogleFonts.ibmPlexSans(
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
+          style: FluentianTheme.label(color: FluentianColors.onInk),
         ),
       ],
     ),
@@ -1193,7 +1150,7 @@ class _NotificationButtonState extends State<_NotificationButton> {
                       unread > 9 ? '9+' : '$unread',
                       style: GoogleFonts.ibmPlexSans(
                         fontSize: 10,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
                     ),
@@ -1252,7 +1209,7 @@ class _ShimmerBoxState extends State<ShimmerBox>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: const Color(0xFFCBD5E1).withValues(alpha: opacity),
+            color: FluentianColors.border.withValues(alpha: opacity),
             borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
         );

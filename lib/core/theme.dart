@@ -54,6 +54,14 @@ class FluentianColors {
   static const Color textPrimary = Color(0xFF0E1726); // 14.60:1
   static const Color textSecondary = Color(0xFF4A4E57); // 6.78:1
 
+  // On ink. Screens kept reaching for `Colors.white.withValues(alpha: .7)`
+  // and, worse, for `accent` -- the French blue on a navy card measures
+  // 2.17:1, which is not readable at any size. These three are fixed values
+  // measured against `primary` (#16233D); on `primaryDark` they only improve.
+  static const Color onInk = Color(0xFFFFFFFF); // 15.65:1
+  static const Color onInkMuted = Color(0xFFC7CCD6); // 9.71:1
+  static const Color onInkAccent = Color(0xFFA8C0F5); // 8.59:1
+
   // ── Rules. Hairlines carry the structure the shadows used to fake.
   static const Color border = Color(0xFFC9C9C0);
   static const Color divider = Color(0xFFD8D8D1);
