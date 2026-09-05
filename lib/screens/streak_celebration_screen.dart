@@ -210,7 +210,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                                 '+1 STREAK!',
                                 style: GoogleFonts.ibmPlexSans(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
                               ),
@@ -238,7 +238,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                           textAlign: TextAlign.center,
                           style: GoogleFonts.ibmPlexSans(
                             fontSize: 32,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             letterSpacing: -0.5,
                             color: Colors.white,
                             shadows: [

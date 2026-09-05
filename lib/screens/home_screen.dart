@@ -181,7 +181,7 @@ class _HomeContentState extends State<_HomeContent> {
                     const Icon(
                       Icons.cloud_off_rounded,
                       size: 48,
-                      color: Colors.grey,
+                      color: FluentianColors.textSecondary,
                     ),
                     const SizedBox(height: 16),
                     LText(

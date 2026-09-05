@@ -279,18 +279,18 @@ class _ProfessionalApplicationScreenState
               contentPadding: const EdgeInsets.all(16),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide: BorderSide(color: Colors.grey.shade200),
+                borderSide: BorderSide(color: FluentianColors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
-                borderSide: BorderSide(color: Colors.grey.shade200),
+                borderSide: BorderSide(color: FluentianColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(0),
                 borderSide: const BorderSide(color: FluentianColors.primary),
               ),
               filled: true,
-              fillColor: Colors.grey.shade50,
+              fillColor: FluentianColors.pageBg,
             ),
           ),
         ],

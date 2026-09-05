@@ -55,7 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: LText(
           'Your settings',
-          style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w900),
+          style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w700),
         ),
         backgroundColor: FluentianColors.pageBg,
         elevation: 0,
@@ -591,7 +591,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               style: GoogleFonts.ibmPlexSans(
                                 color: Colors.white,
                                 fontSize: 24,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -605,14 +605,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   style: GoogleFonts.ibmPlexSans(
                                     color: Colors.white,
                                     fontSize: 19,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 LText(
                                   'Help your learning circle know who you are and what you are aiming for.',
                                   style: GoogleFonts.ibmPlexSans(
-                                    color: Colors.white.withValues(alpha: .78),
+                                    color: FluentianColors.onInkMuted,
                                     fontSize: 12,
                                     height: 1.35,
                                   ),
@@ -908,7 +908,7 @@ class _AccountHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 13,
-                    color: Colors.white.withValues(alpha: .72),
+                    color: FluentianColors.onInkMuted,
                   ),
                 ),
               ],
@@ -947,7 +947,7 @@ class _SettingsGroup extends StatelessWidget {
             style: GoogleFonts.ibmPlexSans(
               fontSize: 11,
               letterSpacing: 1,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: FluentianColors.textSecondary,
             ),
           ),
@@ -1733,7 +1733,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     hintText: '······',
                     hintStyle: TextStyle(
                       letterSpacing: 14,
-                      color: Colors.grey.shade400,
+                      color: FluentianColors.border,
                       fontSize: 22,
                     ),
                     filled: true,
@@ -1992,7 +1992,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                         width: 42,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
+                          color: FluentianColors.border,
                           borderRadius: BorderRadius.circular(99),
                         ),
                       ),

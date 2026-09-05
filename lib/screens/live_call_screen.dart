@@ -693,7 +693,7 @@ class _AiTutorCard extends StatelessWidget {
                 style: GoogleFonts.ibmPlexSans(
                   color: const Color(0xFF9CEAE5),
                   fontSize: 9,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: .7,
                 ),
               ),
@@ -778,7 +778,7 @@ class _MatchCard extends StatelessWidget {
                     style: GoogleFonts.ibmPlexSans(
                       color: Colors.white,
                       fontSize: 18,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   LText(

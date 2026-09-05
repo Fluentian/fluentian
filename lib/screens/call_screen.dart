@@ -893,7 +893,7 @@ class _CallScreenState extends State<CallScreen> {
                           style: GoogleFonts.ibmPlexSans(
                             color: Colors.white,
                             fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         LText(
@@ -934,7 +934,7 @@ class _CallScreenState extends State<CallScreen> {
                 style: GoogleFonts.ibmPlexSans(
                   color: Colors.white54,
                   fontSize: 10,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 1,
                 ),
               ),
@@ -1033,7 +1033,7 @@ class _CallScreenState extends State<CallScreen> {
                   'Report ${participant.name.isEmpty ? 'learner' : participant.name}',
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 20,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -1493,7 +1493,7 @@ class _CallScreenState extends State<CallScreen> {
             style: GoogleFonts.ibmPlexSans(
               color: Colors.white,
               fontSize: 18,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),

@@ -110,7 +110,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
             width: 44,
             height: 5,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: FluentianColors.border,
               borderRadius: BorderRadius.circular(0),
             ),
           ),
@@ -263,7 +263,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                       fontWeight: FontWeight.w700,
                       color: isSelected ? Colors.white : FluentianColors.textSecondary,
                     ),
-                    backgroundColor: Colors.grey.shade100,
+                    backgroundColor: FluentianColors.divider,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(0),
                       side: BorderSide(
@@ -300,12 +300,12 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? FluentianColors.primaryTint
-                          : Colors.grey.shade50,
+                          : FluentianColors.pageBg,
                       borderRadius: BorderRadius.circular(0),
                       border: Border.all(
                         color: isSelected
                             ? FluentianColors.primary
-                            : Colors.grey.shade200,
+                            : FluentianColors.border,
                         width: isSelected ? 2.5 : 1,
                       ),
                     ),

@@ -309,7 +309,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
                     size: widget.compact ? 15 : 17,
                     color: i < widget.hearts
                         ? activeColor
-                        : Colors.grey.shade400,
+                        : FluentianColors.border,
                   ),
                 ),
               ),

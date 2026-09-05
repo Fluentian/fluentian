@@ -127,7 +127,7 @@ class UserAvatar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isOnline
                       ? FluentianColors.success
-                      : Colors.grey.shade400,
+                      : FluentianColors.border,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Colors.white,

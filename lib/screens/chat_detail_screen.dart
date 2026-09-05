@@ -218,7 +218,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               decoration: InputDecoration(
                 hintText: context.tr('Write a friendly message'),
                 filled: true,
-                fillColor: Colors.grey.shade100,
+                fillColor: FluentianColors.divider,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(0),
                   borderSide: BorderSide.none,

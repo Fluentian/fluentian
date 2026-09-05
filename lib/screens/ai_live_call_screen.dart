@@ -521,7 +521,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
             style: GoogleFonts.ibmPlexSans(
               color: _agentColor,
               fontSize: 10,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               letterSpacing: 1.7,
             ),
           ),

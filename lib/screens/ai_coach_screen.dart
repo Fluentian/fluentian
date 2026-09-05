@@ -331,7 +331,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                           hintText: context.tr('Write a sentence in French'),
                           hintStyle: GoogleFonts.ibmPlexSans(
                             fontSize: 15,
-                            color: Colors.grey.shade600,
+                            color: FluentianColors.textSecondary,
                           ),
                         ),
                       ),
@@ -358,7 +358,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade700,
+                        color: FluentianColors.textSecondary,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -471,14 +471,14 @@ class _CoachMarkdownResponse extends StatelessWidget {
       selectable: true,
       styleSheet: MarkdownStyleSheet(
         p: baseStyle,
-        strong: baseStyle.copyWith(fontWeight: FontWeight.w900),
+        strong: baseStyle.copyWith(fontWeight: FontWeight.w700),
         em: baseStyle.copyWith(fontStyle: FontStyle.italic),
-        h1: baseStyle.copyWith(fontSize: 19, fontWeight: FontWeight.w900),
-        h2: baseStyle.copyWith(fontSize: 17, fontWeight: FontWeight.w900),
-        h3: baseStyle.copyWith(fontSize: 15.5, fontWeight: FontWeight.w900),
+        h1: baseStyle.copyWith(fontSize: 19, fontWeight: FontWeight.w700),
+        h2: baseStyle.copyWith(fontSize: 17, fontWeight: FontWeight.w700),
+        h3: baseStyle.copyWith(fontSize: 15.5, fontWeight: FontWeight.w700),
         listBullet: baseStyle.copyWith(
           color: FluentianColors.primaryLight,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
         ),
         a: baseStyle.copyWith(
           color: FluentianColors.primaryLight,

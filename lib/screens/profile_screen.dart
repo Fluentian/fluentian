@@ -84,7 +84,7 @@ class ProfileScreen extends StatelessWidget {
                             style: GoogleFonts.ibmPlexSans(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white.withValues(alpha: .72),
+                              color: FluentianColors.onInkMuted,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -305,7 +305,7 @@ class ProfileScreen extends StatelessWidget {
                           'Weekly Activity',
                           style: GoogleFonts.ibmPlexSans(
                             fontSize: 16,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: FluentianColors.textPrimary,
                           ),
                         ),
@@ -455,7 +455,7 @@ class ProfileScreen extends StatelessWidget {
                       'Learning summary',
                       style: GoogleFonts.ibmPlexSans(
                         fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: FluentianColors.textPrimary,
                       ),
                     ),
@@ -549,7 +549,7 @@ class _MetricCard extends StatelessWidget {
                   maxLines: 1,
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 20,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: FluentianColors.textPrimary,
                     height: 1,
                   ),
@@ -622,7 +622,7 @@ class _SummaryLine extends StatelessWidget {
             value,
             style: GoogleFonts.ibmPlexSans(
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: FluentianColors.primary,
             ),
           ),
@@ -692,7 +692,7 @@ class _SectionLabel extends StatelessWidget {
       style: GoogleFonts.ibmPlexSans(
         fontSize: 11,
         letterSpacing: 1.1,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
         color: FluentianColors.textSecondary,
       ),
     ),

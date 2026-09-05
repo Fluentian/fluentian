@@ -292,7 +292,7 @@ class _InboxHeader extends StatelessWidget {
                   style: GoogleFonts.ibmPlexSans(
                     color: Colors.white,
                     fontSize: 17,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -421,7 +421,7 @@ class _NotificationTile extends StatelessWidget {
                             style: GoogleFonts.ibmPlexSans(
                               fontSize: 15,
                               fontWeight: isUnread
-                                  ? FontWeight.w900
+                                  ? FontWeight.w700
                                   : FontWeight.w700,
                               color: FluentianColors.textPrimary,
                               height: 1.25,
@@ -528,7 +528,7 @@ class _SourcePill extends StatelessWidget {
         label,
         style: GoogleFonts.ibmPlexSans(
           fontSize: 10.5,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           color: color,
         ),
       ),
@@ -586,7 +586,7 @@ class _MessageState extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 18,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: FluentianColors.textPrimary,
                   ),
                 ),

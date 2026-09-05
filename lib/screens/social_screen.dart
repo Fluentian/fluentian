@@ -135,7 +135,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 'Social',
                 style: GoogleFonts.ibmPlexSans(
                   fontSize: 24,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: FluentianColors.textPrimary,
                 ),
               ),
@@ -193,7 +193,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   style: GoogleFonts.ibmPlexSans(
                     color: Colors.white,
                     fontSize: 18,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -429,7 +429,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       'Weekly league',
                       style: GoogleFonts.ibmPlexSans(
                         fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: FluentianColors.textPrimary,
                       ),
                     ),
@@ -466,7 +466,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     '#$rank',
                     style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: FluentianColors.secondary,
                     ),
                   ),
@@ -507,7 +507,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.ibmPlexSans(
                       fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: FluentianColors.textPrimary,
                     ),
                   ),
@@ -594,7 +594,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       children: [
                         TextSpan(
                           text: activity.actor.displayName,
-                          style: const TextStyle(fontWeight: FontWeight.w900),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         TextSpan(text: ' ${activity.title}'),
                       ],
@@ -667,7 +667,7 @@ class _SocialScreenState extends State<SocialScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.ibmPlexSans(
                           fontSize: 15,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: FluentianColors.textPrimary,
                         ),
                       ),
@@ -702,7 +702,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     'Sent',
                     style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: FluentianColors.textSecondary,
                     ),
                   ),
@@ -768,7 +768,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.ibmPlexSans(
                         fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     LText(
@@ -797,7 +797,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   item.status.toUpperCase(),
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 9,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: item.status == 'active'
                         ? FluentianColors.success
                         : FluentianColors.primary,
@@ -922,7 +922,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   'Choose your accountability partner',
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 20,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -1092,7 +1092,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       room.title,
                       style: GoogleFonts.ibmPlexSans(
                         fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: FluentianColors.textPrimary,
                       ),
                     ),
@@ -1241,7 +1241,7 @@ class _SocialScreenState extends State<SocialScreen> {
                                 'Find a learning partner',
                                 style: GoogleFonts.ibmPlexSans(
                                   fontSize: 20,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   color: FluentianColors.textPrimary,
                                 ),
                               ),
@@ -1403,7 +1403,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 'Challenge ${friend.displayName}',
                 style: GoogleFonts.ibmPlexSans(
                   fontSize: 20,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: FluentianColors.textPrimary,
                 ),
               ),
@@ -1555,7 +1555,7 @@ class _FriendSearchEmpty extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.ibmPlexSans(
                 fontSize: 17,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: FluentianColors.textPrimary,
               ),
             ),
@@ -1629,7 +1629,7 @@ class _FriendSearchResult extends StatelessWidget {
               style: GoogleFonts.ibmPlexSans(
                 color: Colors.white,
                 fontSize: 18,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1644,7 +1644,7 @@ class _FriendSearchResult extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: FluentianColors.textPrimary,
                   ),
                 ),
@@ -1816,7 +1816,7 @@ class _FriendCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.ibmPlexSans(
                           fontSize: 15,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: FluentianColors.textPrimary,
                         ),
                       ),
@@ -1915,7 +1915,7 @@ class _SectionTitle extends StatelessWidget {
           title,
           style: GoogleFonts.ibmPlexSans(
             fontSize: 16,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: FluentianColors.textPrimary,
           ),
         ),
@@ -2049,7 +2049,7 @@ class _HeroStat extends StatelessWidget {
             style: GoogleFonts.ibmPlexSans(
               color: Colors.white,
               fontSize: 22,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           LText(
@@ -2083,7 +2083,7 @@ class _LevelBadge extends StatelessWidget {
         level,
         style: GoogleFonts.ibmPlexSans(
           fontSize: 11,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           color: FluentianColors.primary,
         ),
       ),
@@ -2106,7 +2106,7 @@ class _FriendMetric extends StatelessWidget {
           value,
           style: GoogleFonts.ibmPlexSans(
             fontSize: 15,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: FluentianColors.textPrimary,
           ),
         ),
@@ -2205,7 +2205,7 @@ class _EmptyPanel extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.ibmPlexSans(
               fontSize: 15,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: FluentianColors.textPrimary,
             ),
           ),
@@ -2317,7 +2317,7 @@ class _ChoiceChip extends StatelessWidget {
           label,
           style: GoogleFonts.ibmPlexSans(
             color: selected ? Colors.white : FluentianColors.primary,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -2364,7 +2364,7 @@ class _StepperRow extends StatelessWidget {
               '$value',
               style: GoogleFonts.ibmPlexSans(
                 fontSize: 18,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: FluentianColors.textPrimary,
               ),
             ),

@@ -109,7 +109,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           cleaned,
                           style: GoogleFonts.ibmPlexSans(
                             fontSize: 26,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: FluentianColors.textPrimary,
                           ),
                         ),
@@ -251,7 +251,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           'Explore France',
                           style: GoogleFonts.ibmPlexSans(
                             fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: Colors.white,
                           ),
                         ),
@@ -263,7 +263,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           style: GoogleFonts.ibmPlexSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white.withValues(alpha: .72),
+                            color: FluentianColors.onInkMuted,
                           ),
                         ),
                       ],
@@ -492,7 +492,7 @@ class _WordContext extends StatelessWidget {
               label,
               style: GoogleFonts.ibmPlexSans(
                 fontSize: 10,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 1,
                 color: FluentianColors.primary,
               ),
@@ -603,7 +603,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                                 color: Colors.white70,
                                 fontSize: 10,
                                 letterSpacing: 1.2,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -612,7 +612,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                               style: GoogleFonts.ibmPlexSans(
                                 color: Colors.white,
                                 fontSize: 29,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                             if (item.translation.isNotEmpty) ...[
@@ -771,7 +771,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                     "Couldn't load your word bank",
                     style: GoogleFonts.ibmPlexSans(
                       fontSize: 19,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -820,7 +820,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                     'Your word bank is ready',
                     style: GoogleFonts.ibmPlexSans(
                       fontSize: 19,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -888,7 +888,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                             item.word.characters.first.toUpperCase(),
                             style: GoogleFonts.ibmPlexSans(
                               fontSize: 18,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                               color: FluentianColors.primary,
                             ),
                           ),
@@ -902,7 +902,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                                 item.word,
                                 style: GoogleFonts.ibmPlexSans(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               const SizedBox(height: 4),

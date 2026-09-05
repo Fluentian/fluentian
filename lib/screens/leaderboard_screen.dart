@@ -192,7 +192,7 @@ class _LeaderboardAppBar extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.ibmPlexSans(
               fontSize: 19,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: FluentianColors.textPrimary,
             ),
           ),
@@ -275,7 +275,7 @@ class _LeagueHero extends StatelessWidget {
                   style: GoogleFonts.ibmPlexSans(
                     fontSize: 10,
                     letterSpacing: .7,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: FluentianColors.accent,
                   ),
                 ),
@@ -286,7 +286,7 @@ class _LeagueHero extends StatelessWidget {
                 style: GoogleFonts.ibmPlexSans(
                   fontSize: 25,
                   height: 1.05,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               ),
@@ -297,7 +297,7 @@ class _LeagueHero extends StatelessWidget {
                   fontSize: 13,
                   height: 1.4,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: .78),
+                  color: FluentianColors.onInkMuted,
                 ),
               ),
               const SizedBox(height: 16),
@@ -388,7 +388,7 @@ class _PodiumPlace extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.ibmPlexSans(
             fontSize: 12,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: FluentianColors.textPrimary,
           ),
         ),
@@ -409,7 +409,7 @@ class _PodiumPlace extends StatelessWidget {
                 '$rank',
                 style: GoogleFonts.ibmPlexSans(
                   fontSize: rank == 1 ? 26 : 21,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: _color,
                 ),
               ),
@@ -417,7 +417,7 @@ class _PodiumPlace extends StatelessWidget {
                 '${entry!.weeklyXp} XP',
                 style: GoogleFonts.ibmPlexSans(
                   fontSize: 11,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: FluentianColors.textPrimary,
                 ),
               ),
@@ -448,7 +448,7 @@ class _RankRow extends StatelessWidget {
             '${entry.rank ?? '—'}',
             style: GoogleFonts.ibmPlexSans(
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: FluentianColors.textSecondary,
             ),
           ),
@@ -486,7 +486,7 @@ class _RankRow extends StatelessWidget {
           '${entry.weeklyXp} XP',
           style: GoogleFonts.ibmPlexSans(
             fontSize: 13,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: FluentianColors.secondary,
           ),
         ),
@@ -522,7 +522,7 @@ class _CurrentLearnerCard extends StatelessWidget {
             entry.rank == null ? '—' : '#${entry.rank}',
             style: GoogleFonts.ibmPlexSans(
               fontSize: 16,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: FluentianColors.accent,
             ),
           ),
@@ -540,7 +540,7 @@ class _CurrentLearnerCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.ibmPlexSans(
                   fontSize: 14,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               ),
@@ -552,7 +552,7 @@ class _CurrentLearnerCard extends StatelessWidget {
                 style: GoogleFonts.ibmPlexSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: .66),
+                  color: FluentianColors.onInkMuted,
                 ),
               ),
             ],
@@ -562,7 +562,7 @@ class _CurrentLearnerCard extends StatelessWidget {
           '${entry.weeklyXp} XP',
           style: GoogleFonts.ibmPlexSans(
             fontSize: 15,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
         ),
@@ -652,7 +652,7 @@ class _EmptyLeague extends StatelessWidget {
           'The league is open',
           style: GoogleFonts.ibmPlexSans(
             fontSize: 17,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: FluentianColors.textPrimary,
           ),
         ),
@@ -682,7 +682,7 @@ class _SectionLabel extends StatelessWidget {
     style: GoogleFonts.ibmPlexSans(
       fontSize: 10,
       letterSpacing: .9,
-      fontWeight: FontWeight.w900,
+      fontWeight: FontWeight.w700,
       color: FluentianColors.textSecondary,
     ),
   );

@@ -170,7 +170,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: FluentianColors.border,
                 borderRadius: BorderRadius.circular(0),
               ),
             ),
@@ -330,7 +330,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                       gradient: _isLoading
                           ? null
                           : FluentianColors.headerGradient,
-                      color: _isLoading ? Colors.grey.shade300 : null,
+                      color: _isLoading ? FluentianColors.border : null,
                       borderRadius: BorderRadius.circular(0),
                       boxShadow: _isLoading ? null : [FluentianShadows.subtle],
                     ),
@@ -499,30 +499,30 @@ class _MarkdownTutorText extends StatelessWidget {
       selectable: true,
       styleSheet: MarkdownStyleSheet(
         p: baseStyle,
-        strong: baseStyle.copyWith(fontWeight: FontWeight.w900),
+        strong: baseStyle.copyWith(fontWeight: FontWeight.w700),
         em: baseStyle.copyWith(fontStyle: FontStyle.italic),
         h1: GoogleFonts.ibmPlexSans(
           color: FluentianColors.textPrimary,
           fontSize: 19,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           height: 1.25,
         ),
         h2: GoogleFonts.ibmPlexSans(
           color: FluentianColors.textPrimary,
           fontSize: 17,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           height: 1.28,
         ),
         h3: GoogleFonts.ibmPlexSans(
           color: FluentianColors.textPrimary,
           fontSize: 15.5,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           height: 1.32,
         ),
         listBullet: GoogleFonts.ibmPlexSans(
           color: FluentianColors.primary,
           fontSize: 15,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           height: 1.45,
         ),
         code: GoogleFonts.firaCode(
@@ -564,7 +564,7 @@ class _MarkdownTutorText extends StatelessWidget {
             ),
           ),
         ),
-        tableHead: baseStyle.copyWith(fontWeight: FontWeight.w900),
+        tableHead: baseStyle.copyWith(fontWeight: FontWeight.w700),
         tableBody: baseStyle.copyWith(fontSize: 13.5),
         tableBorder: TableBorder.all(color: FluentianColors.border),
         blockSpacing: 10,
@@ -649,7 +649,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                   style: GoogleFonts.ibmPlexSans(
                     color: FluentianColors.textPrimary,
                     fontSize: 12,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),

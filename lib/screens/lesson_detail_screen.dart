@@ -526,7 +526,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 style: GoogleFonts.ibmPlexSans(
                   color: FluentianColors.primary,
                   fontSize: 10,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 0.7,
                 ),
               ),
@@ -569,7 +569,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     style: GoogleFonts.ibmPlexSans(
                       color: FluentianColors.textPrimary,
                       fontSize: 22,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       height: 1.15,
                     ),
                   ),
@@ -1054,7 +1054,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                               style: GoogleFonts.ibmPlexSans(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.grey.shade500,
+                                color: FluentianColors.textSecondary,
                                 letterSpacing: 0.5,
                               ),
                             ),

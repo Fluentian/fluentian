@@ -106,7 +106,7 @@ class _PronunciationButtonState extends State<PronunciationButton> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(0),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: FluentianColors.border),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

@@ -59,7 +59,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                     onTap: () => Navigator.pop(context),
                     child: Icon(
                       Icons.close_rounded,
-                      color: Colors.grey.shade500,
+                      color: FluentianColors.textSecondary,
                       size: 24,
                     ),
                   ),
@@ -69,7 +69,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                       borderRadius: BorderRadius.circular(0),
                       child: LinearProgressIndicator(
                         value: 0.75,
-                        backgroundColor: Colors.grey.shade200,
+                        backgroundColor: FluentianColors.border,
                         valueColor: const AlwaysStoppedAnimation(
                           FluentianColors.primary,
                         ),
@@ -90,7 +90,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                           size: 18,
                           color: i < 4
                               ? FluentianColors.error
-                              : Colors.grey.shade300,
+                              : FluentianColors.border,
                         ),
                       ),
                     ),

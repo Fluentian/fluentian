@@ -266,7 +266,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                                 Icon(
                                   Iconsax.search_status,
                                   size: 64,
-                                  color: Colors.grey.shade300,
+                                  color: FluentianColors.border,
                                 ),
                                 const SizedBox(height: 16),
                                 LText(

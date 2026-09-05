@@ -888,7 +888,7 @@ class _McqScreenState extends State<McqScreen>
                     style: ElevatedButton.styleFrom(
                       backgroundColor: correct
                           ? FluentianColors.success
-                          : Colors.grey.shade300,
+                          : FluentianColors.border,
                       foregroundColor: correct
                           ? Colors.white
                           : FluentianColors.textPrimary,
@@ -1066,7 +1066,7 @@ class _McqScreenState extends State<McqScreen>
                     onTap: () => Navigator.pop(context),
                     child: Icon(
                       Iconsax.close_circle,
-                      color: Colors.grey.shade500,
+                      color: FluentianColors.textSecondary,
                       size: 24,
                     ),
                   ),
@@ -1076,7 +1076,7 @@ class _McqScreenState extends State<McqScreen>
                       borderRadius: BorderRadius.circular(0),
                       child: LinearProgressIndicator(
                         value: progress,
-                        backgroundColor: Colors.grey.shade200,
+                        backgroundColor: FluentianColors.border,
                         valueColor: const AlwaysStoppedAnimation(
                           FluentianColors.primary,
                         ),
@@ -1145,11 +1145,11 @@ class _McqScreenState extends State<McqScreen>
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
                             height: 180,
-                            color: Colors.grey.shade100,
+                            color: FluentianColors.divider,
                             child: const Icon(
                               Iconsax.gallery_slash,
                               size: 40,
-                              color: Colors.grey,
+                              color: FluentianColors.textSecondary,
                             ),
                           ),
                         ),
@@ -1243,10 +1243,10 @@ class _McqScreenState extends State<McqScreen>
                     : null,
                 backgroundColor: _hearts <= 0 || _isCheckEnabled()
                     ? FluentianColors.primary
-                    : Colors.grey.shade300,
+                    : FluentianColors.border,
                 textColor: _hearts <= 0 || _isCheckEnabled()
                     ? Colors.white
-                    : Colors.grey,
+                    : FluentianColors.textSecondary,
               ),
             ),
           ],
@@ -1371,7 +1371,7 @@ class _McqScreenState extends State<McqScreen>
                     shape: BoxShape.circle,
                     color: isSelected
                         ? FluentianColors.primary
-                        : Colors.grey.shade100,
+                        : FluentianColors.divider,
                   ),
                   child: Center(
                     child: LText(
@@ -1509,9 +1509,9 @@ class _McqScreenState extends State<McqScreen>
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
+            color: FluentianColors.pageBg,
             borderRadius: BorderRadius.circular(0),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: FluentianColors.border),
           ),
           child: LText(
             displaySentence,
@@ -1547,7 +1547,7 @@ class _McqScreenState extends State<McqScreen>
                   ? (val) => setState(() => _selected = val ? i : null)
                   : null,
               selectedColor: FluentianColors.primary,
-              backgroundColor: Colors.grey.shade100,
+              backgroundColor: FluentianColors.divider,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(0),
               ),
@@ -1718,18 +1718,18 @@ class _McqScreenState extends State<McqScreen>
           decoration: InputDecoration(
             hintText: context.tr('Write your answer in French'),
             hintStyle: GoogleFonts.ibmPlexSans(
-              color: Colors.grey.shade400,
+              color: FluentianColors.border,
               fontWeight: FontWeight.normal,
             ),
             filled: true,
-            fillColor: Colors.grey.shade50,
+            fillColor: FluentianColors.pageBg,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 16,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(0),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+              borderSide: BorderSide(color: FluentianColors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(0),
@@ -1760,7 +1760,7 @@ class _McqScreenState extends State<McqScreen>
               final isSelected = _selectedLeft == left;
 
               Color bgCol = Colors.white;
-              Color borderCol = Colors.grey.shade200;
+              Color borderCol = FluentianColors.border;
               Color textCol = FluentianColors.textPrimary;
               String badge = '';
 
@@ -1885,7 +1885,7 @@ class _McqScreenState extends State<McqScreen>
               final isSelected = _selectedRight == right;
 
               Color bgCol = Colors.white;
-              Color borderCol = Colors.grey.shade200;
+              Color borderCol = FluentianColors.border;
               Color textCol = FluentianColors.textPrimary;
               String badge = '';
 
@@ -2077,7 +2077,7 @@ class _McqScreenState extends State<McqScreen>
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(0),
                     border: Border.all(
-                      color: Colors.grey.shade300,
+                      color: FluentianColors.border,
                     ),
                   ),
                   child: Row(

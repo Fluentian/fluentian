@@ -108,7 +108,7 @@ class _OfflineDownloadsScreenState extends State<OfflineDownloadsScreen> {
       appBar: AppBar(
         title: LText(
           'Downloaded lessons',
-          style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w900),
+          style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w700),
         ),
         backgroundColor: FluentianColors.pageBg,
         elevation: 0,
@@ -135,7 +135,7 @@ class _OfflineDownloadsScreenState extends State<OfflineDownloadsScreen> {
                           style: GoogleFonts.ibmPlexSans(
                             fontSize: 11,
                             letterSpacing: 1,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: FluentianColors.textSecondary,
                           ),
                         ),

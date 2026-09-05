@@ -224,7 +224,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                                         : 'DAILY PRACTICE RECORDED',
                                     style: GoogleFonts.ibmPlexSans(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.w700,
                                       letterSpacing: 0.5,
                                       color: Colors.white.withValues(alpha: 0.9),
                                     ),
@@ -275,7 +275,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                                   'PERFECT TRIAL BONUS',
                                   style: GoogleFonts.ibmPlexSans(
                                     fontSize: 11,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w700,
                                     letterSpacing: 0.5,
                                     color: FluentianColors.info,
                                   ),
