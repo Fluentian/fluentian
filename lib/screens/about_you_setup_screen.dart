@@ -256,7 +256,7 @@ class _BirthDateField extends StatelessWidget {
                           Text(
                             '$age years old',
                             style: FluentianTheme.label(
-                              color: const Color(0xFFC7CCD6),
+                              color: FluentianColors.onInkMuted,
                             ),
                           ),
                         ],

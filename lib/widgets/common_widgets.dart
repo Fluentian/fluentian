@@ -880,7 +880,7 @@ class SkeletonBox extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: color ?? const Color(0xFFE2E8F0),
+        color: color ?? FluentianColors.border,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     );

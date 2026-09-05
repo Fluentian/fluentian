@@ -162,7 +162,7 @@ class _LevelRow extends StatelessWidget {
                       level.description,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: isSelected
-                            ? const Color(0xFFC7CCD6)
+                            ? FluentianColors.onInkMuted
                             : FluentianColors.textSecondary,
                       ),
                     ),

@@ -238,15 +238,6 @@ class _LeagueHero extends StatelessWidget {
     ),
     child: Stack(
       children: [
-        Positioned(
-          right: -22,
-          top: -22,
-          child: Icon(
-            Iconsax.cup5,
-            size: 140,
-            color: Colors.white.withValues(alpha: .08),
-          ),
-        ),
         Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -355,10 +346,20 @@ class _PodiumPlace extends StatelessWidget {
     required this.height,
   });
 
+  /// Gold, silver, bronze. Kept as literal metals rather than mapped onto the
+  /// semantic palette -- these three read as a podium precisely because they
+  /// are the medal colours, and rank is also carried by position and by the
+  /// numeral, so nothing here depends on telling them apart by hue.
+  /// Gold, silver, bronze. Kept as literal metals rather than mapped onto the
+  /// semantic palette -- these three read as a podium precisely because they
+  /// are the medal colours. The originals (#7C93A8, #B77946) sat at 2.6-2.9:1
+  /// on paper; these clear 4.5:1, and they now only carry the ring and the
+  /// 3px rule. The rank numeral itself is ink, because a number is data and
+  /// should not be the thing whose legibility depends on a metal.
   Color get _color => switch (rank) {
-    1 => FluentianColors.warning,
-    2 => const Color(0xFF7C93A8),
-    _ => const Color(0xFFB77946),
+    1 => FluentianColors.warning, // 5.49:1 on paper
+    2 => const Color(0xFF54677A), // 4.74:1
+    _ => const Color(0xFF8A5730), // 4.90:1
   };
 
   @override
@@ -396,12 +397,13 @@ class _PodiumPlace extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              LText(
+              Text(
                 '$rank',
-                style: GoogleFonts.ibmPlexSans(
-                  fontSize: rank == 1 ? 26 : 21,
-                  fontWeight: FontWeight.w700,
-                  color: _color,
+                style: GoogleFonts.bricolageGrotesque(
+                  fontSize: rank == 1 ? 27 : 22,
+                  fontWeight: FontWeight.w800,
+                  height: 1.0,
+                  color: FluentianColors.textPrimary,
                 ),
               ),
               LText(

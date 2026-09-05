@@ -574,11 +574,11 @@ class _CallScreenState extends State<CallScreen> {
   Widget _buildPingPill() {
     final Color color;
     if (_pingMs < 80) {
-      color = const Color(0xFF4CAF50); // Emerald green
+      color = FluentianColors.onInkSuccess; // Emerald green
     } else if (_pingMs < 180) {
-      color = const Color(0xFFFFB300); // Amber
+      color = FluentianColors.onInkWarning; // Amber
     } else {
-      color = const Color(0xFFF44336); // Red
+      color = FluentianColors.onInkError; // Red
     }
 
     return Container(
@@ -673,7 +673,7 @@ class _CallScreenState extends State<CallScreen> {
         if (!didPop) _leave();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF101014),
+        backgroundColor: FluentianColors.darkPageBg,
         body: SafeArea(
           child: showMatchWaiting
               ? _buildMatchWaitingUi()
@@ -849,7 +849,7 @@ class _CallScreenState extends State<CallScreen> {
       builder: (sheetContext) => Container(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
         decoration: const BoxDecoration(
-          color: Color(0xFF1B1B22),
+          color: FluentianColors.darkCard,
           borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
         ),
         child: SafeArea(
@@ -1344,7 +1344,7 @@ class _CallScreenState extends State<CallScreen> {
               child: Container(
                 width: 92,
                 height: 126,
-                color: const Color(0xFF1D1D22),
+                color: FluentianColors.darkCard,
                 child: _localVideoTrack == null
                     ? const Icon(Iconsax.video_slash, color: Colors.white54)
                     : VideoTrackRenderer(
@@ -1395,7 +1395,7 @@ class _CallScreenState extends State<CallScreen> {
               child: Container(
                 width: 150,
                 height: 200,
-                color: const Color(0xFF1D1D22),
+                color: FluentianColors.darkCard,
                 child: _localVideoTrack == null
                     ? const Icon(Iconsax.video_slash, color: Colors.white54)
                     : VideoTrackRenderer(

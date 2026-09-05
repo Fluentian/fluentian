@@ -320,18 +320,25 @@ class _OpportunityCard extends StatelessWidget {
     }
   }
 
+  /// Colour for an opportunity type.
+  ///
+  /// Was five Material 500 hues -- purple, blue, teal, orange, pink -- copied
+  /// verbatim into both this screen and its detail view. Same problem as the
+  /// lesson kinds: a legend nobody learns, spending colour on a category when
+  /// each row already carries an icon and the type spelled out. The system's
+  /// inks now, so the list sits on the same palette as the rest of the app.
   Color _getColorForType(String type) {
     switch (type.toLowerCase()) {
       case 'scholarships':
-        return const Color(0xFF9C27B0);
+        return FluentianColors.primary;
       case 'jobs':
-        return const Color(0xFF0288D1);
+        return FluentianColors.accent;
       case 'exchange':
-        return const Color(0xFF009688);
+        return FluentianColors.secondary;
       case 'events':
-        return const Color(0xFFF57C00);
+        return FluentianColors.warning;
       case 'volunteer':
-        return const Color(0xFFE91E63);
+        return FluentianColors.error;
       default:
         return FluentianColors.primary;
     }

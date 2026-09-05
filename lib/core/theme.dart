@@ -62,6 +62,16 @@ class FluentianColors {
   static const Color onInkMuted = Color(0xFFC7CCD6); // 9.71:1
   static const Color onInkAccent = Color(0xFFA8C0F5); // 8.59:1
 
+  // The semantic three, lifted for dark grounds. The ink versions of success,
+  // warning and error are dark enough to disappear on a call screen, so the
+  // four dark screens each improvised their own -- Material's #4CAF50,
+  // #FFB300 and #F44336 in one, three different teals in another. Measured
+  // against darkPageBg (#0B121F) / darkCard (#16233D), and success and error
+  // are 1.45:1 apart in luminance so they stay separable in greyscale.
+  static const Color onInkSuccess = Color(0xFF6FD3A8); // 10.32 / 8.61
+  static const Color onInkWarning = Color(0xFFE0B44C); // 9.64 / 8.05
+  static const Color onInkError = Color(0xFFEE8071); // 7.11 / 5.93
+
   // ── Rules. Hairlines carry the structure the shadows used to fake.
   static const Color border = Color(0xFFC9C9C0);
   static const Color divider = Color(0xFFD8D8D1);

@@ -624,7 +624,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                 height: 30,
                 decoration: BoxDecoration(
                   color: isPoll
-                      ? const Color(0xFFFFF7ED)
+                      ? FluentianColors.warningTint
                       : FluentianColors.primaryTint,
                   borderRadius: BorderRadius.circular(0),
                 ),

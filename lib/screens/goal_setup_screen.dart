@@ -135,7 +135,7 @@ class _GoalRow extends StatelessWidget {
                       'min',
                       style: FluentianTheme.label(
                         color: selected
-                            ? const Color(0xFFC7CCD6)
+                            ? FluentianColors.onInkMuted
                             : FluentianColors.textSecondary,
                       ),
                     ),
@@ -160,7 +160,7 @@ class _GoalRow extends StatelessWidget {
                       'a day  ·  ${goal.xp} XP',
                       style: FluentianTheme.label(
                         color: selected
-                            ? const Color(0xFFC7CCD6)
+                            ? FluentianColors.onInkMuted
                             : FluentianColors.textSecondary,
                       ),
                     ),

@@ -1972,7 +1972,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
               builder: (context, scrollController) {
                 return Container(
                   decoration: const BoxDecoration(
-                    color: Color(0xFFF8FAFC),
+                    color: FluentianColors.pageBg,
                     borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
                   ),
                   child: Column(
@@ -2012,7 +2012,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                     style: GoogleFonts.bricolageGrotesque(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w800,
-                                      color: const Color(0xFF0F172A),
+                                      color: FluentianColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -2020,7 +2020,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                     'Audition voice samples before picking your tutor.',
                                     style: GoogleFonts.ibmPlexSans(
                                       fontSize: 13,
-                                      color: const Color(0xFF64748B),
+                                      color: FluentianColors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -2053,7 +2053,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                 border: Border.all(
                                   color: isSelected
                                       ? FluentianColors.primary.withValues(alpha: 0.5)
-                                      : const Color(0xFFE2E8F0),
+                                      : FluentianColors.border,
                                   width: isSelected ? 1.8 : 1.0,
                                 ),
                                 boxShadow: [
@@ -2082,7 +2082,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                                   style: GoogleFonts.ibmPlexSans(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.w700,
-                                                    color: const Color(0xFF0F172A),
+                                                    color: FluentianColors.textPrimary,
                                                   ),
                                                 ),
                                                 const SizedBox(width: 8),
@@ -2092,7 +2092,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                                   decoration: BoxDecoration(
                                                     color: isSelected
                                                         ? FluentianColors.primary
-                                                        : const Color(0xFFF1F5F9),
+                                                        : FluentianColors.pageBg,
                                                     borderRadius: BorderRadius.circular(0),
                                                   ),
                                                   child: Text(
@@ -2102,7 +2102,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                                       fontWeight: FontWeight.w600,
                                                       color: isSelected
                                                           ? Colors.white
-                                                          : const Color(0xFF475569),
+                                                          : FluentianColors.textSecondary,
                                                     ),
                                                   ),
                                                 ),
@@ -2113,7 +2113,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                               info.description,
                                               style: GoogleFonts.ibmPlexSans(
                                                 fontSize: 12,
-                                                color: const Color(0xFF64748B),
+                                                color: FluentianColors.textSecondary,
                                               ),
                                             ),
                                           ],
@@ -2133,11 +2133,11 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                           style: OutlinedButton.styleFrom(
                                             foregroundColor: isPlaying
                                                 ? FluentianColors.primary
-                                                : const Color(0xFF334155),
+                                                : FluentianColors.textPrimary,
                                             side: BorderSide(
                                               color: isPlaying
                                                   ? FluentianColors.primary
-                                                  : const Color(0xFFCBD5E1),
+                                                  : FluentianColors.border,
                                             ),
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 14, vertical: 10),
@@ -2153,7 +2153,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                             size: 18,
                                             color: isPlaying
                                                 ? FluentianColors.primary
-                                                : const Color(0xFF334155),
+                                                : FluentianColors.textPrimary,
                                           ),
                                           label: Text(
                                             isPlaying ? 'Auditioning...' : 'Listen sample',
@@ -2264,7 +2264,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                         style: GoogleFonts.ibmPlexSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0F172A),
+                          color: FluentianColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -2299,7 +2299,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                 const SizedBox(width: 4),
                 const Icon(
                   Icons.chevron_right_rounded,
-                  color: Color(0xFF94A3B8),
+                  color: FluentianColors.border,
                   size: 20,
                 ),
               ],

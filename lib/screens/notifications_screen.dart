@@ -325,7 +325,7 @@ class _SyncWarning extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF7ED),
+        color: FluentianColors.warningTint,
         borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: FluentianColors.warning.withValues(alpha: 0.2),
@@ -369,7 +369,7 @@ class _NotificationTile extends StatelessWidget {
         ? FluentianColors.warning
         : FluentianColors.primary;
     final tint = item.isLocal
-        ? const Color(0xFFFFF7ED)
+        ? FluentianColors.warningTint
         : FluentianColors.primaryTint;
 
     return Material(

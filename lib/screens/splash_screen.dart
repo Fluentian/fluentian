@@ -95,7 +95,7 @@ class _SplashScreenState extends State<SplashScreen>
                     LText(
                       'French, from Addis to Paris',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF9AA3B4),
+                        color: FluentianColors.onInkMuted,
                       ),
                     ),
                   ],

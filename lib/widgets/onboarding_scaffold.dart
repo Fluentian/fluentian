@@ -207,7 +207,7 @@ class OnboardingOptionCard extends StatelessWidget {
                       style: GoogleFonts.ibmPlexSans(
                         fontSize: 12.5,
                         color: selected
-                            ? const Color(0xFFC7CCD6)
+                            ? FluentianColors.onInkMuted
                             : FluentianColors.textSecondary,
                         height: 1.3,
                       ),

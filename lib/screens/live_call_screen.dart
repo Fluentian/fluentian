@@ -646,7 +646,7 @@ class _AiTutorCard extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white24),
               ),
-              child: const Icon(Icons.auto_awesome, color: Color(0xFF7FE2DC)),
+              child: const Icon(Icons.auto_awesome, color: FluentianColors.onInkSuccess),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -676,13 +676,13 @@ class _AiTutorCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
               decoration: BoxDecoration(
-                color: const Color(0xFF7FE2DC).withValues(alpha: .15),
+                color: FluentianColors.onInkSuccess.withValues(alpha: .15),
                 borderRadius: BorderRadius.circular(99),
               ),
               child: LText(
                 'ALWAYS READY',
                 style: GoogleFonts.ibmPlexSans(
-                  color: const Color(0xFF9CEAE5),
+                  color: FluentianColors.onInkSuccess,
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
                   letterSpacing: .7,

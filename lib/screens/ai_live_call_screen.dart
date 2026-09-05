@@ -255,11 +255,11 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
   }
 
   Color get _agentColor {
-    if (_error != null) return const Color(0xFFF5C86B);
+    if (_error != null) return FluentianColors.onInkWarning;
     return switch (_session?.agent.agentState) {
-      AgentState.speaking => const Color(0xFF74DDD7),
-      AgentState.thinking => const Color(0xFFF5C86B),
-      _ => const Color(0xFF8BB8E8),
+      AgentState.speaking => FluentianColors.onInkSuccess,
+      AgentState.thinking => FluentianColors.onInkWarning,
+      _ => FluentianColors.onInkAccent,
     };
   }
 
@@ -400,7 +400,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        backgroundColor: const Color(0xFF0B1018),
+        backgroundColor: FluentianColors.darkPageBg,
         body: SafeArea(
           child: Column(
             children: [
@@ -566,7 +566,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
                         children: [
                           const Icon(
                             Iconsax.message_question,
-                            color: Color(0xFF74DDD7),
+                            color: FluentianColors.onInkSuccess,
                             size: 18,
                           ),
                           const SizedBox(width: 10),
@@ -666,7 +666,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
             tooltip: context.tr('Send message'),
             onPressed: _isStarting || _isSending ? null : _send,
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF74DDD7),
+              backgroundColor: FluentianColors.onInkSuccess,
               foregroundColor: FluentianColors.primaryDark,
               disabledBackgroundColor: Colors.white10,
             ),
@@ -686,7 +686,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
   Widget _buildControls() => Container(
     padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
     decoration: const BoxDecoration(
-      color: Color(0xFF0E151F),
+      color: FluentianColors.darkPageBg,
       border: Border(top: BorderSide(color: Colors.white10)),
     ),
     child: Row(
@@ -721,7 +721,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Iconsax.info_circle, color: Color(0xFFF5C86B), size: 34),
+          const Icon(Iconsax.info_circle, color: FluentianColors.onInkWarning, size: 34),
           const SizedBox(height: 12),
           LText(
             _error!,
@@ -790,7 +790,7 @@ class _CallControl extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 color: danger
-                    ? const Color(0xFFD94242)
+                    ? FluentianColors.onInkError
                     : active
                     ? Colors.white
                     : Colors.white.withValues(alpha: .09),
@@ -801,7 +801,7 @@ class _CallControl extends StatelessWidget {
                 color: danger
                     ? Colors.white
                     : active
-                    ? const Color(0xFF0B1018)
+                    ? FluentianColors.darkPageBg
                     : Colors.white,
                 size: 21,
               ),

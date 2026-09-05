@@ -39,7 +39,7 @@ class _FindSpeakingPartnerScreenState extends State<FindSpeakingPartnerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF101014),
+      backgroundColor: FluentianColors.darkPageBg,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
