@@ -1863,11 +1863,7 @@ class _McqScreenState extends State<McqScreen>
                     ),
                     boxShadow: [
                       if (isSelected)
-                        BoxShadow(
-                          color: FluentianColors.primary.withValues(alpha: 0.1),
-                          blurRadius: 0,
-                          offset: const Offset(0, 2),
-                        ),
+                        FluentianShadows.subtle,
                     ],
                   ),
                   child: Center(
@@ -1988,11 +1984,7 @@ class _McqScreenState extends State<McqScreen>
                     ),
                     boxShadow: [
                       if (isSelected)
-                        BoxShadow(
-                          color: FluentianColors.primary.withValues(alpha: 0.1),
-                          blurRadius: 0,
-                          offset: const Offset(0, 2),
-                        ),
+                        FluentianShadows.subtle,
                     ],
                   ),
                   child: Center(

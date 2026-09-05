@@ -231,18 +231,9 @@ class _LeagueHero extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [FluentianColors.primaryDark, FluentianColors.secondary],
-      ),
-      borderRadius: BorderRadius.circular(0),
+      color: FluentianColors.primary,
       boxShadow: [
-        BoxShadow(
-          color: FluentianColors.primary.withValues(alpha: .18),
-          blurRadius: 0,
-          offset: const Offset(0, 8),
-        ),
+        FluentianShadows.subtle,
       ],
     ),
     child: Stack(

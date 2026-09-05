@@ -155,11 +155,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
         color: FluentianColors.pageBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.14),
-            blurRadius: 0,
-            offset: const Offset(0, -8),
-          ),
+          FluentianShadows.subtle,
         ],
       ),
       child: Column(

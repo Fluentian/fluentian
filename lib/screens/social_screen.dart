@@ -1603,11 +1603,7 @@ class _FriendSearchResult extends StatelessWidget {
         borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.black.withValues(alpha: 0.055)),
         boxShadow: [
-          BoxShadow(
-            color: FluentianColors.primary.withValues(alpha: 0.055),
-            blurRadius: 0,
-            offset: const Offset(0, 7),
-          ),
+          FluentianShadows.subtle,
         ],
       ),
       child: Row(
@@ -1616,11 +1612,7 @@ class _FriendSearchResult extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [FluentianColors.primary, FluentianColors.secondary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: FluentianColors.primary,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,

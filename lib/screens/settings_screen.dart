@@ -563,13 +563,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         gradient: FluentianColors.headerGradient,
                         borderRadius: BorderRadius.circular(0),
                         boxShadow: [
-                          BoxShadow(
-                            color: FluentianColors.primary.withValues(
-                              alpha: .22,
-                            ),
-                            blurRadius: 0,
-                            offset: const Offset(0, 10),
-                          ),
+                          FluentianShadows.subtle,
                         ],
                       ),
                       child: Row(
@@ -811,11 +805,7 @@ class _AccountHeader extends StatelessWidget {
         gradient: FluentianColors.headerGradient,
         borderRadius: BorderRadius.circular(0),
         boxShadow: [
-          BoxShadow(
-            color: FluentianColors.primary.withValues(alpha: .18),
-            blurRadius: 0,
-            offset: const Offset(0, 7),
-          ),
+          FluentianShadows.subtle,
         ],
       ),
       child: Row(
@@ -2067,11 +2057,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                   width: isSelected ? 1.8 : 1.0,
                                 ),
                                 boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.02),
-                                    blurRadius: 0,
-                                    offset: const Offset(0, 2),
-                                  ),
+                                  FluentianShadows.subtle,
                                 ],
                               ),
                               padding: const EdgeInsets.all(16),

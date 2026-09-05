@@ -628,18 +628,9 @@ class _AiTutorCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF072D52), Color(0xFF0B6665)],
-      ),
-      borderRadius: BorderRadius.circular(0),
+      color: FluentianColors.primary,
       boxShadow: [
-        BoxShadow(
-          color: FluentianColors.primary.withValues(alpha: .18),
-          blurRadius: 0,
-          offset: const Offset(0, 8),
-        ),
+        FluentianShadows.subtle,
       ],
     ),
     child: Column(

@@ -549,12 +549,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
         margin: const EdgeInsets.fromLTRB(16, 20, 16, 8),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [FluentianColors.primary, FluentianColors.primaryDark],
-          ),
-          borderRadius: BorderRadius.circular(0),
+          color: FluentianColors.primary,
           border: isFocused
               ? Border.all(color: FluentianColors.accent, width: 2)
               : null,

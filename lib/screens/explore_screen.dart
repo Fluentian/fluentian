@@ -220,11 +220,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 gradient: FluentianColors.headerGradient,
                 borderRadius: BorderRadius.circular(0),
                 boxShadow: [
-                  BoxShadow(
-                    color: FluentianColors.primary.withValues(alpha: .18),
-                    blurRadius: 0,
-                    offset: const Offset(0, 7),
-                  ),
+                  FluentianShadows.subtle,
                 ],
               ),
               child: Row(

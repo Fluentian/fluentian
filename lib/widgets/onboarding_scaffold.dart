@@ -160,11 +160,7 @@ class OnboardingOptionCard extends StatelessWidget {
             ),
             boxShadow: selected
                 ? [
-                    BoxShadow(
-                      color: FluentianColors.primary.withValues(alpha: .15),
-                      blurRadius: 0,
-                      offset: const Offset(0, 4),
-                    ),
+                    FluentianShadows.subtle,
                   ]
                 : null,
           ),

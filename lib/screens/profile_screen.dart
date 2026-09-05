@@ -374,12 +374,7 @@ class ProfileScreen extends StatelessWidget {
                                     : Border.all(color: FluentianColors.border),
                                 boxShadow: isActive
                                     ? [
-                                        BoxShadow(
-                                          color: FluentianColors.warning
-                                              .withValues(alpha: 0.35),
-                                          blurRadius: 0,
-                                          offset: const Offset(0, 3),
-                                        ),
+                                        FluentianShadows.subtle,
                                       ]
                                     : null,
                               ),
@@ -671,11 +666,7 @@ BoxDecoration _heroDecoration() => BoxDecoration(
   gradient: FluentianColors.headerGradient,
   borderRadius: BorderRadius.circular(0),
   boxShadow: [
-    BoxShadow(
-      color: FluentianColors.primary.withValues(alpha: .2),
-      blurRadius: 0,
-      offset: const Offset(0, 8),
-    ),
+    FluentianShadows.subtle,
   ],
 );
 

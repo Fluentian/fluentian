@@ -198,11 +198,7 @@ class _ModeCard extends StatelessWidget {
             ),
             boxShadow: selected
                 ? [
-                    BoxShadow(
-                      color: FluentianColors.accent.withValues(alpha: 0.25),
-                      blurRadius: 0,
-                      offset: const Offset(0, 8),
-                    ),
+                    FluentianShadows.subtle,
                   ]
                 : null,
           ),

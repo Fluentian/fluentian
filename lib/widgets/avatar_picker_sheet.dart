@@ -166,16 +166,8 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  selectedPreset.gradient.first.withValues(alpha: 0.12),
-                  selectedPreset.gradient.last.withValues(alpha: 0.04),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(0),
-              border: Border.all(
-                color: selectedPreset.borderColor.withValues(alpha: 0.4),
-              ),
+              color: selectedPreset.gradient.first,
+              border: Border.all(color: selectedPreset.borderColor),
             ),
             child: Row(
               children: [

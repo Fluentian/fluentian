@@ -378,11 +378,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 0,
-            offset: const Offset(0, -4),
-          ),
+          FluentianShadows.subtle,
         ],
       ),
       child: Row(

@@ -161,11 +161,9 @@ class UserAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: deterministic.gradient,
-        ),
+        // Flat, and the initial is set in the preset's ink rather than white
+        // -- these grounds are pale tints now, so white would vanish.
+        color: deterministic.gradient.first,
         border: Border.all(
           color: borderColor ?? deterministic.borderColor,
           width: borderWidth,
@@ -176,8 +174,8 @@ class UserAvatar extends StatelessWidget {
           initial,
           style: GoogleFonts.ibmPlexSans(
             fontSize: size * 0.44,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            color: deterministic.borderColor,
           ),
         ),
       ),
