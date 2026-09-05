@@ -120,44 +120,79 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
     );
   }
 
-  Future<void> _startAiPractice() async {
-    final p = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    final result = await showModalBottomSheet<AiCallSettings>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) => _AiCallSettingsSheet(
-        speed: p.getDouble('ai_speed') ?? 1,
-        level: p.getString('ai_level'),
-        immersion: p.getBool('ai_immersion') ?? false,
-        explanation: p.getString('ai_explanation') ?? 'English',
-        voice: p.getString('ai_voice') ?? 'maya',
-        personality: p.getString('ai_personality') ?? 'Warm',
-        mood: p.getString('ai_mood') ?? 'Encouraging',
-        register: p.getString('ai_register') ?? 'Natural',
-        curveball: p.getBool('ai_curveball') ?? false,
-      ),
-    );
-    if (result == null || !mounted) return;
-    await p.setDouble('ai_speed', result.speed);
-    if (result.level == null) {
+  /// Set once the learner has been through the options sheet. After that the
+  /// sheet is opt-in rather than compulsory.
+  static const _configuredKey = 'ai_configured';
+
+  AiCallSettings _savedSettings(SharedPreferences p) => AiCallSettings(
+    speed: p.getDouble('ai_speed') ?? 1,
+    level: p.getString('ai_level'),
+    immersion: p.getBool('ai_immersion') ?? false,
+    explanationLanguage: p.getString('ai_explanation') ?? 'English',
+    voice: p.getString('ai_voice') ?? 'maya',
+    personality: p.getString('ai_personality') ?? 'Warm',
+    mood: p.getString('ai_mood') ?? 'Encouraging',
+    register: p.getString('ai_register') ?? 'Natural',
+    curveball: p.getBool('ai_curveball') ?? false,
+  );
+
+  Future<void> _persistSettings(
+    SharedPreferences p,
+    AiCallSettings s,
+  ) async {
+    await p.setDouble('ai_speed', s.speed);
+    if (s.level == null) {
       await p.remove('ai_level');
     } else {
-      await p.setString('ai_level', result.level!);
+      await p.setString('ai_level', s.level!);
     }
-    await p.setBool('ai_immersion', result.immersion);
-    await p.setString('ai_explanation', result.explanationLanguage);
-    await p.setString('ai_voice', result.voice);
-    await p.setString('ai_personality', result.personality);
-    await p.setString('ai_mood', result.mood);
-    await p.setString('ai_register', result.register);
-    await p.setBool('ai_curveball', result.curveball);
+    await p.setBool('ai_immersion', s.immersion);
+    await p.setString('ai_explanation', s.explanationLanguage);
+    await p.setString('ai_voice', s.voice);
+    await p.setString('ai_personality', s.personality);
+    await p.setString('ai_mood', s.mood);
+    await p.setString('ai_register', s.register);
+    await p.setBool('ai_curveball', s.curveball);
+    await p.setBool(_configuredKey, true);
+  }
+
+  /// Starts a tutor call.
+  ///
+  /// The nine-control sheet used to open on every single tap, even though
+  /// every one of those values was already persisted from last time -- so the
+  /// common case was scrolling past nine controls you had already set in
+  /// order to press a button that said the same thing as the one you just
+  /// pressed. It now opens on the first call, and after that only when asked
+  /// for through [_openAiOptions].
+  Future<void> _startAiPractice({bool configure = false}) async {
+    final p = await SharedPreferences.getInstance();
     if (!mounted) return;
+
+    var settings = _savedSettings(p);
+    final needsSetup = configure || !(p.getBool(_configuredKey) ?? false);
+
+    if (needsSetup) {
+      final result = await showModalBottomSheet<AiCallSettings>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (_) => _AiCallSettingsSheet(
+          settings: settings,
+          isFirstRun: !(p.getBool(_configuredKey) ?? false),
+        ),
+      );
+      if (result == null || !mounted) return;
+      await _persistSettings(p, result);
+      if (!mounted) return;
+      settings = result;
+    }
+
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => AiLiveCallScreen(settings: result)),
+      MaterialPageRoute(builder: (_) => AiLiveCallScreen(settings: settings)),
     );
   }
+
+  void _openAiOptions() => _startAiPractice(configure: true);
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +245,10 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
             const SizedBox(height: 18),
             if (_scenarios != null && _scenarios!.isNotEmpty)
               _ScenarioGallery(scenarios: _scenarios!),
-            _AiTutorCard(onStart: _startAiPractice),
+            _AiTutorCard(
+              onStart: _startAiPractice,
+              onOptions: _openAiOptions,
+            ),
             const SizedBox(height: 12),
             Builder(
               builder: (context) {
@@ -442,41 +480,40 @@ Future<void> _showRolePicker(BuildContext context, AiScenario scenario) async {
   );
 }
 
+/// Practice options.
+///
+/// Nine controls used to greet the learner before every single call, all of
+/// them already persisted from the previous one. Two things changed: the
+/// sheet is no longer compulsory (see [_LiveCallScreenState._startAiPractice]),
+/// and when it does open, only the three settings that change the
+/// conversation itself are visible. Voice, personality, mood, register and
+/// curveball are the tutor's character -- you pick those once and forget
+/// them -- so they sit behind a disclosure.
 class _AiCallSettingsSheet extends StatefulWidget {
-  final double speed;
-  final String? level;
-  final bool immersion;
-  final String explanation;
-  final String voice;
-  final String personality;
-  final String mood;
-  final String register;
-  final bool curveball;
-  const _AiCallSettingsSheet({
-    required this.speed,
-    required this.level,
-    required this.immersion,
-    required this.explanation,
-    required this.voice,
-    required this.personality,
-    required this.mood,
-    required this.register,
-    required this.curveball,
-  });
+  final AiCallSettings settings;
+
+  /// On the very first call this sheet is the introduction to the feature,
+  /// so it explains itself. On later visits it is just a settings panel.
+  final bool isFirstRun;
+
+  const _AiCallSettingsSheet({required this.settings, required this.isFirstRun});
+
   @override
   State<_AiCallSettingsSheet> createState() => _AiCallSettingsSheetState();
 }
 
 class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
-  late double speed = widget.speed;
-  late String? level = widget.level;
-  late bool immersion = widget.immersion;
-  late String explanation = widget.explanation,
-      voice = widget.voice,
-      personality = widget.personality,
-      mood = widget.mood,
-      register = widget.register;
-  late bool curveball = widget.curveball;
+  late double speed = widget.settings.speed;
+  late String? level = widget.settings.level;
+  late bool immersion = widget.settings.immersion;
+  late String explanation = widget.settings.explanationLanguage,
+      voice = widget.settings.voice,
+      personality = widget.settings.personality,
+      mood = widget.settings.mood,
+      register = widget.settings.register;
+  late bool curveball = widget.settings.curveball;
+  bool _showTutorOptions = false;
+
   Widget _pick(
     String label,
     String value,
@@ -488,7 +525,7 @@ class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
       initialValue: value,
       decoration: InputDecoration(
         labelText: context.tr(label),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(0)),
+        border: const OutlineInputBorder(borderRadius: BorderRadius.zero),
       ),
       items: values
           .map((v) => DropdownMenuItem(value: v, child: Text(v)))
@@ -498,6 +535,19 @@ class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
       },
     ),
   );
+
+  AiCallSettings get _result => AiCallSettings(
+    speed: speed,
+    level: level,
+    immersion: immersion,
+    explanationLanguage: explanation,
+    voice: voice,
+    personality: personality,
+    mood: mood,
+    register: register,
+    curveball: curveball,
+  );
+
   @override
   Widget build(BuildContext context) => SafeArea(
     child: SingleChildScrollView(
@@ -506,43 +556,43 @@ class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           LText(
-            'Before you start',
-            style: GoogleFonts.ibmPlexSans(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: FluentianColors.textPrimary,
-            ),
+            widget.isFirstRun ? 'Set up your tutor' : 'Practice options',
+            style: Theme.of(context).textTheme.displaySmall,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           LText(
-            'Shape this practice around how you learn best.',
-            style: GoogleFonts.ibmPlexSans(color: FluentianColors.textSecondary),
+            widget.isFirstRun
+                ? 'Set these once. Every later call starts straight away, and you can change them any time from the gear button.'
+                : 'These are saved for next time.',
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 20),
-          LText(
-            'Speaking speed',
-            style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w700),
-          ),
+          const SizedBox(height: 22),
+
+          Text(context.tr('SPEAKING SPEED'), style: FluentianTheme.label()),
           Slider(
             value: speed,
             min: .6,
             max: 1.4,
             divisions: 8,
-            label: '${speed.toStringAsFixed(1)}×',
+            label: '${speed.toStringAsFixed(1)}x',
             onChanged: (v) => setState(() => speed = v),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const LText('Slower'),
+              LText('Slower', style: Theme.of(context).textTheme.bodySmall),
               Text(
-                '${speed.toStringAsFixed(1)}×',
-                style: const TextStyle(fontWeight: FontWeight.w800),
+                '${speed.toStringAsFixed(1)}x',
+                style: FluentianTheme.label(
+                  size: 13,
+                  color: FluentianColors.textPrimary,
+                ),
               ),
-              const LText('Faster'),
+              LText('Faster', style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
+
           _pick('Level', level ?? 'Auto', const [
             'Auto',
             'A0',
@@ -552,66 +602,100 @@ class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
             'B2',
             'C1',
           ], (v) => setState(() => level = v == 'Auto' ? null : v)),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: LText('Immersion mode'),
-            subtitle: LText('Keep the conversation in French'),
-            value: immersion,
-            onChanged: (v) => setState(() => immersion = v),
-          ),
           _pick('Explanation language', explanation, const [
             'English',
             'Amharic',
             'Afaan Oromo',
           ], (v) => setState(() => explanation = v)),
-          _pick('Voice', voice, const [
-            'maya',
-            'claire',
-            'marie',
-          ], (v) => setState(() => voice = v)),
-          _pick('Personality', personality, const [
-            'Warm',
-            'Direct',
-            'Playful',
-          ], (v) => setState(() => personality = v)),
-          _pick('Mood', mood, const [
-            'Encouraging',
-            'Calm',
-            'Energetic',
-          ], (v) => setState(() => mood = v)),
-          _pick('Register', register, const [
-            'Natural',
-            'Formal',
-            'Casual',
-          ], (v) => setState(() => register = v)),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const LText('Curveball mode'),
-            subtitle: const LText('Add a realistic surprise to the role-play'),
-            value: curveball,
-            onChanged: (v) => setState(() => curveball = v),
+
+          // Everything below is the tutor's character rather than the shape
+          // of the lesson. Set once, rarely revisited, so it stays folded.
+          const SizedBox(height: 4),
+          InkWell(
+            onTap: () =>
+                setState(() => _showTutorOptions = !_showTutorOptions),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                children: [
+                  Text(
+                    context.tr("THE TUTOR'S MANNER"),
+                    style: FluentianTheme.label(),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    _showTutorOptions
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    size: 20,
+                    color: FluentianColors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
           ),
+          if (_showTutorOptions) ...[
+            _pick('Voice', voice, const [
+              'maya',
+              'claire',
+              'marie',
+            ], (v) => setState(() => voice = v)),
+            _pick('Personality', personality, const [
+              'Warm',
+              'Direct',
+              'Playful',
+            ], (v) => setState(() => personality = v)),
+            _pick('Mood', mood, const [
+              'Encouraging',
+              'Calm',
+              'Energetic',
+            ], (v) => setState(() => mood = v)),
+            _pick('Register', register, const [
+              'Natural',
+              'Formal',
+              'Casual',
+            ], (v) => setState(() => register = v)),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const LText('Immersion mode'),
+              subtitle: const LText('Keep the conversation in French'),
+              value: immersion,
+              onChanged: (v) => setState(() => immersion = v),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const LText('Curveball mode'),
+              subtitle: const LText(
+                'Add a realistic surprise to the role-play',
+              ),
+              value: curveball,
+              onChanged: (v) => setState(() => curveball = v),
+            ),
+          ],
+
+          const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
             height: 50,
             child: FilledButton.icon(
               icon: const Icon(Iconsax.microphone_2),
               label: const LText('Start practice'),
-              onPressed: () => Navigator.pop(
-                context,
-                AiCallSettings(
-                  speed: speed,
-                  level: level,
-                  immersion: immersion,
-                  explanationLanguage: explanation,
-                  voice: voice,
-                  personality: personality,
-                  mood: mood,
-                  register: register,
-                  curveball: curveball,
-                ),
-              ),
+              onPressed: () => Navigator.pop(context, _result),
             ),
+          ),
+
+          // The privacy disclosure used to be a blocking dialog shown before
+          // every call. It is acknowledged once now (see AiLiveCallScreen),
+          // so it lives here permanently -- the place someone looks when they
+          // want to know what the feature does with their microphone.
+          const SizedBox(height: 18),
+          const Divider(height: 1, color: FluentianColors.border),
+          const SizedBox(height: 12),
+          Text(context.tr('YOUR MICROPHONE'), style: FluentianTheme.label()),
+          const SizedBox(height: 6),
+          LText(
+            aiMediaDisclosure,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),
@@ -621,8 +705,9 @@ class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
 
 class _AiTutorCard extends StatelessWidget {
   final VoidCallback onStart;
+  final VoidCallback onOptions;
 
-  const _AiTutorCard({required this.onStart});
+  const _AiTutorCard({required this.onStart, required this.onOptions});
 
   @override
   Widget build(BuildContext context) => Container(
@@ -696,24 +781,47 @@ class _AiTutorCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 15),
-        SizedBox(
-          width: double.infinity,
-          height: 46,
-          child: FilledButton.icon(
-            onPressed: onStart,
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: FluentianColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(0),
+        // One tap starts the call. Changing how the tutor behaves is a
+        // deliberate, secondary act -- not something to be walked through
+        // before every conversation.
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 46,
+                child: FilledButton.icon(
+                  onPressed: onStart,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: FluentianColors.primary,
+                    shape: const RoundedRectangleBorder(),
+                  ),
+                  icon: const Icon(Iconsax.microphone_2, size: 19),
+                  label: LText(
+                    'Start practice',
+                    style: GoogleFonts.ibmPlexSans(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               ),
             ),
-            icon: const Icon(Iconsax.microphone_2, size: 19),
-            label: LText(
-              'Start private practice',
-              style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w800),
+            const SizedBox(width: 10),
+            SizedBox(
+              height: 46,
+              width: 46,
+              child: IconButton(
+                onPressed: onOptions,
+                tooltip: context.tr('Practice options'),
+                style: IconButton.styleFrom(
+                  shape: const RoundedRectangleBorder(),
+                  side: const BorderSide(color: FluentianColors.darkBorder),
+                  foregroundColor: FluentianColors.onInk,
+                ),
+                icon: const Icon(Iconsax.setting_4, size: 19),
+              ),
             ),
-          ),
+          ],
         ),
       ],
     ),

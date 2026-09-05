@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/app_localization.dart';
 import '../core/theme.dart';
@@ -40,6 +41,17 @@ class AiCallSettings {
     this.curveball = false,
   });
 }
+
+/// What the tutor call does with the learner's audio. Shown in full before
+/// the first call, and permanently in the practice-options sheet after that.
+const String aiMediaDisclosure =
+    'Your microphone audio is sent through LiveKit. Cartesia transcribes and '
+    'speaks, and Gemini creates the tutor reply. Fluentian does not record '
+    'the call. You can mute or leave at any time.';
+
+/// Versioned: bumping it re-asks everyone, which is the correct behaviour if
+/// the pipeline above ever changes.
+const String aiMediaConsentKey = 'ai_media_consent_v1';
 
 class AiLiveCallScreen extends StatefulWidget {
   final AiCallSettings settings;
@@ -170,21 +182,28 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
     }
   }
 
+  /// Asks for consent to the media pipeline, once.
+  ///
+  /// This was a blocking dialog in front of every call -- a paragraph about
+  /// LiveKit, Cartesia and Gemini standing between the learner and the
+  /// conversation they had already asked for twice. The disclosure still
+  /// matters, so it is shown in full before the first call and recorded; it
+  /// then lives permanently at the bottom of the practice-options sheet,
+  /// which is where someone goes to find out what the feature does with
+  /// their microphone. The key is versioned so that if the pipeline ever
+  /// changes, everyone is asked again rather than silently carried over.
   Future<bool> _confirmAiMediaUse() async {
-    return await showDialog<bool>(
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(aiMediaConsentKey) ?? false) return true;
+    if (!mounted) return false;
+
+    final approved =
+        await showDialog<bool>(
           context: context,
           barrierDismissible: false,
           builder: (dialogContext) => AlertDialog(
-            icon: const Icon(
-              Icons.auto_awesome,
-              color: FluentianColors.secondary,
-            ),
             title: Text(dialogContext.tr('Private AI voice practice')),
-            content: Text(
-              dialogContext.tr(
-                'Your microphone audio is sent through LiveKit. Cartesia transcribes and speaks, and Gemini creates the tutor reply. Fluentian does not record the call. You can mute or leave at any time.',
-              ),
-            ),
+            content: Text(dialogContext.tr(aiMediaDisclosure)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
@@ -198,6 +217,9 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
           ),
         ) ??
         false;
+
+    if (approved) await prefs.setBool(aiMediaConsentKey, true);
+    return approved;
   }
 
   void _onSessionChanged() {

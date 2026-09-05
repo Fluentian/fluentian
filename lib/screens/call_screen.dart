@@ -7,11 +7,22 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/theme.dart';
 import '../services/api_client.dart';
 import '../services/social_api.dart';
 import '../core/endpoints.dart';
+
+/// Consent keys for the speaking rooms. Public and defined once, because
+/// Settings has to be able to clear them -- when they were literals in two
+/// files, "ask me again" could silently stop clearing one of them.
+///
+/// Audio and video are separate: a video room also asks for the camera,
+/// which is a materially different thing to agree to. Versioned, so changing
+/// what we actually do re-asks everyone.
+const String roomAudioConsentKey = 'room_media_consent_audio_v1';
+const String roomVideoConsentKey = 'room_media_consent_video_v1';
 
 class CallScreen extends StatefulWidget {
   final String topic;
@@ -333,9 +344,32 @@ class _CallScreenState extends State<CallScreen> {
     }
   }
 
+  /// Asks for consent to the room's media use, once per mode.
+  ///
+  /// This was a blocking dialog before every single call. The disclosure is
+  /// worth making, but making it repeatedly does not make it more informed --
+  /// it just trains people to dismiss it. Shown in full the first time and
+  /// recorded; audio and video are keyed separately because the video room
+  /// also asks for the camera, which is a materially different thing to
+  /// agree to. The keys are versioned so a change to what we actually do
+  /// re-asks everyone.
+  static const _audioDisclosure =
+      'Fluentian uses your microphone only while you are in this speaking '
+      'room. Live audio is sent to the other participant through LiveKit and '
+      'is not recorded by Fluentian.';
+  static const _videoDisclosure =
+      'Fluentian uses your camera and microphone only while you are in this '
+      'speaking room. Live audio and video are sent to the other participant '
+      'through LiveKit and are not recorded by Fluentian.';
+
   Future<bool> _confirmMediaUse() async {
+    final key = widget.isVideo ? roomVideoConsentKey : roomAudioConsentKey;
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(key) ?? false) return true;
     if (!mounted) return false;
-    return await showDialog<bool>(
+
+    final approved =
+        await showDialog<bool>(
           context: context,
           barrierDismissible: false,
           builder: (dialogContext) => AlertDialog(
@@ -352,9 +386,7 @@ class _CallScreenState extends State<CallScreen> {
             ),
             content: Text(
               dialogContext.tr(
-                widget.isVideo
-                    ? 'Fluentian uses your camera and microphone only while you are in this speaking room. Live audio and video are sent to the other participant through LiveKit and are not recorded by Fluentian.'
-                    : 'Fluentian uses your microphone only while you are in this speaking room. Live audio is sent to the other participant through LiveKit and is not recorded by Fluentian.',
+                widget.isVideo ? _videoDisclosure : _audioDisclosure,
               ),
             ),
             actions: [
@@ -370,6 +402,9 @@ class _CallScreenState extends State<CallScreen> {
           ),
         ) ??
         false;
+
+    if (approved) await prefs.setBool(key, true);
+    return approved;
   }
 
   Future<SpeakingCallSession> _waitForMatch() async {

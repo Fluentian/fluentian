@@ -13,6 +13,9 @@ import '../services/app_logger.dart';
 import '../services/download_settings.dart';
 import '../services/local_push_service.dart';
 import '../services/tts_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'ai_live_call_screen.dart';
+import 'call_screen.dart';
 import 'legal_document_screen.dart';
 import 'offline_downloads_screen.dart';
 import '../models/user_model.dart';
@@ -297,6 +300,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   size: 20,
                 ),
               ),
+              // The call disclosures are acknowledged once rather than
+              // repeated before every call, so there has to be a way back to
+              // them. This both shows what was agreed to and clears it, which
+              // makes the acknowledgement genuinely reversible.
+              _RowShell(
+                icon: Icons.mic_none_outlined,
+                label: 'Microphone & call privacy',
+                onTap: () => _showMediaConsent(context),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: FluentianColors.textSecondary,
+                  size: 20,
+                ),
+              ),
               _RowShell(
                 icon: Icons.delete_forever_outlined,
                 label: 'Delete my account',
@@ -471,6 +488,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
     }
+  }
+
+  /// Shows what the calling features do with the microphone and camera, and
+  /// lets the learner withdraw the acknowledgement so the disclosures are
+  /// presented again before the next call.
+  Future<void> _showMediaConsent(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!context.mounted) return;
+
+    final acknowledged = [
+      aiMediaConsentKey,
+      roomAudioConsentKey,
+      roomVideoConsentKey,
+    ].where((k) => prefs.getBool(k) ?? false).toList();
+
+    final reset = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.tr('Microphone & call privacy')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(dialogContext.tr(aiMediaDisclosure)),
+            const SizedBox(height: 12),
+            Text(
+              dialogContext.tr(
+                'In speaking rooms, your live audio (and video, in a video '
+                'room) goes to the other participant through LiveKit and is '
+                'not recorded by Fluentian.',
+              ),
+            ),
+            if (acknowledged.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                dialogContext.tr(
+                  'You have agreed to this, so it is no longer shown before '
+                  'each call.',
+                ),
+                style: Theme.of(dialogContext).textTheme.bodySmall,
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(dialogContext.tr('Close')),
+          ),
+          if (acknowledged.isNotEmpty)
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(dialogContext.tr('Ask me again')),
+            ),
+        ],
+      ),
+    );
+
+    if (reset != true) return;
+    for (final key in acknowledged) {
+      await prefs.remove(key);
+    }
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          context.tr('You will be asked again before your next call.'),
+        ),
+      ),
+    );
   }
 
   void _openLegalPage(BuildContext context, String slug) {
