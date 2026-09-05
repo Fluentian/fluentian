@@ -186,7 +186,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                       children: [
                         LText(
                           'Marie — AI Coach',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -194,7 +194,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                         ),
                         LText(
                           'A2 · Free conversation',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 12,
                             color: FluentianColors.primaryLight,
                           ),
@@ -207,7 +207,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                     height: 38,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.12),
                       ),
@@ -241,7 +241,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                       color: _modeIndex == i
                           ? FluentianColors.primary
                           : Colors.white.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                       border: _modeIndex != i
                           ? Border.all(
                               color: Colors.white.withValues(alpha: 0.12),
@@ -251,7 +251,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                     alignment: Alignment.center,
                     child: LText(
                       _modes[i],
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: _modeIndex == i
@@ -315,21 +315,21 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
                         color: FluentianColors.darkCard,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(color: FluentianColors.darkBorder),
                       ),
                       child: TextField(
                         controller: _controller,
                         textInputAction: TextInputAction.send,
                         onSubmitted: (_) => _sendMessage(),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 15,
                           color: Colors.white,
                         ),
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: context.tr('Write a sentence in French'),
-                          hintStyle: GoogleFonts.inter(
+                          hintStyle: GoogleFonts.ibmPlexSans(
                             fontSize: 15,
                             color: Colors.grey.shade600,
                           ),
@@ -414,8 +414,8 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(isUser ? 18 : 4),
                   topRight: Radius.circular(isUser ? 4 : 18),
-                  bottomLeft: const Radius.circular(18),
-                  bottomRight: const Radius.circular(18),
+                  bottomLeft: const Radius.circular(0),
+                  bottomRight: const Radius.circular(0),
                 ),
                 border: isUser
                     ? null
@@ -428,7 +428,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                   isUser
                       ? LText(
                           msg.text!,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 15,
                             color: Colors.white,
                             height: 1.4,
@@ -459,7 +459,7 @@ class _CoachMarkdownResponse extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseStyle = GoogleFonts.inter(
+    final baseStyle = GoogleFonts.ibmPlexSans(
       fontSize: 15,
       color: Colors.white,
       height: 1.42,
@@ -494,14 +494,14 @@ class _CoachMarkdownResponse extends StatelessWidget {
         ),
         codeblockDecoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
         codeblockPadding: const EdgeInsets.all(10),
         blockquote: baseStyle.copyWith(color: Colors.white70),
         blockquoteDecoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(0),
           border: const Border(
             left: BorderSide(color: FluentianColors.primaryLight, width: 4),
           ),
@@ -525,7 +525,7 @@ class _StatPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Row(
@@ -535,7 +535,7 @@ class _StatPill extends StatelessWidget {
           const SizedBox(width: 5),
           LText(
             text,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: Colors.white.withValues(alpha: 0.58),
@@ -558,7 +558,7 @@ class _CoachTypingPreview extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
@@ -571,7 +571,7 @@ class _CoachTypingPreview extends StatelessWidget {
                 'Marie is ready with hints, corrections, and examples',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: Colors.white.withValues(alpha: 0.66),

@@ -9,23 +9,27 @@ class AppConstants {
   static const int onboardingSlides = 3;
 }
 
-/// CEFR Levels
+/// CEFR Levels.
+///
+/// These deliberately carry no colour. Each level used to own a hue -- grey,
+/// green, teal, blue, navy, amber -- drawn at 15% alpha behind a numeral.
+/// Six unrelated hues for six steps of one scale is decoration standing in
+/// for hierarchy, and it belonged to the old palette. Level is a *sequence*,
+/// so the screen renders it as one: the CEFR code, set in the mono face, in
+/// ink. Rank reads off the ordering, not off a colour key nobody learns.
 enum CEFRLevel {
-  a0('A0', 'Complete Beginner', "I've never studied French", 0xFF9CA3AF),
-  a1('A1', 'Absolute Beginner', 'I know a few words', 0xFF22C55E),
-  a2('A2', 'Elementary', 'I can handle simple conversations', 0xFF14B8A6),
-  b1('B1', 'Intermediate', 'I can talk about familiar topics', 0xFF3B82F6),
-  b2('B2', 'Upper Intermediate', 'I can discuss complex topics', 0xFF0A3B6A),
-  c1c2('C1/C2', 'Advanced', "I'm nearly fluent", 0xFFF59E0B);
+  a0('A0', 'Complete Beginner', "I've never studied French"),
+  a1('A1', 'Absolute Beginner', 'I know a few words'),
+  a2('A2', 'Elementary', 'I can handle simple conversations'),
+  b1('B1', 'Intermediate', 'I can talk about familiar topics'),
+  b2('B2', 'Upper Intermediate', 'I can discuss complex topics'),
+  c1c2('C1/C2', 'Advanced', "I'm nearly fluent");
 
   final String code;
   final String name;
   final String description;
-  final int colorValue;
 
-  const CEFRLevel(this.code, this.name, this.description, this.colorValue);
-
-  Color get color => Color(colorValue);
+  const CEFRLevel(this.code, this.name, this.description);
 
   static CEFRLevel fromCode(String code) {
     final cleanCode = code.toUpperCase().replaceAll('/', '').trim();
@@ -51,45 +55,30 @@ enum CEFRLevel {
   }
 }
 
-/// Daily goal options
+/// Daily goal options.
+///
+/// Minutes are the thing the learner is actually committing to, so minutes
+/// are what the screen sets large. The icons this used to carry (a tree, a
+/// lightning bolt, a trophy) were decoration standing in for a quantity that
+/// is already a number.
 class DailyGoal {
-  final IconData iconData;
+  final int minutes;
   final int xp;
   final String label;
-  final String duration;
 
   const DailyGoal({
-    required this.iconData,
+    required this.minutes,
     required this.xp,
     required this.label,
-    required this.duration,
   });
 
+  String get duration => '$minutes min/day';
+
   static const List<DailyGoal> goals = [
-    DailyGoal(
-      iconData: Iconsax.tree,
-      xp: 10,
-      label: 'Casual',
-      duration: '5 min/day',
-    ),
-    DailyGoal(
-      iconData: Iconsax.flash_1,
-      xp: 20,
-      label: 'Regular',
-      duration: '10 min/day',
-    ),
-    DailyGoal(
-      iconData: Iconsax.flash_15,
-      xp: 50,
-      label: 'Serious',
-      duration: '20 min/day',
-    ),
-    DailyGoal(
-      iconData: Iconsax.cup5,
-      xp: 100,
-      label: 'Intense',
-      duration: '40 min/day',
-    ),
+    DailyGoal(minutes: 5, xp: 10, label: 'Casual'),
+    DailyGoal(minutes: 10, xp: 20, label: 'Regular'),
+    DailyGoal(minutes: 20, xp: 50, label: 'Serious'),
+    DailyGoal(minutes: 40, xp: 100, label: 'Intense'),
   ];
 }
 

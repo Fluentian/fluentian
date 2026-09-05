@@ -186,7 +186,7 @@ class _HomeContentState extends State<_HomeContent> {
                     LText(
                       content.error ?? 'Connection error',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 16,
                         color: FluentianColors.textSecondary,
                       ),
@@ -309,7 +309,7 @@ class _HomeContentState extends State<_HomeContent> {
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(0),
                                 border: Border.all(
                                   color: FluentianColors.border,
                                 ),
@@ -322,7 +322,7 @@ class _HomeContentState extends State<_HomeContent> {
                                     height: 46,
                                     decoration: BoxDecoration(
                                       color: FluentianColors.primaryTint,
-                                      borderRadius: BorderRadius.circular(14),
+                                      borderRadius: BorderRadius.circular(0),
                                     ),
                                     child: const Icon(
                                       Iconsax.message5,
@@ -340,7 +340,7 @@ class _HomeContentState extends State<_HomeContent> {
                                           'Daily Review Time!',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.inter(
+                                          style: GoogleFonts.ibmPlexSans(
                                             fontWeight: FontWeight.w800,
                                             fontSize: 16,
                                             color: FluentianColors.textPrimary,
@@ -348,7 +348,7 @@ class _HomeContentState extends State<_HomeContent> {
                                         ),
                                         LText(
                                           '${dueQuestions.length} questions ready for you',
-                                          style: GoogleFonts.inter(
+                                          style: GoogleFonts.ibmPlexSans(
                                             fontSize: 13,
                                             color:
                                                 FluentianColors.textSecondary,
@@ -402,9 +402,9 @@ class _HomeContentState extends State<_HomeContent> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Material(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(0),
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(0),
                           onTap: dailyChallengeComplete
                               ? null
                               : () => Navigator.of(context).push(
@@ -417,7 +417,7 @@ class _HomeContentState extends State<_HomeContent> {
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(18),
+                              borderRadius: BorderRadius.circular(0),
                               border: Border.all(
                                 color: dailyChallengeComplete
                                     ? FluentianColors.success.withValues(
@@ -438,7 +438,7 @@ class _HomeContentState extends State<_HomeContent> {
                                             alpha: .12,
                                           )
                                         : const Color(0xFFFFF7ED),
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(0),
                                   ),
                                   child: Icon(
                                     dailyChallengeComplete
@@ -459,7 +459,7 @@ class _HomeContentState extends State<_HomeContent> {
                                     children: [
                                       LText(
                                         'DAILY CHALLENGE',
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.ibmPlexSans(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w900,
                                           color: FluentianColors.warning,
@@ -473,7 +473,7 @@ class _HomeContentState extends State<_HomeContent> {
                                             : 'Complete $dailyLessonGoal lessons today',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.ibmPlexSans(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w800,
                                           color: FluentianColors.textPrimary,
@@ -488,7 +488,7 @@ class _HomeContentState extends State<_HomeContent> {
                                   percent: lessonsToday / dailyLessonGoal,
                                   center: LText(
                                     '$lessonsToday/$dailyLessonGoal',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.ibmPlexSans(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w900,
                                       color: FluentianColors.warning,
@@ -566,7 +566,7 @@ class _NoCoursesCard extends StatelessWidget {
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(0),
       border: Border.all(color: FluentianColors.border),
       boxShadow: [FluentianShadows.subtle],
     ),
@@ -577,7 +577,7 @@ class _NoCoursesCard extends StatelessWidget {
           height: 48,
           decoration: BoxDecoration(
             color: FluentianColors.primaryTint,
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(0),
           ),
           child: const Icon(
             Iconsax.book_1,
@@ -593,7 +593,7 @@ class _NoCoursesCard extends StatelessWidget {
             children: [
               LText(
                 'Your journey is being prepared',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
                   color: FluentianColors.textPrimary,
@@ -602,7 +602,7 @@ class _NoCoursesCard extends StatelessWidget {
               const SizedBox(height: 4),
               LText(
                 'Your first course will appear here as soon as it is ready.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 12,
                   height: 1.35,
                   fontWeight: FontWeight.w600,
@@ -626,14 +626,14 @@ class _AllCaughtUpCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: const Color(0xFFF0FBF5),
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(0),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(0),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(
               color: FluentianColors.success.withValues(alpha: .18),
             ),
@@ -661,7 +661,7 @@ class _AllCaughtUpCard extends StatelessWidget {
                   children: [
                     LText(
                       'You’re all caught up',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                         color: FluentianColors.textPrimary,
@@ -672,7 +672,7 @@ class _AllCaughtUpCard extends StatelessWidget {
                       'Browse the roadmap and revisit any lesson.',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: FluentianColors.textSecondary,
@@ -687,7 +687,7 @@ class _AllCaughtUpCard extends StatelessWidget {
                 height: 32,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: const Icon(
                   Icons.chevron_right_rounded,
@@ -725,11 +725,11 @@ class _ContinueJourneyCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         gradient: FluentianColors.headerGradient,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(0),
         boxShadow: [
           BoxShadow(
             color: FluentianColors.primary.withValues(alpha: .22),
-            blurRadius: 20,
+            blurRadius: 0,
             offset: const Offset(0, 9),
           ),
         ],
@@ -752,7 +752,7 @@ class _ContinueJourneyCard extends StatelessWidget {
               children: [
                 LText(
                   chapterLabel,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 11,
                     letterSpacing: 1,
                     fontWeight: FontWeight.w900,
@@ -764,7 +764,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                   lesson.title,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 21,
                     height: 1.18,
                     fontWeight: FontWeight.w900,
@@ -776,7 +776,7 @@ class _ContinueJourneyCard extends StatelessWidget {
                   chapterTitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Colors.white.withValues(alpha: .7),
@@ -804,9 +804,9 @@ class _ContinueJourneyCard extends StatelessWidget {
                         foregroundColor: FluentianColors.primary,
                         minimumSize: const Size(102, 48),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(0),
                         ),
-                        textStyle: GoogleFonts.inter(
+                        textStyle: GoogleFonts.ibmPlexSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
                         ),
@@ -837,7 +837,7 @@ class _MissionDetail extends StatelessWidget {
       const SizedBox(width: 5),
       LText(
         text,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 12,
           fontWeight: FontWeight.w800,
           color: Colors.white.withValues(alpha: .82),
@@ -857,7 +857,7 @@ class _HomeSectionLabel extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 16),
     child: LText(
       text,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.ibmPlexSans(
         fontSize: 11,
         letterSpacing: 1.1,
         fontWeight: FontWeight.w900,
@@ -904,11 +904,11 @@ class _HomeHero extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           gradient: FluentianColors.headerGradient,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(0),
           boxShadow: [
             BoxShadow(
               color: FluentianColors.primary.withValues(alpha: .18),
-              blurRadius: 18,
+              blurRadius: 0,
               offset: const Offset(0, 7),
             ),
           ],
@@ -938,7 +938,7 @@ class _HomeHero extends StatelessWidget {
                           children: [
                             LText(
                               greeting.toUpperCase(),
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 11,
                                 letterSpacing: 1,
                                 fontWeight: FontWeight.w900,
@@ -950,7 +950,7 @@ class _HomeHero extends StatelessWidget {
                               displayName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
                                 color: Colors.white,
@@ -980,7 +980,7 @@ class _HomeHero extends StatelessWidget {
                         : 'One small lesson is all it takes to begin.',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Colors.white.withValues(alpha: .76),
@@ -1011,7 +1011,7 @@ class _HomeHero extends StatelessWidget {
                     children: [
                       LText(
                         'LEVEL PROGRESS',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 10,
                           letterSpacing: .8,
                           fontWeight: FontWeight.w900,
@@ -1021,7 +1021,7 @@ class _HomeHero extends StatelessWidget {
                       const Spacer(),
                       LText(
                         '${_compactNumber(xp)} XP',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
@@ -1082,7 +1082,7 @@ class _HeroPill extends StatelessWidget {
         const SizedBox(width: 5),
         LText(
           text,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 11,
             fontWeight: FontWeight.w800,
             color: Colors.white,
@@ -1150,9 +1150,9 @@ class _NotificationButtonState extends State<_NotificationButton> {
               color: widget.inverted
                   ? Colors.white.withValues(alpha: .13)
                   : FluentianColors.pageBg,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(0),
               child: InkWell(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(0),
                 onTap: () async {
                   await Navigator.of(context).push(
                     MaterialPageRoute(
@@ -1191,7 +1191,7 @@ class _NotificationButtonState extends State<_NotificationButton> {
                   child: Center(
                     child: LText(
                       unread > 9 ? '9+' : '$unread',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,

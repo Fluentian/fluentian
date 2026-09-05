@@ -66,7 +66,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                       child: LinearProgressIndicator(
                         value: 0.75,
                         backgroundColor: Colors.grey.shade200,
@@ -107,7 +107,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                     const SizedBox(height: 20),
                     LText(
                       'SAY THIS IN FRENCH',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: FluentianColors.textSecondary,
@@ -118,7 +118,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                     LText(
                       "Je voudrais un café,\ns'il vous plaît.",
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                         color: FluentianColors.textPrimary,
@@ -129,7 +129,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                     LText(
                       'zhuh voo-DREH uhn ka-FEH, seel voo PLEH',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 14,
                         color: FluentianColors.textSecondary,
                       ),
@@ -142,7 +142,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: FluentianColors.primaryTint,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                       child: Row(
                         children: [
@@ -162,7 +162,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                           const SizedBox(width: 12),
                           LText(
                             'Listen to native speaker',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: FluentianColors.textPrimary,
@@ -181,7 +181,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                                 ),
                                 decoration: BoxDecoration(
                                   color: FluentianColors.accent,
-                                  borderRadius: BorderRadius.circular(2),
+                                  borderRadius: BorderRadius.circular(0),
                                 ),
                               ),
                             ),
@@ -204,7 +204,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                           : _state == _RecordState.analyzing
                           ? 'Analysing...'
                           : '',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 14,
                         color: FluentianColors.textSecondary,
                       ),
@@ -234,7 +234,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                             color: FluentianColors.primary,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(0),
                           ),
                           minimumSize: const Size(0, 52),
                         ),
@@ -248,7 +248,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: FluentianColors.primary,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(0),
                           ),
                           minimumSize: const Size(0, 52),
                         ),
@@ -337,7 +337,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: FluentianColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: FluentianColors.border),
         boxShadow: [FluentianShadows.subtle],
       ),
@@ -349,7 +349,7 @@ class _SpeakingScreenState extends State<SpeakingScreen>
             percent: 0.82,
             center: LText(
               '82%',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: FluentianColors.primary,
@@ -400,7 +400,7 @@ class _MetricRow extends StatelessWidget {
             width: 100,
             child: LText(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 13,
                 color: FluentianColors.textSecondary,
               ),
@@ -408,7 +408,7 @@ class _MetricRow extends StatelessWidget {
           ),
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(0),
               child: LinearProgressIndicator(
                 value: value,
                 backgroundColor: color.withValues(alpha: 0.15),
@@ -420,7 +420,7 @@ class _MetricRow extends StatelessWidget {
           const SizedBox(width: 8),
           LText(
             '${(value * 100).toInt()}%',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: color,
@@ -443,12 +443,12 @@ class _WordChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: LText(
         word,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: color,

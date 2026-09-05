@@ -15,14 +15,14 @@ void showGuidebookDialog(BuildContext context, UnitModel unit) {
     builder: (context) {
       return AlertDialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         title: Row(
           children: [
             const Icon(Iconsax.book_1, color: FluentianColors.primary),
             const SizedBox(width: 8),
             LText(
               'Unit ${unit.unitNo} Guidebook',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: FluentianColors.textPrimary,
@@ -36,7 +36,7 @@ void showGuidebookDialog(BuildContext context, UnitModel unit) {
           children: [
             LText(
               'Key Vocabulary & Grammar:',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
                 color: FluentianColors.textPrimary,
@@ -45,7 +45,7 @@ void showGuidebookDialog(BuildContext context, UnitModel unit) {
             const SizedBox(height: 8),
             LText(
               'In this unit, you will learn the fundamentals of conversation for this level. Practice daily to master pronoun conjugations, basic sentence structure, and core vocabulary lists.',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 13,
                 color: FluentianColors.textSecondary,
                 height: 1.5,
@@ -54,7 +54,7 @@ void showGuidebookDialog(BuildContext context, UnitModel unit) {
             const SizedBox(height: 16),
             LText(
               'Lessons in this unit:',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
                 color: FluentianColors.textPrimary,
@@ -75,7 +75,7 @@ void showGuidebookDialog(BuildContext context, UnitModel unit) {
                     Expanded(
                       child: LText(
                         l.title,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 13,
                           color: FluentianColors.textSecondary,
                         ),
@@ -90,7 +90,7 @@ void showGuidebookDialog(BuildContext context, UnitModel unit) {
                 padding: const EdgeInsets.only(top: 4, left: 14),
                 child: LText(
                   '+ ${unit.lessons.length - 4} more lessons',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 12,
                     fontStyle: FontStyle.italic,
                     color: FluentianColors.textSecondary,
@@ -104,7 +104,7 @@ void showGuidebookDialog(BuildContext context, UnitModel unit) {
             onPressed: () => Navigator.pop(context),
             child: LText(
               'Close',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 color: FluentianColors.primary,
                 fontWeight: FontWeight.w600,
               ),
@@ -152,7 +152,7 @@ class StatChip extends StatelessWidget {
           const SizedBox(width: 4),
           LText(
             value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: color,
@@ -320,7 +320,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
             widget.compact
                 ? '${widget.hearts}/${widget.maxHearts}'
                 : _countdown,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: widget.compact ? 11 : 12,
               fontWeight: FontWeight.w800,
               color: activeColor,
@@ -330,7 +330,7 @@ class _HeartStatusChipState extends State<HeartStatusChip> {
             const SizedBox(width: 4),
             LText(
               'next',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: FluentianColors.error.withValues(alpha: 0.65),
@@ -365,7 +365,7 @@ class SectionHeader extends StatelessWidget {
         children: [
           LText(
             title,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: FluentianColors.textPrimary,
@@ -376,7 +376,7 @@ class SectionHeader extends StatelessWidget {
               onTap: onTap,
               child: LText(
                 actionText!,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: FluentianColors.primary,
@@ -554,7 +554,7 @@ class _FluentianButtonState extends State<FluentianButton> {
           child: LText(
             widget.text,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 17,
               fontWeight: FontWeight.w800,
               color: color,
@@ -591,7 +591,7 @@ class PillBadge extends StatelessWidget {
       ),
       child: LText(
         text,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: fontSize,
           fontWeight: FontWeight.w600,
           color: textColor,
@@ -617,7 +617,7 @@ class XpChip extends StatelessWidget {
       ),
       child: LText(
         value,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 11,
           fontWeight: FontWeight.w600,
           color: FluentianColors.accent,
@@ -709,7 +709,7 @@ class ToggleRow extends StatelessWidget {
           Expanded(
             child: LText(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
                 color: FluentianColors.textPrimary,
@@ -766,7 +766,7 @@ class SettingsRow extends StatelessWidget {
             Expanded(
               child: LText(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
                   color: textColor ?? FluentianColors.textPrimary,
@@ -776,7 +776,7 @@ class SettingsRow extends StatelessWidget {
             if (trailing != null)
               LText(
                 trailing!,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 14,
                   color: FluentianColors.textSecondary,
                 ),
@@ -898,7 +898,7 @@ class SkeletonHeroCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       decoration: BoxDecoration(
         gradient: FluentianColors.headerGradient,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -988,7 +988,7 @@ class SkeletonMissionCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: FluentianColors.headerGradient,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1062,7 +1062,7 @@ class SkeletonChallengeCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
       ),
       child: Row(
@@ -1118,7 +1118,7 @@ class SkeletonRoadmap extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: FluentianColors.headerGradient,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(0),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1181,7 +1181,7 @@ class SkeletonOpportunityCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
       ),
       child: Column(
@@ -1251,7 +1251,7 @@ class SkeletonCultureStory extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
             ),
             child: Column(
@@ -1284,7 +1284,7 @@ class SkeletonLiveRoom extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: FluentianColors.headerGradient,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(0),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1338,7 +1338,7 @@ class SkeletonLiveRoom extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
             ),
             child: Row(
@@ -1382,7 +1382,7 @@ class SkeletonProfile extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             gradient: FluentianColors.headerGradient,
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(0),
           ),
           child: Column(
             children: [
@@ -1440,7 +1440,7 @@ class SkeletonProfile extends StatelessWidget {
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
           ),
           child: Column(
@@ -1476,7 +1476,7 @@ class SkeletonProfile extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(0),
                 border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
               ),
               child: Column(

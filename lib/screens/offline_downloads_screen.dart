@@ -108,7 +108,7 @@ class _OfflineDownloadsScreenState extends State<OfflineDownloadsScreen> {
       appBar: AppBar(
         title: LText(
           'Downloaded lessons',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w900),
+          style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w900),
         ),
         backgroundColor: FluentianColors.pageBg,
         elevation: 0,
@@ -132,7 +132,7 @@ class _OfflineDownloadsScreenState extends State<OfflineDownloadsScreen> {
                         padding: const EdgeInsets.only(left: 4, bottom: 8),
                         child: LText(
                           course.code,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 11,
                             letterSpacing: 1,
                             fontWeight: FontWeight.w900,
@@ -209,7 +209,7 @@ class _UnitDownloadRowState extends State<_UnitDownloadRow> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: FluentianColors.border),
       ),
       child: Row(
@@ -220,7 +220,7 @@ class _UnitDownloadRowState extends State<_UnitDownloadRow> {
               children: [
                 LText(
                   widget.unit.title,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: FluentianColors.textPrimary,
@@ -230,7 +230,7 @@ class _UnitDownloadRowState extends State<_UnitDownloadRow> {
                 if (widget.isDownloaded)
                   LText(
                     'Downloaded · available offline',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       color: FluentianColors.primary,
                       fontWeight: FontWeight.w600,
@@ -239,7 +239,7 @@ class _UnitDownloadRowState extends State<_UnitDownloadRow> {
                 else if (_estimating)
                   LText(
                     'Estimating size…',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       color: FluentianColors.textSecondary,
                     ),
@@ -249,7 +249,7 @@ class _UnitDownloadRowState extends State<_UnitDownloadRow> {
                     _estimatedBytes != null
                         ? '${widget.unit.lessons.length} lessons · ~${_formatBytes(_estimatedBytes!)}'
                         : '${widget.unit.lessons.length} lessons',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       color: FluentianColors.textSecondary,
                     ),

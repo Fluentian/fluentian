@@ -55,7 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: LText(
           'Your settings',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w900),
+          style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w900),
         ),
         backgroundColor: FluentianColors.pageBg,
         elevation: 0,
@@ -376,7 +376,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             return Container(
               decoration: const BoxDecoration(
                 color: FluentianColors.pageBg,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
               ),
               child: Column(
                 children: [
@@ -395,7 +395,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       alignment: Alignment.centerLeft,
                       child: LText(
                         'Choose your timezone',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
                         ),
@@ -415,21 +415,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: ListTile(
                             onTap: () => Navigator.pop(context, option),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(0),
                             ),
                             tileColor: selected
                                 ? FluentianColors.primaryTint
                                 : Colors.transparent,
                             title: LText(
                               option.displayName,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontWeight: FontWeight.w600,
                                 color: FluentianColors.textPrimary,
                               ),
                             ),
                             subtitle: LText(
                               option.offsetLabel,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 12,
                                 color: FluentianColors.textSecondary,
                               ),
@@ -522,7 +522,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (context) {
         bool isSaving = false;
@@ -538,7 +538,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               decoration: const BoxDecoration(
                 color: FluentianColors.pageBg,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
               ),
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(20, 10, 20, keyboard + 24),
@@ -561,13 +561,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         gradient: FluentianColors.headerGradient,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(0),
                         boxShadow: [
                           BoxShadow(
                             color: FluentianColors.primary.withValues(
                               alpha: .22,
                             ),
-                            blurRadius: 22,
+                            blurRadius: 0,
                             offset: const Offset(0, 10),
                           ),
                         ],
@@ -588,7 +588,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                             child: LText(
                               initial,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 color: Colors.white,
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
@@ -602,7 +602,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               children: [
                                 LText(
                                   'Make your profile yours',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.ibmPlexSans(
                                     color: Colors.white,
                                     fontSize: 19,
                                     fontWeight: FontWeight.w900,
@@ -611,7 +611,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 const SizedBox(height: 4),
                                 LText(
                                   'Help your learning circle know who you are and what you are aiming for.',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.ibmPlexSans(
                                     color: Colors.white.withValues(alpha: .78),
                                     fontSize: 12,
                                     height: 1.35,
@@ -695,7 +695,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(17),
+                            borderRadius: BorderRadius.circular(0),
                           ),
                         ),
                       ),
@@ -739,7 +739,7 @@ class _ProfileEditField extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: FluentianColors.border),
         boxShadow: [FluentianShadows.subtle],
       ),
@@ -755,7 +755,7 @@ class _ProfileEditField extends StatelessWidget {
             height: 38,
             decoration: BoxDecoration(
               color: FluentianColors.primaryTint,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(0),
             ),
             child: Icon(icon, color: FluentianColors.primary, size: 20),
           ),
@@ -763,7 +763,7 @@ class _ProfileEditField extends StatelessWidget {
           hintText: hint,
           border: InputBorder.none,
           alignLabelWithHint: true,
-          counterStyle: GoogleFonts.inter(
+          counterStyle: GoogleFonts.ibmPlexSans(
             fontSize: 10,
             color: FluentianColors.textSecondary,
           ),
@@ -809,11 +809,11 @@ class _AccountHeader extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: FluentianColors.headerGradient,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(0),
         boxShadow: [
           BoxShadow(
             color: FluentianColors.primary.withValues(alpha: .18),
-            blurRadius: 18,
+            blurRadius: 0,
             offset: const Offset(0, 7),
           ),
         ],
@@ -839,7 +839,7 @@ class _AccountHeader extends StatelessWidget {
                   user.displayName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -872,7 +872,7 @@ class _AccountHeader extends StatelessWidget {
                             const SizedBox(width: 3),
                             LText(
                               'Founder',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: FluentianColors.warning,
@@ -892,7 +892,7 @@ class _AccountHeader extends StatelessWidget {
                       ),
                       child: LText(
                         'Free plan',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -906,7 +906,7 @@ class _AccountHeader extends StatelessWidget {
                   user.email,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 13,
                     color: Colors.white.withValues(alpha: .72),
                   ),
@@ -944,7 +944,7 @@ class _SettingsGroup extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: LText(
             title,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 11,
               letterSpacing: 1,
               fontWeight: FontWeight.w900,
@@ -957,7 +957,7 @@ class _SettingsGroup extends StatelessWidget {
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(0),
             side: BorderSide(color: FluentianColors.border),
           ),
           clipBehavior: Clip.antiAlias,
@@ -1058,7 +1058,7 @@ class _TimezoneRow extends StatelessWidget {
       onTap: onTap,
       trailing: LText(
         option?.displayName ?? timezone,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 14,
           fontWeight: FontWeight.w700,
           color: FluentianColors.primary,
@@ -1088,7 +1088,7 @@ class _TimeRow extends StatelessWidget {
       onTap: enabled ? onTap : null,
       trailing: LText(
         '$time · device time',
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 14,
           fontWeight: FontWeight.w700,
           color: enabled
@@ -1124,7 +1124,7 @@ class _FontScaleRow extends StatelessWidget {
               Expanded(
                 child: LText(
                   'Font size',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 15,
                     color: FluentianColors.textPrimary,
                   ),
@@ -1172,7 +1172,7 @@ class _SwitchRow extends StatelessWidget {
       secondary: _SettingIcon(icon: icon),
       title: LText(
         label,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 14,
           fontWeight: FontWeight.w700,
           color: FluentianColors.textPrimary,
@@ -1217,7 +1217,7 @@ class _SliderRow extends StatelessWidget {
               Expanded(
                 child: LText(
                   label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 15,
                     color: FluentianColors.textPrimary,
                   ),
@@ -1241,7 +1241,7 @@ class _SliderRow extends StatelessWidget {
               const SizedBox(width: 6),
               LText(
                 displayValue,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                   color: FluentianColors.primary,
@@ -1296,7 +1296,7 @@ class _RowShell extends StatelessWidget {
             Expanded(
               child: LText(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 15,
                   color: enabled
                       ? FluentianColors.textPrimary
@@ -1322,12 +1322,12 @@ class _DangerAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: isLoading ? null : onSignOut,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(0),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: FluentianColors.errorTint,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(
             color: FluentianColors.error.withValues(alpha: 0.2),
           ),
@@ -1338,7 +1338,7 @@ class _DangerAction extends StatelessWidget {
             const SizedBox(width: 12),
             LText(
               isLoading ? 'Signing out...' : 'Sign out',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: FluentianColors.error,
@@ -1363,7 +1363,7 @@ class _SettingIcon extends StatelessWidget {
     height: 36,
     decoration: BoxDecoration(
       color: enabled ? FluentianColors.primaryTint : FluentianColors.pageBg,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(0),
     ),
     child: Icon(
       icon,
@@ -1410,7 +1410,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
       ),
       padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomPadding),
       child: ConstrainedBox(
@@ -1430,7 +1430,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                 ),
               ),
@@ -1443,7 +1443,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                       height: 4,
                       decoration: BoxDecoration(
                         color: FluentianColors.error,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                     ),
                   ),
@@ -1455,7 +1455,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                         color: _step >= 1
                             ? FluentianColors.error
                             : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                     ),
                   ),
@@ -1477,7 +1477,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
                     color: FluentianColors.error.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(0),
                     border: Border.all(
                       color: FluentianColors.error.withValues(alpha: 0.3),
                     ),
@@ -1508,7 +1508,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: FluentianColors.error.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                       child: const Icon(
                         Icons.help_outline_rounded,
@@ -1555,7 +1555,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                         color: isSelected
                             ? FluentianColors.error.withValues(alpha: 0.08)
                             : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(
                           color: isSelected
                               ? FluentianColors.error
@@ -1596,7 +1596,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                           : FluentianColors.error.withValues(alpha: 0.4),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                     ),
                     onPressed: _selectedReason != null && !_isProcessing
@@ -1660,7 +1660,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: FluentianColors.error.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                       child: const Icon(
                         Icons.mark_email_unread_outlined,
@@ -1698,7 +1698,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: Row(
                     children: [
@@ -1739,11 +1739,11 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                       borderSide: BorderSide(
                         color: FluentianColors.error.withValues(alpha: 0.6),
                         width: 1.5,
@@ -1805,7 +1805,7 @@ class _DeleteAccountBottomSheetState extends State<_DeleteAccountBottomSheet> {
                               : FluentianColors.error.withValues(alpha: 0.4),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(0),
                           ),
                         ),
                         onPressed: canSubmit
@@ -1912,28 +1912,28 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
     'maya': _VoiceInfo(
       name: 'Maya',
       tag: 'Young Female',
-      accent: '🇫🇷 French (Female)',
+      accent: 'French · Female',
       description: 'Upbeat, bright and encouraging cadence for everyday French.',
       sampleText: "Bonjour ! Je m'appelle Maya, votre tutrice Fluentian.",
     ),
     'sofia': _VoiceInfo(
       name: 'Sofia',
       tag: 'Polished Female',
-      accent: '🇫🇷 French (Female)',
+      accent: 'French · Female',
       description: 'Serene, articulate Parisian tone ideal for clear lessons.',
       sampleText: "Bonjour ! Je m'appelle Sofia, votre tutrice Fluentian.",
     ),
     'sami': _VoiceInfo(
       name: 'Sami',
       tag: 'Young Male',
-      accent: '🇫🇷 French (Male)',
+      accent: 'French · Male',
       description: 'Friendly, energetic male voice for casual conversations.',
       sampleText: "Bonjour ! Je m'appelle Sami, votre tuteur Fluentian.",
     ),
     'daniel': _VoiceInfo(
       name: 'Daniel',
       tag: 'Polished Male',
-      accent: '🇫🇷 French (Male)',
+      accent: 'French · Male',
       description: 'Clear, reassuring male host style for structured learning.',
       sampleText: "Bonjour ! Je m'appelle Daniel, votre tuteur Fluentian.",
     ),
@@ -1983,7 +1983,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                 return Container(
                   decoration: const BoxDecoration(
                     color: Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
                   ),
                   child: Column(
                     children: [
@@ -2004,7 +2004,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 color: FluentianColors.primary.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(0),
                               ),
                               child: const Icon(
                                 Icons.record_voice_over_rounded,
@@ -2019,7 +2019,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                 children: [
                                   Text(
                                     'Cartesia AI Voice Engine',
-                                    style: GoogleFonts.plusJakartaSans(
+                                    style: GoogleFonts.bricolageGrotesque(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w800,
                                       color: const Color(0xFF0F172A),
@@ -2028,7 +2028,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                   const SizedBox(height: 2),
                                   Text(
                                     'Audition voice samples before picking your tutor.',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.ibmPlexSans(
                                       fontSize: 13,
                                       color: const Color(0xFF64748B),
                                     ),
@@ -2059,7 +2059,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                 color: isSelected
                                     ? FluentianColors.primary.withValues(alpha: 0.04)
                                     : Colors.white,
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(0),
                                 border: Border.all(
                                   color: isSelected
                                       ? FluentianColors.primary.withValues(alpha: 0.5)
@@ -2069,7 +2069,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(alpha: 0.02),
-                                    blurRadius: 8,
+                                    blurRadius: 0,
                                     offset: const Offset(0, 2),
                                   ),
                                 ],
@@ -2093,7 +2093,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                               children: [
                                                 Text(
                                                   info.name,
-                                                  style: GoogleFonts.plusJakartaSans(
+                                                  style: GoogleFonts.ibmPlexSans(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.w700,
                                                     color: const Color(0xFF0F172A),
@@ -2107,11 +2107,11 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                                     color: isSelected
                                                         ? FluentianColors.primary
                                                         : const Color(0xFFF1F5F9),
-                                                    borderRadius: BorderRadius.circular(8),
+                                                    borderRadius: BorderRadius.circular(0),
                                                   ),
                                                   child: Text(
                                                     info.tag,
-                                                    style: GoogleFonts.inter(
+                                                    style: GoogleFonts.ibmPlexSans(
                                                       fontSize: 11,
                                                       fontWeight: FontWeight.w600,
                                                       color: isSelected
@@ -2125,7 +2125,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                             const SizedBox(height: 2),
                                             Text(
                                               info.description,
-                                              style: GoogleFonts.inter(
+                                              style: GoogleFonts.ibmPlexSans(
                                                 fontSize: 12,
                                                 color: const Color(0xFF64748B),
                                               ),
@@ -2156,7 +2156,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 14, vertical: 10),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius: BorderRadius.circular(0),
                                             ),
                                           ),
                                           onPressed: () => _previewVoice(key, setSheetState),
@@ -2171,7 +2171,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                           ),
                                           label: Text(
                                             isPlaying ? 'Auditioning...' : 'Listen sample',
-                                            style: GoogleFonts.plusJakartaSans(
+                                            style: GoogleFonts.ibmPlexSans(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -2188,7 +2188,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 16, vertical: 10),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(0),
                                           ),
                                         ),
                                         onPressed: () {
@@ -2211,7 +2211,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                                             ],
                                             Text(
                                               isSelected ? 'Active' : 'Select voice',
-                                              style: GoogleFonts.plusJakartaSans(
+                                              style: GoogleFonts.ibmPlexSans(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w700,
                                                 color: Colors.white,
@@ -2250,7 +2250,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(0),
           onTap: () => _openVoicePicker(context),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -2260,7 +2260,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: FluentianColors.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: const Icon(
                     Icons.record_voice_over_rounded,
@@ -2275,7 +2275,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                     children: [
                       Text(
                         'French Speaker Voice',
-                        style: GoogleFonts.plusJakartaSans(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF0F172A),
@@ -2284,7 +2284,7 @@ class _VoiceSelectorRowState extends State<_VoiceSelectorRow> {
                       const SizedBox(height: 2),
                       Text(
                         '${info.name} • ${info.tag}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: FluentianColors.primary,

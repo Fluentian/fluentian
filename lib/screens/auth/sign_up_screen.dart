@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../legal_document_screen.dart';
+import '../../core/theme.dart';
+import '../../widgets/tibeb_band.dart';
 import 'auth_widgets.dart';
 import 'otp_verification_screen.dart';
 import 'sign_in_screen.dart';
@@ -244,7 +246,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (context) {
         return SafeArea(
@@ -257,16 +259,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: AuthColors.border,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(0),
                 ),
               ),
               const SizedBox(height: 16),
-              LText(
-                'Choose your language',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AuthColors.heading,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  context.tr('Choose your language').toUpperCase(),
+                  style: FluentianTheme.label(),
                 ),
               ),
               const SizedBox(height: 16),
@@ -295,22 +296,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         child: Row(
           children: [
-            const Icon(
-              Icons.language_rounded,
-              size: 20,
-              color: AuthColors.primary,
-            ),
-            const SizedBox(width: 12),
             Expanded(
               child: LText(
                 name,
-                style: GoogleFonts.inter(fontSize: 16, color: AuthColors.body),
+                style: GoogleFonts.ibmPlexSans(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                  color: AuthColors.heading,
+                ),
               ),
             ),
-            Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? AuthColors.primary : AuthColors.border,
-            ),
+            if (isSelected)
+              const Icon(
+                Icons.check_rounded,
+                size: 20,
+                color: AuthColors.primary,
+              ),
           ],
         ),
       ),
@@ -353,7 +354,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: AuthColors.cardBg,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(color: AuthColors.border),
                       ),
                       child: Column(
@@ -400,7 +401,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                           if (auth.errorMessage != null) ...[
                             const SizedBox(height: 12),
-                            _ErrorBanner(message: auth.errorMessage!),
+                            AuthErrorBanner(message: auth.errorMessage!),
                           ],
                           const SizedBox(height: 24),
                           AuthButton(
@@ -425,8 +426,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
                   child: GestureDetector(
                     onTap: auth.isLoading
                         ? null
@@ -438,7 +440,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                     child: RichText(
                       text: TextSpan(
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 14,
                           color: AuthColors.placeholder,
                         ),
@@ -468,6 +470,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 }
 
+/// Sign-up progress.
+///
+/// Was four rounded pill segments -- a third progress language in an app that
+/// already draws progress one way. Same counter and same band as the
+/// onboarding scaffold, so "how far through am I" looks identical wherever
+/// the question comes up.
 class _StepProgress extends StatelessWidget {
   final int step;
   final int count;
@@ -476,22 +484,21 @@ class _StepProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: List.generate(count, (index) {
-        final isActive = index <= step;
-        return Expanded(
-          child: Container(
-            height: 5,
-            margin: EdgeInsets.only(right: index == count - 1 ? 0 : 6),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? AuthColors.primary
-                  : AuthColors.border.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-        );
-      }),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Step ${step + 1} / $count',
+          style: FluentianTheme.label(),
+        ),
+        const SizedBox(height: 10),
+        TweenAnimationBuilder<double>(
+          tween: Tween(end: (step + 1) / count),
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOutCubic,
+          builder: (context, v, _) => TibebBand(height: 12, progress: v),
+        ),
+      ],
     );
   }
 }
@@ -509,20 +516,12 @@ class _StepHeader extends StatelessWidget {
       children: [
         LText(
           title,
-          style: GoogleFonts.inter(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: AuthColors.heading,
-          ),
+          style: Theme.of(context).textTheme.displaySmall,
         ),
         const SizedBox(height: 8),
         LText(
           subtitle,
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            height: 1.35,
-            color: AuthColors.placeholder,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
       ],
     );
@@ -554,7 +553,6 @@ class _NameStep extends StatelessWidget {
         const SizedBox(height: 28),
         AuthInputField(
           label: 'Full name',
-          leftIcon: Icons.person_outline,
           keyboardType: TextInputType.name,
           controller: controller,
           enabled: enabled,
@@ -592,7 +590,6 @@ class _UsernameStep extends StatelessWidget {
         const SizedBox(height: 28),
         AuthInputField(
           label: 'Username',
-          leftIcon: Icons.alternate_email_rounded,
           controller: controller,
           enabled: enabled,
           hint: 'Choose a memorable username, like sara_french',
@@ -627,7 +624,6 @@ class _EmailStep extends StatelessWidget {
         const SizedBox(height: 28),
         AuthInputField(
           label: 'Email address',
-          leftIcon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
           controller: controller,
           enabled: enabled,
@@ -672,7 +668,6 @@ class _PasswordStep extends StatelessWidget {
           const SizedBox(height: 20),
           AuthInputField(
             label: 'Password',
-            leftIcon: Icons.lock_outline,
             isPassword: true,
             controller: controller,
             enabled: enabled,
@@ -682,12 +677,12 @@ class _PasswordStep extends StatelessWidget {
           const SizedBox(height: 12),
           InkWell(
             onTap: enabled ? onLanguageTap : null,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(0),
             child: Container(
               height: 52,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(0),
                 border: Border.all(color: AuthColors.border),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -702,7 +697,7 @@ class _PasswordStep extends StatelessWidget {
                   Expanded(
                     child: LText(
                       language,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 16,
                         color: AuthColors.heading,
                       ),
@@ -729,7 +724,7 @@ class _PasswordStep extends StatelessWidget {
                     color: agreedToTerms
                         ? AuthColors.primary
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(0),
                     border: Border.all(
                       color: agreedToTerms
                           ? AuthColors.primary
@@ -800,7 +795,7 @@ class _TermsAgreementTextState extends State<_TermsAgreementText> {
 
   @override
   Widget build(BuildContext context) {
-    final bodyStyle = GoogleFonts.inter(fontSize: 13, color: AuthColors.body);
+    final bodyStyle = GoogleFonts.ibmPlexSans(fontSize: 13, color: AuthColors.body);
     final linkStyle = bodyStyle.copyWith(
       color: AuthColors.primary,
       fontWeight: FontWeight.w700,
@@ -832,35 +827,3 @@ class _TermsAgreementTextState extends State<_TermsAgreementText> {
   }
 }
 
-class _ErrorBanner extends StatelessWidget {
-  final String message;
-  const _ErrorBanner({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFECACA)),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: AuthColors.errorText,
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: LText(
-              message,
-              style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

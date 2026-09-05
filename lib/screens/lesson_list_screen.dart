@@ -140,7 +140,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                 const SizedBox(height: 16),
                 LText(
                   'No courses loaded yet.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 15,
                     color: FluentianColors.textSecondary,
                   ),
@@ -238,7 +238,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(0),
                 border: Border.all(color: FluentianColors.border),
                 boxShadow: [FluentianShadows.subtle],
               ),
@@ -249,7 +249,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                     height: 44,
                     decoration: BoxDecoration(
                       color: FluentianColors.primaryTint,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                     ),
                     child: const Icon(
                       Iconsax.routing_2,
@@ -267,7 +267,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                           children: [
                             LText(
                               'French Fluency Path',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: FluentianColors.textPrimary,
@@ -275,7 +275,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                             ),
                             LText(
                               '${(progressPercent * 100).toInt()}%',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: FluentianColors.primary,
@@ -285,7 +285,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                         ),
                         const SizedBox(height: 8),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(0),
                           child: LinearProgressIndicator(
                             value: progressPercent,
                             backgroundColor: FluentianColors.primary
@@ -301,7 +301,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                           '$completedLessons of $totalLessons lessons complete · ${content.courses.length} ${content.courses.length == 1 ? 'course' : 'courses'} · $totalUnits ${totalUnits == 1 ? 'chapter' : 'chapters'}',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 12,
                             color: FluentianColors.textSecondary,
                             fontWeight: FontWeight.w500,
@@ -328,7 +328,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
       appBar: AppBar(
         title: LText(
           'Learning Path',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: FluentianColors.textPrimary,
@@ -444,7 +444,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
             ),
             child: LText(
               '${item.courseIndex + 1}',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: isFocusedCourse ? Colors.white : FluentianColors.primary,
@@ -460,7 +460,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                   isFocusedCourse
                       ? 'YOUR ACTIVE COURSE'
                       : 'COURSE ${item.courseIndex + 1} OF ${item.courseCount}',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     color: isFocusedCourse
@@ -472,7 +472,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                 const SizedBox(height: 2),
                 LText(
                   _courseTitle(item.course),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: FluentianColors.textPrimary,
@@ -487,7 +487,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
             children: [
               LText(
                 level.toUpperCase(),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
                   color: FluentianColors.primary,
@@ -497,7 +497,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
               const SizedBox(height: 3),
               LText(
                 '$completedLessons/${lessons.length}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: FluentianColors.textSecondary,
@@ -554,7 +554,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
             end: Alignment.bottomRight,
             colors: [FluentianColors.primary, FluentianColors.primaryDark],
           ),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(0),
           border: isFocused
               ? Border.all(color: FluentianColors.accent, width: 2)
               : null,
@@ -576,12 +576,12 @@ class _LessonListScreenState extends State<LessonListScreen> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(0),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
               ),
               child: LText(
                 '${unit.unitNo}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
@@ -597,7 +597,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                     isFocused
                         ? 'CURRENT CHAPTER · ${unit.unitKind.toUpperCase()}'
                         : 'CHAPTER ${unit.unitNo} · ${unit.unitKind.toUpperCase()}',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: Colors.white.withValues(alpha: 0.7),
@@ -607,7 +607,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                   const SizedBox(height: 4),
                   LText(
                     unit.title,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
@@ -618,7 +618,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(0),
                           child: LinearProgressIndicator(
                             value: progress,
                             minHeight: 6,
@@ -634,7 +634,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                       const SizedBox(width: 10),
                       LText(
                         '$completed/${unit.lessons.length}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -647,7 +647,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                     progress == 1
                         ? 'Chapter mastered · replay any mission'
                         : 'Follow the route to reach the chapter summit',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       color: Colors.white.withValues(alpha: 0.72),
                     ),
@@ -813,7 +813,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                   color: item.isUnlocked
                       ? Colors.white
                       : FluentianColors.divider,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(0),
                   border: Border.all(
                     color: item.isActive
                         ? FluentianColors.primary.withValues(alpha: 0.3)
@@ -844,7 +844,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                                 : visuals.label.toUpperCase(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 9,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.55,
@@ -861,7 +861,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                       item.lesson.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 13,
                         height: 1.18,
                         fontWeight: FontWeight.w700,
@@ -882,7 +882,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                         ),
                         LText(
                           '${item.lesson.xpReward} XP',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: FluentianColors.textSecondary,
@@ -897,7 +897,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                         const SizedBox(width: 2),
                         LText(
                           '${item.lesson.estimatedMinutes}m',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
                             color: FluentianColors.textSecondary,
@@ -1010,7 +1010,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: item.isUnlocked ? Colors.white : const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: item.isActive
               ? FluentianColors.primary.withValues(alpha: 0.25)
@@ -1021,14 +1021,14 @@ class _LessonListScreenState extends State<LessonListScreen> {
             ? [
                 BoxShadow(
                   color: FluentianColors.primary.withValues(alpha: 0.06),
-                  blurRadius: 10,
+                  blurRadius: 0,
                   offset: const Offset(0, 4),
                 ),
               ]
             : [FluentianShadows.subtle],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(0),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1070,7 +1070,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                               children: [
                                 LText(
                                   kindText.toUpperCase(),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.ibmPlexSans(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
                                     color: item.isUnlocked
@@ -1090,11 +1090,11 @@ class _LessonListScreenState extends State<LessonListScreen> {
                                       color: FluentianColors.primary.withValues(
                                         alpha: 0.15,
                                       ),
-                                      borderRadius: BorderRadius.circular(4),
+                                      borderRadius: BorderRadius.circular(0),
                                     ),
                                     child: LText(
                                       'ACTIVE',
-                                      style: GoogleFonts.inter(
+                                      style: GoogleFonts.ibmPlexSans(
                                         fontSize: 8,
                                         fontWeight: FontWeight.w800,
                                         color: FluentianColors.primary,
@@ -1109,7 +1109,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                               item.lesson.title,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: item.isUnlocked
@@ -1130,7 +1130,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                                 const SizedBox(width: 2),
                                 LText(
                                   '+${item.lesson.xpReward} XP',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.ibmPlexSans(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
                                     color: item.isUnlocked
@@ -1149,7 +1149,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                                 const SizedBox(width: 2),
                                 LText(
                                   '${item.lesson.estimatedMinutes}m',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.ibmPlexSans(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
                                     color: item.isUnlocked
@@ -1211,11 +1211,11 @@ class _LessonListScreenState extends State<LessonListScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 border: Border.all(color: FluentianColors.primary, width: 1.5),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(0),
               ),
               child: LText(
                 'REVIEW',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   color: FluentianColors.primary,
@@ -1236,12 +1236,12 @@ class _LessonListScreenState extends State<LessonListScreen> {
         foregroundColor: Colors.white,
         minimumSize: Size.zero,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         elevation: 0,
       ),
       child: LText(
         'START',
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 10,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.5,
@@ -1259,7 +1259,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (context) {
         Color kindColor;
@@ -1306,7 +1306,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                   height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                 ),
               ),
@@ -1328,7 +1328,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                         const SizedBox(width: 6),
                         LText(
                           kindText.toUpperCase(),
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: kindColor,
@@ -1359,7 +1359,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                           const SizedBox(width: 6),
                           LText(
                             'COMPLETED',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               color: FluentianColors.success,
@@ -1373,7 +1373,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
               const SizedBox(height: 16),
               LText(
                 lesson.title,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: FluentianColors.textPrimary,
@@ -1382,7 +1382,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
               const SizedBox(height: 8),
               LText(
                 'Practice key expressions and improve your fluency in this session.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 14,
                   color: FluentianColors.textSecondary,
                   height: 1.4,
@@ -1396,7 +1396,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(color: Colors.grey.shade200),
                       ),
                       child: Column(
@@ -1409,7 +1409,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                           const SizedBox(height: 4),
                           LText(
                             '+${lesson.xpReward} XP',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: FluentianColors.textPrimary,
@@ -1417,7 +1417,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                           ),
                           LText(
                             'Base Reward',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 11,
                               color: FluentianColors.textSecondary,
                             ),
@@ -1432,7 +1432,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(color: Colors.grey.shade200),
                       ),
                       child: Column(
@@ -1445,7 +1445,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                           const SizedBox(height: 4),
                           LText(
                             '${lesson.estimatedMinutes} mins',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: FluentianColors.textPrimary,
@@ -1453,7 +1453,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
                           ),
                           LText(
                             'Est. Duration',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 11,
                               color: FluentianColors.textSecondary,
                             ),
@@ -1479,12 +1479,12 @@ class _LessonListScreenState extends State<LessonListScreen> {
                   backgroundColor: kindColor,
                   minimumSize: const Size(double.infinity, 54),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                 ),
                 child: LText(
                   isCompleted ? 'PRACTICE AGAIN' : 'START LESSON',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,

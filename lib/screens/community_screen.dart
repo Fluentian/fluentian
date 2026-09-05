@@ -106,7 +106,7 @@ class _SegmentToggle extends StatelessWidget {
               const SizedBox(width: 6),
               LText(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: selected

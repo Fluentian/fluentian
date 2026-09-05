@@ -67,7 +67,7 @@ class OpportunityDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: LText(
           'Opportunity Details',
-          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
+          style: GoogleFonts.ibmPlexSans(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
@@ -80,7 +80,7 @@ class OpportunityDetailScreen extends StatelessWidget {
           children: [
             if (opportunity.imageUrl != null) ...[
               ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(0),
                 child: Image.network(
                   opportunity.imageUrl!,
                   height: 180,
@@ -95,12 +95,12 @@ class OpportunityDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(0),
                 border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10,
+                    blurRadius: 0,
                     offset: const Offset(0, 4),
                   ),
                 ],
@@ -116,7 +116,7 @@ class OpportunityDetailScreen extends StatelessWidget {
                         height: compact ? 46 : 56,
                         decoration: BoxDecoration(
                           color: typeColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(0),
                         ),
                         child: Center(
                           child: Icon(
@@ -133,7 +133,7 @@ class OpportunityDetailScreen extends StatelessWidget {
                             opportunity.title,
                             maxLines: compact ? 3 : 2,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: compact ? 18 : 20,
                               fontWeight: FontWeight.w800,
                               color: FluentianColors.textPrimary,
@@ -151,13 +151,13 @@ class OpportunityDetailScreen extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: typeColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(0),
                               ),
                               child: LText(
                                 opportunity.type.toUpperCase(),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   color: typeColor,
                                   fontWeight: FontWeight.w800,
                                   fontSize: 10,
@@ -210,7 +210,7 @@ class OpportunityDetailScreen extends StatelessWidget {
             const SizedBox(height: 32),
             LText(
               'Description',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: FluentianColors.textPrimary,
@@ -219,7 +219,7 @@ class OpportunityDetailScreen extends StatelessWidget {
             const SizedBox(height: 12),
             LText(
               opportunity.description,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 15,
                 color: FluentianColors.textSecondary,
                 height: 1.6,
@@ -252,7 +252,7 @@ class OpportunityDetailScreen extends StatelessWidget {
               elevation: 4,
               shadowColor: FluentianColors.accent.withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(0),
               ),
             ),
             child: Row(
@@ -271,7 +271,7 @@ class OpportunityDetailScreen extends StatelessWidget {
                             ? opportunity.ctaLabel!
                             : 'Open Opportunity')
                       : 'Apply Now',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -291,7 +291,7 @@ class OpportunityDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(0),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -303,7 +303,7 @@ class OpportunityDetailScreen extends StatelessWidget {
                 text,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: FluentianColors.textSecondary,

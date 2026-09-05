@@ -134,7 +134,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               DecoratedBox(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(0),
                   border: Border.all(color: FluentianColors.border),
                   boxShadow: [FluentianShadows.subtle],
                 ),
@@ -158,7 +158,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           LText(
             'Only XP earned from lessons and reviews counts here. The winner bonus is added to total XP after the league closes, but not to the next competition.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 11,
               height: 1.45,
               fontWeight: FontWeight.w600,
@@ -190,7 +190,7 @@ class _LeaderboardAppBar extends StatelessWidget {
           child: LText(
             'Weekly league',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 19,
               fontWeight: FontWeight.w900,
               color: FluentianColors.textPrimary,
@@ -236,11 +236,11 @@ class _LeagueHero extends StatelessWidget {
         end: Alignment.bottomRight,
         colors: [FluentianColors.primaryDark, FluentianColors.secondary],
       ),
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(0),
       boxShadow: [
         BoxShadow(
           color: FluentianColors.primary.withValues(alpha: .18),
-          blurRadius: 20,
+          blurRadius: 0,
           offset: const Offset(0, 8),
         ),
       ],
@@ -272,7 +272,7 @@ class _LeagueHero extends StatelessWidget {
                 ),
                 child: LText(
                   _timeLabel.toUpperCase(),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 10,
                     letterSpacing: .7,
                     fontWeight: FontWeight.w900,
@@ -283,7 +283,7 @@ class _LeagueHero extends StatelessWidget {
               const SizedBox(height: 14),
               LText(
                 'Learn your way to first.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 25,
                   height: 1.05,
                   fontWeight: FontWeight.w900,
@@ -293,7 +293,7 @@ class _LeagueHero extends StatelessWidget {
               const SizedBox(height: 8),
               LText(
                 'The top learner earns +$rewardXp bonus XP when this week closes.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 13,
                   height: 1.4,
                   fontWeight: FontWeight.w600,
@@ -307,7 +307,7 @@ class _LeagueHero extends StatelessWidget {
                   const SizedBox(width: 7),
                   LText(
                     '$participantCount active learner${participantCount == 1 ? '' : 's'} this week',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
@@ -386,7 +386,7 @@ class _PodiumPlace extends StatelessWidget {
           entry!.displayName,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 12,
             fontWeight: FontWeight.w900,
             color: FluentianColors.textPrimary,
@@ -399,7 +399,7 @@ class _PodiumPlace extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(5, 10, 5, 8),
           decoration: BoxDecoration(
             color: _color.withValues(alpha: .13),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
             border: Border(top: BorderSide(color: _color, width: 3)),
           ),
           child: Column(
@@ -407,7 +407,7 @@ class _PodiumPlace extends StatelessWidget {
             children: [
               LText(
                 '$rank',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: rank == 1 ? 26 : 21,
                   fontWeight: FontWeight.w900,
                   color: _color,
@@ -415,7 +415,7 @@ class _PodiumPlace extends StatelessWidget {
               ),
               LText(
                 '${entry!.weeklyXp} XP',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w900,
                   color: FluentianColors.textPrimary,
@@ -446,7 +446,7 @@ class _RankRow extends StatelessWidget {
           width: 28,
           child: LText(
             '${entry.rank ?? '—'}',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 14,
               fontWeight: FontWeight.w900,
               color: FluentianColors.textSecondary,
@@ -465,7 +465,7 @@ class _RankRow extends StatelessWidget {
                     : entry.displayName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   color: FluentianColors.textPrimary,
@@ -473,7 +473,7 @@ class _RankRow extends StatelessWidget {
               ),
               LText(
                 entry.currentLevel,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: FluentianColors.textSecondary,
@@ -484,7 +484,7 @@ class _RankRow extends StatelessWidget {
         ),
         LText(
           '${entry.weeklyXp} XP',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 13,
             fontWeight: FontWeight.w900,
             color: FluentianColors.secondary,
@@ -505,7 +505,7 @@ class _CurrentLearnerCard extends StatelessWidget {
     padding: const EdgeInsets.all(15),
     decoration: BoxDecoration(
       color: FluentianColors.primaryDark,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(0),
       boxShadow: [FluentianShadows.subtle],
     ),
     child: Row(
@@ -516,11 +516,11 @@ class _CurrentLearnerCard extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: .12),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(0),
           ),
           child: LText(
             entry.rank == null ? '—' : '#${entry.rank}',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 16,
               fontWeight: FontWeight.w900,
               color: FluentianColors.accent,
@@ -538,7 +538,7 @@ class _CurrentLearnerCard extends StatelessWidget {
                     : entry.displayName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
@@ -549,7 +549,7 @@ class _CurrentLearnerCard extends StatelessWidget {
                 entry.rank == null
                     ? 'Complete a lesson or review'
                     : '${entry.currentLevel} this week',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: Colors.white.withValues(alpha: .66),
@@ -560,7 +560,7 @@ class _CurrentLearnerCard extends StatelessWidget {
         ),
         LText(
           '${entry.weeklyXp} XP',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 15,
             fontWeight: FontWeight.w900,
             color: Colors.white,
@@ -604,7 +604,7 @@ class _PreviousWinnerBanner extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
     decoration: BoxDecoration(
       color: FluentianColors.warningTint,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(0),
       border: Border.all(color: FluentianColors.warning.withValues(alpha: .3)),
     ),
     child: Row(
@@ -618,7 +618,7 @@ class _PreviousWinnerBanner extends StatelessWidget {
         Expanded(
           child: LText(
             '${winner.displayName} won last week and earned +${winner.bonusXp} XP.',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 12,
               height: 1.35,
               fontWeight: FontWeight.w800,
@@ -641,7 +641,7 @@ class _EmptyLeague extends StatelessWidget {
     padding: const EdgeInsets.all(24),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(0),
       border: Border.all(color: FluentianColors.border),
     ),
     child: Column(
@@ -650,7 +650,7 @@ class _EmptyLeague extends StatelessWidget {
         const SizedBox(height: 12),
         LText(
           'The league is open',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 17,
             fontWeight: FontWeight.w900,
             color: FluentianColors.textPrimary,
@@ -660,7 +660,7 @@ class _EmptyLeague extends StatelessWidget {
         LText(
           'Be the first to earn XP this week and start the race for the +$rewardXp XP prize.',
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 13,
             height: 1.4,
             color: FluentianColors.textSecondary,
@@ -679,7 +679,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LText(
     text,
-    style: GoogleFonts.inter(
+    style: GoogleFonts.ibmPlexSans(
       fontSize: 10,
       letterSpacing: .9,
       fontWeight: FontWeight.w900,

@@ -161,7 +161,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                                 BoxShadow(
                                   color: FluentianColors.warning
                                       .withValues(alpha: 0.5),
-                                  blurRadius: 36,
+                                  blurRadius: 0,
                                   spreadRadius: 4,
                                   offset: const Offset(0, 12),
                                 ),
@@ -195,20 +195,20 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                               ),
                               decoration: BoxDecoration(
                                 color: FluentianColors.success,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(0),
                                 boxShadow: [
                                   BoxShadow(
                                     color: FluentianColors.success.withValues(
                                       alpha: 0.4,
                                     ),
-                                    blurRadius: 10,
+                                    blurRadius: 0,
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
                               child: LText(
                                 '+1 STREAK!',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
@@ -234,9 +234,9 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                     child: Column(
                       children: [
                         LText(
-                          '${widget.streakDays} DAY STREAK! 🔥',
+                          '${widget.streakDays} DAY STREAK',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 32,
                             fontWeight: FontWeight.w900,
                             letterSpacing: -0.5,
@@ -244,7 +244,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                             shadows: [
                               Shadow(
                                 color: Colors.black.withValues(alpha: 0.4),
-                                blurRadius: 12,
+                                blurRadius: 0,
                                 offset: const Offset(0, 4),
                               ),
                             ],
@@ -254,7 +254,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                         LText(
                           'You completed a lesson today and kept your streak alive. Practice tomorrow to make it ${widget.streakDays + 1} days!',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 15,
                             fontWeight: FontWeight.w400,
                             color: Colors.white.withValues(alpha: 0.8),
@@ -282,7 +282,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.15),
                         ),
@@ -316,7 +316,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                                         )
                                       : LText(
                                           dayLabels[index],
-                                          style: GoogleFonts.inter(
+                                          style: GoogleFonts.ibmPlexSans(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                             color: Colors.white.withValues(
@@ -329,7 +329,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                               const SizedBox(height: 6),
                               LText(
                                 dayLabels[index],
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   fontSize: 11,
                                   fontWeight: isToday
                                       ? FontWeight.w800
@@ -357,7 +357,7 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                   ),
                   decoration: BoxDecoration(
                     color: FluentianColors.infoTint.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(0),
                     border: Border.all(
                       color: FluentianColors.accent.withValues(alpha: 0.5),
                     ),
@@ -372,8 +372,8 @@ class _StreakCelebrationScreenState extends State<StreakCelebrationScreen>
                       ),
                       const SizedBox(width: 8),
                       LText(
-                        '1 Streak Freeze Active to Protect Missed Days 🛡️',
-                        style: GoogleFonts.inter(
+                        '1 streak freeze active, protecting missed days',
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,

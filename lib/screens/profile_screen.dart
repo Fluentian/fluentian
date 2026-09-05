@@ -72,7 +72,7 @@ class ProfileScreen extends StatelessWidget {
                             user.displayName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
@@ -81,7 +81,7 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 3),
                           LText(
                             '@${user.username}',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: Colors.white.withValues(alpha: .72),
@@ -104,9 +104,9 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     Material(
                       color: Colors.white.withValues(alpha: .13),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(0),
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(0),
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const SettingsScreen(),
@@ -132,7 +132,7 @@ class ProfileScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: .12),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: .16),
                       ),
@@ -149,7 +149,7 @@ class ProfileScreen extends StatelessWidget {
                         Expanded(
                           child: LText(
                             user.learningGoal!,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 13,
                               height: 1.35,
                               fontWeight: FontWeight.w600,
@@ -179,7 +179,7 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     LText(
                       'Level progress',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: FluentianColors.textPrimary,
@@ -188,7 +188,7 @@ class ProfileScreen extends StatelessWidget {
                     const Spacer(),
                     LText(
                       '${(xpProgress * 100).round()}%',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
                         color: FluentianColors.primary,
@@ -224,7 +224,7 @@ class ProfileScreen extends StatelessWidget {
                         '${xp % nextLevelXp} of $nextLevelXp XP toward the next milestone',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: FluentianColors.textSecondary,
@@ -292,7 +292,7 @@ class ProfileScreen extends StatelessWidget {
                           height: 34,
                           decoration: BoxDecoration(
                             color: FluentianColors.warningTint,
-                            borderRadius: BorderRadius.circular(11),
+                            borderRadius: BorderRadius.circular(0),
                           ),
                           child: const Icon(
                             Iconsax.flash_15,
@@ -303,7 +303,7 @@ class ProfileScreen extends StatelessWidget {
                         const SizedBox(width: 10),
                         LText(
                           'Weekly Activity',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                             color: FluentianColors.textPrimary,
@@ -318,7 +318,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: FluentianColors.warningTint,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                       child: Row(
                         children: [
@@ -330,7 +330,7 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(width: 4),
                           LText(
                             '$streak ${streak == 1 ? 'Day' : 'Days'}',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: FluentianColors.warning,
@@ -377,7 +377,7 @@ class ProfileScreen extends StatelessWidget {
                                         BoxShadow(
                                           color: FluentianColors.warning
                                               .withValues(alpha: 0.35),
-                                          blurRadius: 8,
+                                          blurRadius: 0,
                                           offset: const Offset(0, 3),
                                         ),
                                       ]
@@ -392,7 +392,7 @@ class ProfileScreen extends StatelessWidget {
                                       )
                                     : LText(
                                         dayLabels[index],
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.ibmPlexSans(
                                           fontSize: 13,
                                           fontWeight: isToday
                                               ? FontWeight.w800
@@ -407,7 +407,7 @@ class ProfileScreen extends StatelessWidget {
                             const SizedBox(height: 6),
                             LText(
                               dayLabels[index],
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 11,
                                 fontWeight: isToday
                                     ? FontWeight.w800
@@ -442,7 +442,7 @@ class ProfileScreen extends StatelessWidget {
                       height: 34,
                       decoration: BoxDecoration(
                         color: FluentianColors.primaryTint,
-                        borderRadius: BorderRadius.circular(11),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                       child: const Icon(
                         Iconsax.chart_2,
@@ -453,7 +453,7 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(width: 10),
                     LText(
                       'Learning summary',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
                         color: FluentianColors.textPrimary,
@@ -496,7 +496,7 @@ class ProfileScreen extends StatelessWidget {
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(0),
                 ),
               ),
             ),
@@ -534,7 +534,7 @@ class _MetricCard extends StatelessWidget {
             height: 38,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(13),
+              borderRadius: BorderRadius.circular(0),
             ),
             child: Icon(icon, color: color, size: 21),
           ),
@@ -547,7 +547,7 @@ class _MetricCard extends StatelessWidget {
                 child: LText(
                   value,
                   maxLines: 1,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: FluentianColors.textPrimary,
@@ -560,7 +560,7 @@ class _MetricCard extends StatelessWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: FluentianColors.textSecondary,
@@ -592,7 +592,7 @@ class _SummaryLine extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: FluentianColors.pageBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: FluentianColors.border),
       ),
       child: Row(
@@ -602,7 +602,7 @@ class _SummaryLine extends StatelessWidget {
             height: 34,
             decoration: BoxDecoration(
               color: FluentianColors.primaryTint,
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(0),
             ),
             child: Icon(icon, color: FluentianColors.primary, size: 18),
           ),
@@ -610,7 +610,7 @@ class _SummaryLine extends StatelessWidget {
           Expanded(
             child: LText(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: FluentianColors.textPrimary,
@@ -620,7 +620,7 @@ class _SummaryLine extends StatelessWidget {
           const SizedBox(width: 10),
           LText(
             value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 14,
               fontWeight: FontWeight.w900,
               color: FluentianColors.primary,
@@ -645,7 +645,7 @@ class _Pill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: color.withValues(alpha: 0.14)),
       ),
       child: Row(
@@ -655,7 +655,7 @@ class _Pill extends StatelessWidget {
           const SizedBox(width: 5),
           LText(
             text,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 12,
               fontWeight: FontWeight.w700,
               color: color,
@@ -669,11 +669,11 @@ class _Pill extends StatelessWidget {
 
 BoxDecoration _heroDecoration() => BoxDecoration(
   gradient: FluentianColors.headerGradient,
-  borderRadius: BorderRadius.circular(22),
+  borderRadius: BorderRadius.circular(0),
   boxShadow: [
     BoxShadow(
       color: FluentianColors.primary.withValues(alpha: .2),
-      blurRadius: 20,
+      blurRadius: 0,
       offset: const Offset(0, 8),
     ),
   ],
@@ -689,7 +689,7 @@ class _SectionLabel extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 4),
     child: LText(
       text,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.ibmPlexSans(
         fontSize: 11,
         letterSpacing: 1.1,
         fontWeight: FontWeight.w900,
@@ -758,7 +758,7 @@ BoxDecoration _panelDecoration({double radius = 16}) => BoxDecoration(
 
 BoxDecoration _metricDecoration(Color color) => BoxDecoration(
   color: Colors.white,
-  borderRadius: BorderRadius.circular(18),
+  borderRadius: BorderRadius.circular(0),
   border: Border.all(color: color.withValues(alpha: 0.14)),
   boxShadow: [FluentianShadows.subtle],
 );

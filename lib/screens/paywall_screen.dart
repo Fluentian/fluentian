@@ -33,7 +33,7 @@ class PaywallScreen extends StatelessWidget {
                 LText(
                   'Fluentian Pro is coming soon',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -43,7 +43,7 @@ class PaywallScreen extends StatelessWidget {
                 LText(
                   'Purchases are not available yet. You can keep learning with the free plan.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 15,
                     height: 1.5,
                     color: Colors.white70,

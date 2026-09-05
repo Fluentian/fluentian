@@ -109,7 +109,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 label: const LText('Mark all read'),
                 style: TextButton.styleFrom(
                   foregroundColor: FluentianColors.primary,
-                  textStyle: GoogleFonts.inter(
+                  textStyle: GoogleFonts.ibmPlexSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
                   ),
@@ -134,7 +134,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
                     ),
                     child: Row(
@@ -260,7 +260,7 @@ class _InboxHeader extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: FluentianColors.headerGradient,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(0),
         boxShadow: [FluentianShadows.card],
       ),
       child: Row(
@@ -270,7 +270,7 @@ class _InboxHeader extends StatelessWidget {
             height: 46,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(0),
             ),
             child: const Icon(
               Iconsax.notification_status,
@@ -289,7 +289,7 @@ class _InboxHeader extends StatelessWidget {
                       : '${data.unreadCount} unread update${data.unreadCount == 1 ? '' : 's'}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     color: Colors.white,
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
@@ -300,7 +300,7 @@ class _InboxHeader extends StatelessWidget {
                   '${data.items.length} total - ${data.localCount} from this app',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     color: Colors.white.withValues(alpha: 0.78),
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -326,7 +326,7 @@ class _SyncWarning extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7ED),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: FluentianColors.warning.withValues(alpha: 0.2),
         ),
@@ -342,7 +342,7 @@ class _SyncWarning extends StatelessWidget {
           Expanded(
             child: LText(
               message ?? 'Backend notifications could not sync right now.',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 color: FluentianColors.textPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -374,14 +374,14 @@ class _NotificationTile extends StatelessWidget {
 
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(0),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(0),
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(
               color: isUnread
                   ? accent.withValues(alpha: 0.28)
@@ -397,7 +397,7 @@ class _NotificationTile extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   color: isUnread ? tint : FluentianColors.pageBg,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: Icon(
                   item.isLocal ? Iconsax.mobile : Iconsax.notification,
@@ -418,7 +418,7 @@ class _NotificationTile extends StatelessWidget {
                             item.title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 15,
                               fontWeight: isUnread
                                   ? FontWeight.w900
@@ -443,7 +443,7 @@ class _NotificationTile extends StatelessWidget {
                     const SizedBox(height: 5),
                     LText(
                       item.body,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 13,
                         height: 1.38,
                         fontWeight: FontWeight.w600,
@@ -464,7 +464,7 @@ class _NotificationTile extends StatelessWidget {
                             _formatDate(item.createdAt),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: FluentianColors.textSecondary.withValues(
@@ -526,7 +526,7 @@ class _SourcePill extends StatelessWidget {
       ),
       child: LText(
         label,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 10.5,
           fontWeight: FontWeight.w900,
           color: color,
@@ -564,7 +564,7 @@ class _MessageState extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: FluentianColors.border),
               boxShadow: [FluentianShadows.subtle],
             ),
@@ -576,7 +576,7 @@ class _MessageState extends StatelessWidget {
                   height: 58,
                   decoration: BoxDecoration(
                     color: FluentianColors.primaryTint,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: Icon(icon, size: 30, color: FluentianColors.primary),
                 ),
@@ -584,7 +584,7 @@ class _MessageState extends StatelessWidget {
                 LText(
                   title,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                     color: FluentianColors.textPrimary,
@@ -594,7 +594,7 @@ class _MessageState extends StatelessWidget {
                 LText(
                   message,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 14,
                     height: 1.4,
                     fontWeight: FontWeight.w600,

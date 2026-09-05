@@ -80,7 +80,7 @@ class _ProfessionalApplicationScreenState
       appBar: AppBar(
         title: LText(
           'Apply: ${widget.opportunity.title}',
-          style: GoogleFonts.inter(fontSize: 16),
+          style: GoogleFonts.ibmPlexSans(fontSize: 16),
         ),
         elevation: 0,
         backgroundColor: Colors.white,
@@ -95,7 +95,7 @@ class _ProfessionalApplicationScreenState
             children: [
               LText(
                 'Professional Application',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
                 ),
@@ -103,7 +103,7 @@ class _ProfessionalApplicationScreenState
               const SizedBox(height: 8),
               LText(
                 'Fill in your details to apply for this opportunity.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 14,
                   color: FluentianColors.textSecondary,
                 ),
@@ -186,7 +186,7 @@ class _ProfessionalApplicationScreenState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: FluentianColors.primary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                     ),
                     elevation: 0,
                   ),
@@ -201,7 +201,7 @@ class _ProfessionalApplicationScreenState
                         )
                       : LText(
                           'Submit Application',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -222,7 +222,7 @@ class _ProfessionalApplicationScreenState
       padding: const EdgeInsets.only(bottom: 16),
       child: LText(
         title.toUpperCase(),
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: FluentianColors.primary,
@@ -248,7 +248,7 @@ class _ProfessionalApplicationScreenState
         children: [
           LText(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: FluentianColors.textPrimary,
@@ -258,7 +258,7 @@ class _ProfessionalApplicationScreenState
           TextFormField(
             controller: controller,
             maxLines: maxLines,
-            style: GoogleFonts.inter(fontSize: 14),
+            style: GoogleFonts.ibmPlexSans(fontSize: 14),
             keyboardType: isEmail
                 ? TextInputType.emailAddress
                 : TextInputType.text,
@@ -278,15 +278,15 @@ class _ProfessionalApplicationScreenState
                   : null,
               contentPadding: const EdgeInsets.all(16),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(0),
                 borderSide: BorderSide(color: Colors.grey.shade200),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(0),
                 borderSide: BorderSide(color: Colors.grey.shade200),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(0),
                 borderSide: const BorderSide(color: FluentianColors.primary),
               ),
               filled: true,

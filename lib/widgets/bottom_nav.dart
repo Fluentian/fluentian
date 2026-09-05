@@ -29,7 +29,7 @@ class FluentianBottomNav extends StatelessWidget {
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       decoration: const BoxDecoration(
         color: FluentianColors.darkNav,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -56,7 +56,7 @@ class FluentianBottomNav extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 4),
                     decoration: BoxDecoration(
                       color: FluentianColors.accent,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(0),
                     ),
                   ),
                   SizedBox(
@@ -81,7 +81,7 @@ class FluentianBottomNav extends StatelessWidget {
                       _tabs[index].label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 11,
                         fontWeight: isActive
                             ? FontWeight.w600

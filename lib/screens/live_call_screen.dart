@@ -175,7 +175,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                     children: [
                       LText(
                         'Live practice',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           color: FluentianColors.textPrimary,
@@ -184,7 +184,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                       const SizedBox(height: 4),
                       LText(
                         'Practice with Marie or learners worldwide',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: FluentianColors.textSecondary,
@@ -198,7 +198,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> {
                   height: 44,
                   decoration: BoxDecoration(
                     color: FluentianColors.primaryTint,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: const Icon(
                     Iconsax.microphone_2,
@@ -296,7 +296,7 @@ class _ScenarioGallery extends StatelessWidget {
     children: [
       LText(
         'Choose a scenario',
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 18,
           fontWeight: FontWeight.w800,
           color: FluentianColors.textPrimary,
@@ -315,7 +315,7 @@ class _ScenarioGallery extends StatelessWidget {
               width: 238,
               child: Card(
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(0),
                   onTap: () => _showRolePicker(context, s),
                   child: Padding(
                     padding: const EdgeInsets.all(14),
@@ -329,7 +329,7 @@ class _ScenarioGallery extends StatelessWidget {
                                 s.title,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -347,7 +347,7 @@ class _ScenarioGallery extends StatelessWidget {
                           s.setting,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 12,
                             color: FluentianColors.textSecondary,
                           ),
@@ -357,7 +357,7 @@ class _ScenarioGallery extends StatelessWidget {
                           'Goal: ${s.goal}',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: FluentianColors.primary,
@@ -488,7 +488,7 @@ class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
       initialValue: value,
       decoration: InputDecoration(
         labelText: context.tr(label),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(0)),
       ),
       items: values
           .map((v) => DropdownMenuItem(value: v, child: Text(v)))
@@ -507,7 +507,7 @@ class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
         children: [
           LText(
             'Before you start',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: FluentianColors.textPrimary,
@@ -516,12 +516,12 @@ class _AiCallSettingsSheetState extends State<_AiCallSettingsSheet> {
           const SizedBox(height: 4),
           LText(
             'Shape this practice around how you learn best.',
-            style: GoogleFonts.inter(color: FluentianColors.textSecondary),
+            style: GoogleFonts.ibmPlexSans(color: FluentianColors.textSecondary),
           ),
           const SizedBox(height: 20),
           LText(
             'Speaking speed',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+            style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w700),
           ),
           Slider(
             value: speed,
@@ -633,11 +633,11 @@ class _AiTutorCard extends StatelessWidget {
         end: Alignment.bottomRight,
         colors: [Color(0xFF072D52), Color(0xFF0B6665)],
       ),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(0),
       boxShadow: [
         BoxShadow(
           color: FluentianColors.primary.withValues(alpha: .18),
-          blurRadius: 18,
+          blurRadius: 0,
           offset: const Offset(0, 8),
         ),
       ],
@@ -664,7 +664,7 @@ class _AiTutorCard extends StatelessWidget {
                 children: [
                   LText(
                     'Practice with Marie',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: Colors.white,
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
@@ -673,7 +673,7 @@ class _AiTutorCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   LText(
                     'Your private AI French tutor',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: Colors.white70,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -690,7 +690,7 @@ class _AiTutorCard extends StatelessWidget {
               ),
               child: LText(
                 'ALWAYS READY',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   color: const Color(0xFF9CEAE5),
                   fontSize: 9,
                   fontWeight: FontWeight.w900,
@@ -703,7 +703,7 @@ class _AiTutorCard extends StatelessWidget {
         const SizedBox(height: 16),
         LText(
           'Speak naturally, type when it is easier, and get gentle corrections matched to your level.',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             color: Colors.white70,
             fontSize: 12,
             height: 1.45,
@@ -719,13 +719,13 @@ class _AiTutorCard extends StatelessWidget {
               backgroundColor: Colors.white,
               foregroundColor: FluentianColors.primary,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(13),
+                borderRadius: BorderRadius.circular(0),
               ),
             ),
             icon: const Icon(Iconsax.microphone_2, size: 19),
             label: LText(
               'Start private practice',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w800),
+              style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w800),
             ),
           ),
         ),
@@ -742,7 +742,7 @@ class _Heading extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(0, 22, 0, 10),
     child: LText(
       text,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.ibmPlexSans(
         fontSize: 16,
         fontWeight: FontWeight.w800,
         color: FluentianColors.textPrimary,
@@ -760,7 +760,7 @@ class _MatchCard extends StatelessWidget {
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
       gradient: FluentianColors.headerGradient,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(0),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -775,7 +775,7 @@ class _MatchCard extends StatelessWidget {
                 children: [
                   LText(
                     room.title,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
@@ -783,7 +783,7 @@ class _MatchCard extends StatelessWidget {
                   ),
                   LText(
                     'Private · 2 people · ${room.eligibilityLabel}',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: Colors.white70,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -797,7 +797,7 @@ class _MatchCard extends StatelessWidget {
         const SizedBox(height: 14),
         LText(
           room.description,
-          style: GoogleFonts.inter(color: Colors.white, height: 1.4),
+          style: GoogleFonts.ibmPlexSans(color: Colors.white, height: 1.4),
         ),
         const SizedBox(height: 14),
         SizedBox(
@@ -833,7 +833,7 @@ class _RoomCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: enabled ? Colors.white : FluentianColors.pageBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: FluentianColors.border),
       ),
       child: Row(
@@ -843,7 +843,7 @@ class _RoomCard extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color: FluentianColors.primaryTint,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(0),
             ),
             child: Icon(
               room.roomType == 'streak'
@@ -863,7 +863,7 @@ class _RoomCard extends StatelessWidget {
                   room.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: FluentianColors.textPrimary,
@@ -882,7 +882,7 @@ class _RoomCard extends StatelessWidget {
                       : 'Scheduled ${room.scheduledAt!.toLocal()}',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 11,
                     color: FluentianColors.textSecondary,
                   ),

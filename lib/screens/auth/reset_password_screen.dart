@@ -3,6 +3,8 @@ import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/theme.dart';
+import '../../widgets/tibeb_band.dart';
 import 'auth_widgets.dart';
 import 'sign_in_screen.dart';
 
@@ -89,7 +91,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
       decoration: BoxDecoration(
         color: AuthColors.cardBg,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: AuthColors.border),
       ),
       child: Column(
@@ -97,18 +99,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         children: [
           LText(
             'Set a new password',
-            style: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: AuthColors.heading,
-            ),
+            style: Theme.of(context).textTheme.displaySmall,
           ),
           const SizedBox(height: 8),
           RichText(
             text: TextSpan(
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 15,
-                color: AuthColors.placeholder,
+                color: AuthColors.body,
                 height: 1.5,
               ),
               children: [
@@ -132,7 +130,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
           AuthInputField(
             label: 'Verification code',
-            leftIcon: Icons.vpn_key_outlined,
             keyboardType: TextInputType.number,
             hint: 'Enter the 6-digit code from your email',
             onChanged: (val) => setState(() => _code = val),
@@ -142,7 +139,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
           AuthInputField(
             label: 'New password',
-            leftIcon: Icons.lock_outline,
             isPassword: true,
             hint: 'Use 8 or more characters',
             onChanged: (val) => setState(() => _pwd1 = val),
@@ -156,7 +152,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
           AuthInputField(
             label: 'Confirm password',
-            leftIcon: Icons.lock_outline,
             isPassword: !pwdMatch,
             hint: 'Re-enter your new password',
             errorText: showMismatchError ? 'Passwords do not match' : null,
@@ -176,7 +171,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
           if (auth.errorMessage != null) ...[
             const SizedBox(height: 20),
-            _ErrorBanner(message: auth.errorMessage!),
+            AuthErrorBanner(message: auth.errorMessage!),
           ],
 
           const SizedBox(height: 28),
@@ -192,16 +187,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   Widget _buildStrengthIndicator(int str) {
+    // The "Fair" step used to be #F59E0B, an amber left over from the old
+    // palette and the only place it survived. The word is what actually
+    // carries the verdict here -- the bars alone would be colour-only.
     Color c = AuthColors.border;
     String label = "Weak";
     if (str == 1) {
       c = AuthColors.errorText;
       label = "Weak";
     } else if (str == 2) {
-      c = const Color(0xFFF59E0B);
+      c = FluentianColors.warning;
       label = "Fair";
     } else if (str >= 3) {
-      c = AuthColors.primary;
+      c = FluentianColors.success;
       label = str == 4 ? "Strong" : "Good";
     }
 
@@ -215,13 +213,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         const SizedBox(width: 4),
         Expanded(child: _buildSegment(str >= 4 ? c : AuthColors.border)),
         const SizedBox(width: 12),
-        LText(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            color: c,
-            fontWeight: FontWeight.w500,
-          ),
+        Text(
+          context.tr(label).toUpperCase(),
+          style: FluentianTheme.label(color: c),
         ),
       ],
     );
@@ -232,7 +226,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       height: 6,
       decoration: BoxDecoration(
         color: c,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(0),
       ),
     );
   }
@@ -244,82 +238,32 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
       decoration: BoxDecoration(
         color: AuthColors.cardBg,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: AuthColors.border),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4),
-              shape: BoxShape.circle,
-              border: Border.all(color: AuthColors.success, width: 2),
-            ),
-            child: const Center(
-              child: Icon(Icons.check, color: AuthColors.success, size: 32),
-            ),
-          ),
-          const SizedBox(height: 24),
+          // Was a 72px mint circle with a tick, centred -- the success
+          // illustration every flow ships. The band already means "complete"
+          // everywhere else in this app, so it means it here too.
+          const TibebBand(height: 16),
+          const SizedBox(height: 22),
           LText(
-            'Password updated!',
-            style: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: AuthColors.heading,
-            ),
+            'Password updated',
+            style: Theme.of(context).textTheme.displaySmall,
           ),
           const SizedBox(height: 8),
           LText(
-            'Your password has been successfully changed. You can now sign in.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              color: AuthColors.placeholder,
-              height: 1.5,
-            ),
+            'Your password has been changed. You can sign in with it now.',
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 32),
           AuthButton(
             text: 'Back to sign in',
             onPressed: () => Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const SignInScreen()),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  final String message;
-  const _ErrorBanner({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFECACA)),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: AuthColors.errorText,
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: LText(
-              message,
-              style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
             ),
           ),
         ],

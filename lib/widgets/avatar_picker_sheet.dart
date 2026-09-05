@@ -94,7 +94,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
       ),
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       padding: EdgeInsets.fromLTRB(
         20,
@@ -111,7 +111,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
             height: 5,
             decoration: BoxDecoration(
               color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(0),
             ),
           ),
           const SizedBox(height: 16),
@@ -123,7 +123,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: FluentianColors.primaryTint,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: const Icon(
                   Iconsax.profile_circle,
@@ -138,7 +138,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                   children: [
                     LText(
                       'Choose Your Avatar',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                         color: FluentianColors.textPrimary,
@@ -146,7 +146,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                     ),
                     LText(
                       'Pick a signature look for your profile & leaderboard',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 12,
                         color: FluentianColors.textSecondary,
                       ),
@@ -172,7 +172,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                   selectedPreset.gradient.last.withValues(alpha: 0.04),
                 ],
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(
                 color: selectedPreset.borderColor.withValues(alpha: 0.4),
               ),
@@ -191,7 +191,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                     children: [
                       LText(
                         selectedPreset.label,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: FluentianColors.textPrimary,
@@ -200,7 +200,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                       const SizedBox(height: 2),
                       LText(
                         'Category: ${selectedPreset.category}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 12,
                           color: FluentianColors.textSecondary,
                           fontWeight: FontWeight.w500,
@@ -216,7 +216,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                   ),
                   decoration: BoxDecoration(
                     color: FluentianColors.successTint,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -229,7 +229,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                       const SizedBox(width: 4),
                       LText(
                         'Active',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: FluentianColors.success,
@@ -258,14 +258,14 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                       if (selected) setState(() => _selectedCategory = category);
                     },
                     selectedColor: FluentianColors.primary,
-                    labelStyle: GoogleFonts.inter(
+                    labelStyle: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: isSelected ? Colors.white : FluentianColors.textSecondary,
                     ),
                     backgroundColor: Colors.grey.shade100,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(0),
                       side: BorderSide(
                         color: isSelected ? FluentianColors.primary : Colors.transparent,
                       ),
@@ -301,7 +301,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                       color: isSelected
                           ? FluentianColors.primaryTint
                           : Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(
                         color: isSelected
                             ? FluentianColors.primary
@@ -323,7 +323,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 10,
                             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                             color: isSelected
@@ -350,7 +350,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                 backgroundColor: FluentianColors.primary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 elevation: 0,
               ),
@@ -365,7 +365,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                     )
                   : Text(
                       'Save Avatar',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
                       ),

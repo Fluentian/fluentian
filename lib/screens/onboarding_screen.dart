@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
-import '../core/app_localization.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../core/theme.dart';
-import '../widgets/common_widgets.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 
+import '../core/app_localization.dart';
+import '../core/theme.dart';
+import '../providers/auth_provider.dart';
+import '../widgets/tibeb_band.dart';
+
+/// Three-panel intro.
+///
+/// Was a centre-stacked image / heading / subtitle with dot pagination — the
+/// exact arrangement every onboarding flow ships. Two changes carry the
+/// redesign:
+///
+///  1. Everything is left-aligned to a single edge, so the eye tracks one
+///     line down the page instead of bouncing off a centre axis.
+///  2. The artwork is framed as a *plate*: hairline border, numbered, with a
+///     mono caption under it. These illustrations are stock-feeling, and the
+///     honest move is to present them as figures in a book rather than pass
+///     them off as the brand. When real commissioned art lands, the frame
+///     still works.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
   @override
@@ -17,11 +29,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pc = PageController();
   int _page = 0;
 
+  static const _panels = <_Panel>[
+    _Panel(
+      plate: 'assets/onboarding/learn-french.png',
+      caption: 'Plate I · Le parcours',
+      heading: 'Learn French\nyour way',
+      body:
+          'Structured lessons and real cultural context — all in Amharic or English.',
+    ),
+    _Panel(
+      plate: 'assets/onboarding/ai-speaking-tutor.png',
+      caption: 'Plate II · La tutrice',
+      heading: 'A tutor that\nnever sleeps',
+      body:
+          'Practice speaking French at any hour. Instant feedback on pronunciation and fluency.',
+    ),
+    _Panel(
+      plate: 'assets/onboarding/ethiopia-france-bridge.png',
+      caption: 'Plate III · Le pont',
+      heading: 'Built for\nEthiopian learners',
+      body:
+          'Explanations in Amharic, Afaan Oromo or English, and cultural bridges between Ethiopian and French life.',
+    ),
+  ];
+
   void _next() {
-    if (_page < 2) {
+    if (_page < _panels.length - 1) {
       _pc.nextPage(
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
       );
     } else {
       _go();
@@ -39,80 +75,56 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final last = _page == _panels.length - 1;
+
     return Scaffold(
-      backgroundColor: FluentianColors.white,
+      backgroundColor: FluentianColors.pageBg,
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: GestureDetector(
-                  onTap: _go,
-                  child: LText(
-                    'Skip',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: FluentianColors.primary,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pc,
-                onPageChanged: (i) => setState(() => _page = i),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 12, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _Slide(
-                    heading: 'Learn French your way',
-                    sub:
-                        'Structured lessons and real cultural context — all in Amharic or English.',
-                    child: const _OnboardingIllustration(
-                      asset: 'assets/onboarding/learn-french.png',
-                    ),
+                  Text(
+                    '${_page + 1} / ${_panels.length}',
+                    style: FluentianTheme.label(),
                   ),
-                  _Slide(
-                    heading: 'Your personalized tutor, always on',
-                    sub:
-                        'Practice speaking French 24/7. Get instant feedback on pronunciation and fluency.',
-                    child: const _OnboardingIllustration(
-                      asset: 'assets/onboarding/ai-speaking-tutor.png',
-                    ),
-                  ),
-                  _Slide(
-                    heading: 'Built for Ethiopian learners',
-                    sub:
-                        'Explanations in Amharic, Afaan Oromo, or English. Cultural bridges between Ethiopian and French life.',
-                    child: const _OnboardingIllustration(
-                      asset: 'assets/onboarding/ethiopia-france-bridge.png',
-                    ),
+                  TextButton(
+                    onPressed: _go,
+                    child: const LText('Skip'),
                   ),
                 ],
               ),
             ),
-            SmoothPageIndicator(
-              controller: _pc,
-              count: 3,
-              effect: ExpandingDotsEffect(
-                activeDotColor: FluentianColors.primary,
-                dotColor: FluentianColors.primary.withValues(alpha: 0.2),
-                dotHeight: 8,
-                dotWidth: 8,
-                expansionFactor: 3,
+            Expanded(
+              child: PageView.builder(
+                controller: _pc,
+                itemCount: _panels.length,
+                onPageChanged: (i) => setState(() => _page = i),
+                itemBuilder: (context, i) => _PanelView(panel: _panels[i]),
               ),
             ),
-            const SizedBox(height: 32),
+            // The band carries pagination, so there is one progress language
+            // in the app rather than dots here and bars elsewhere.
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: FluentianButton(
-                text: _page == 2 ? 'Get started' : 'Continue',
-                onPressed: _next,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: (_page + 1) / _panels.length),
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.easeOutCubic,
+                builder: (context, v, _) => TibebBand(height: 16, progress: v),
               ),
             ),
-            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+              child: ElevatedButton(
+                onPressed: _next,
+                child: LText(last ? 'Get started' : 'Continue'),
+              ),
+            ),
           ],
         ),
       ),
@@ -120,63 +132,59 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-class _Slide extends StatelessWidget {
-  final String heading, sub;
-  final Widget child;
-  const _Slide({required this.heading, required this.sub, required this.child});
+class _Panel {
+  const _Panel({
+    required this.plate,
+    required this.caption,
+    required this.heading,
+    required this.body,
+  });
+  final String plate, caption, heading, body;
+}
+
+class _PanelView extends StatelessWidget {
+  const _PanelView({required this.panel});
+  final _Panel panel;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+    final text = Theme.of(context).textTheme;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Spacer(),
-          SizedBox(height: 260, child: child),
-          const SizedBox(height: 40),
-          LText(
-            heading,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
-              color: FluentianColors.textPrimary,
+          // The plate: bordered, square-cornered, sitting on paper.
+          Container(
+            decoration: const BoxDecoration(
+              color: FluentianColors.cardBg,
+              border: Border.fromBorderSide(FluentianBorders.hairline),
             ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: 280,
-            child: LText(
-              sub,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: FluentianColors.textSecondary,
+            padding: const EdgeInsets.all(10),
+            child: AspectRatio(
+              aspectRatio: 3 / 2,
+              child: Image.asset(
+                panel.plate,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.high,
               ),
             ),
           ),
-          const Spacer(flex: 2),
+          const SizedBox(height: 10),
+          Text(panel.caption, style: FluentianTheme.label()),
+          const SizedBox(height: 26),
+          LText(
+            panel.heading,
+            style: text.displayMedium?.copyWith(height: 1.0),
+          ),
+          const SizedBox(height: 14),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: LText(panel.body, style: text.bodyLarge),
+          ),
+          const SizedBox(height: 12),
         ],
-      ),
-    );
-  }
-}
-
-class _OnboardingIllustration extends StatelessWidget {
-  final String asset;
-
-  const _OnboardingIllustration({required this.asset});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: Image.asset(
-        asset,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        filterQuality: FilterQuality.high,
       ),
     );
   }

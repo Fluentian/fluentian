@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/theme.dart';
 import 'auth_widgets.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
@@ -156,7 +157,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: AuthColors.cardBg,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(color: AuthColors.border),
                     ),
                     child: Column(
@@ -164,18 +165,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       children: [
                         LText(
                           'Verify your email',
-                          style: GoogleFonts.inter(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                            color: AuthColors.heading,
-                          ),
+                          style: Theme.of(context).textTheme.displaySmall,
                         ),
                         const SizedBox(height: 8),
                         RichText(
                           text: TextSpan(
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 15,
-                              color: AuthColors.placeholder,
+                              color: AuthColors.body,
                               height: 1.5,
                             ),
                             children: [
@@ -225,24 +222,27 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                   textAlign: TextAlign.center,
                                   keyboardType: TextInputType.number,
                                   maxLength: 1,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                                  // A one-time code is data, not prose, so
+                                  // it is set in the mono face -- and mono
+                                  // digits are the ones that don't confuse
+                                  // 0/O or 1/l when read off a phone.
+                                  style: FluentianTheme.label(
+                                    size: 20,
                                     color: AuthColors.heading,
                                   ),
                                   decoration: InputDecoration(
                                     counterText: '',
                                     enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(0),
                                       borderSide: const BorderSide(
                                         color: AuthColors.border,
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(0),
                                       borderSide: const BorderSide(
                                         color: AuthColors.primary,
-                                        width: 1.5,
+                                        width: 2,
                                       ),
                                     ),
                                     contentPadding: const EdgeInsets.symmetric(
@@ -258,7 +258,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         // Error message
                         if (auth.errorMessage != null) ...[
                           const SizedBox(height: 20),
-                          _ErrorBanner(message: auth.errorMessage!),
+                          AuthErrorBanner(message: auth.errorMessage!),
                         ],
 
                         const SizedBox(height: 32),
@@ -269,26 +269,25 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         const SizedBox(height: 24),
 
                         // Timer / Resend
-                        Center(
+                        Align(
+                          alignment: Alignment.centerLeft,
                           child: _canResend
                               ? GestureDetector(
                                   onTap: auth.isLoading ? null : _resendOtp,
                                   child: LText(
                                     'Resend verification code',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.ibmPlexSans(
                                       fontSize: 14,
                                       color: AuthColors.primary,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w700,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
                                 )
-                              : LText(
-                                  'Resend code in ${_secondsRemaining}s',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14,
-                                    color: AuthColors.placeholder,
-                                  ),
+                              : Text(
+                                  '${context.tr('Resend in')} '
+                                  '${_secondsRemaining.toString().padLeft(2, '0')}s',
+                                  style: FluentianTheme.label(),
                                 ),
                         ),
                       ],
@@ -304,35 +303,3 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   }
 }
 
-class _ErrorBanner extends StatelessWidget {
-  final String message;
-  const _ErrorBanner({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFECACA)),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: AuthColors.errorText,
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: LText(
-              message,
-              style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

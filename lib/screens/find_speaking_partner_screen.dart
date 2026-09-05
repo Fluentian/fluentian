@@ -71,7 +71,7 @@ class _FindSpeakingPartnerScreenState extends State<FindSpeakingPartnerScreen> {
               LText(
                 'Practice with someone new',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
@@ -81,12 +81,12 @@ class _FindSpeakingPartnerScreenState extends State<FindSpeakingPartnerScreen> {
               LText(
                 'Meet another learner and practice French naturally.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(color: Colors.white60, fontSize: 14),
+                style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 14),
               ),
               const SizedBox(height: 40),
               LText(
                 'HOW DO YOU WANT TO CONNECT?',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   color: Colors.white38,
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -133,12 +133,12 @@ class _FindSpeakingPartnerScreenState extends State<FindSpeakingPartnerScreen> {
                     backgroundColor: FluentianColors.accent,
                     foregroundColor: FluentianColors.darkNav,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(0),
                     ),
                   ),
                   child: LText(
                     'Find someone',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                     ),
@@ -189,7 +189,7 @@ class _ModeCard extends StatelessWidget {
             color: selected
                 ? FluentianColors.accent.withValues(alpha: 0.14)
                 : Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(
               color: selected
                   ? FluentianColors.accent
@@ -200,7 +200,7 @@ class _ModeCard extends StatelessWidget {
                 ? [
                     BoxShadow(
                       color: FluentianColors.accent.withValues(alpha: 0.25),
-                      blurRadius: 20,
+                      blurRadius: 0,
                       offset: const Offset(0, 8),
                     ),
                   ]
@@ -232,7 +232,7 @@ class _ModeCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   LText(
                     label,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: selected ? Colors.white : Colors.white70,
@@ -241,7 +241,7 @@ class _ModeCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   LText(
                     subtitle,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: Colors.white38,

@@ -129,7 +129,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return Scaffold(
       backgroundColor: FluentianColors.pageBg,
       appBar: AppBar(
-        title: LText(widget.title, style: GoogleFonts.inter(fontSize: 16)),
+        title: LText(widget.title, style: GoogleFonts.ibmPlexSans(fontSize: 16)),
         scrolledUnderElevation: 0,
         actions: [
           IconButton(
@@ -220,7 +220,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(0),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -257,13 +257,13 @@ class _EmptyChat extends StatelessWidget {
           const SizedBox(height: 12),
           LText(
             'Start the conversation',
-            style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w800),
+            style: GoogleFonts.ibmPlexSans(fontSize: 17, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           LText(
             'Messages sent here are shared with everyone in this room.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(color: FluentianColors.textSecondary),
+            style: GoogleFonts.ibmPlexSans(color: FluentianColors.textSecondary),
           ),
         ],
       ),
@@ -290,9 +290,9 @@ class _MessageBubble extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 300),
         decoration: BoxDecoration(
           color: isMe ? FluentianColors.primary : Colors.white,
-          borderRadius: BorderRadius.circular(16).copyWith(
-            bottomRight: isMe ? const Radius.circular(4) : null,
-            bottomLeft: isMe ? null : const Radius.circular(4),
+          borderRadius: BorderRadius.circular(0).copyWith(
+            bottomRight: isMe ? const Radius.circular(0) : null,
+            bottomLeft: isMe ? null : const Radius.circular(0),
           ),
           boxShadow: [FluentianShadows.subtle],
         ),
@@ -301,7 +301,7 @@ class _MessageBubble extends StatelessWidget {
           children: [
             LText(
               message.body,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 color: isMe ? Colors.white : FluentianColors.textPrimary,
                 height: 1.35,
               ),
@@ -310,7 +310,7 @@ class _MessageBubble extends StatelessWidget {
               const SizedBox(height: 4),
               LText(
                 time,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 10,
                   color: isMe ? Colors.white70 : FluentianColors.textSecondary,
                 ),

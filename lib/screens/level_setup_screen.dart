@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+
 import '../core/app_localization.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
 import '../services/onboarding_draft_store.dart';
@@ -39,29 +39,25 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ...CEFRLevel.values.map(
-            (level) => _LevelCard(
+            (level) => _LevelRow(
               level: level,
               isSelected: _selected == level,
               onTap: () => setState(() => _selected = level),
             ),
           ),
-          const SizedBox(height: 4),
-          Center(
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PlacementTestScreen()),
-              ),
-              child: LText(
-                'Take placement test instead',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: FluentianColors.primary,
-                ),
-              ),
-            ),
-          ),
         ],
+      ),
+      // The placement test is a real alternative to picking a level, not an
+      // afterthought floating under the list -- it sits next to the primary
+      // action where the learner is already deciding.
+      footer: Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const PlacementTestScreen()),
+          ),
+          child: const LText('Not sure? Take the placement test'),
+        ),
       ),
       buttonLabel: 'Continue',
       onButtonPressed: _selected != null
@@ -78,12 +74,19 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
   }
 }
 
-class _LevelCard extends StatelessWidget {
+/// One rung of the level ladder.
+///
+/// The code plate on the left is the whole idea: A0 through C1/C2 set in the
+/// mono face, so the six options read as one ordered scale at a glance. The
+/// selected row inverts to solid ink, matching [OnboardingOptionCard] -- the
+/// rest of onboarding answers questions the same way, and this screen should
+/// not invent a second selection language.
+class _LevelRow extends StatelessWidget {
   final CEFRLevel level;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _LevelCard({
+  const _LevelRow({
     required this.level,
     required this.isSelected,
     required this.onTap,
@@ -91,77 +94,92 @@ class _LevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 64,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? FluentianColors.primaryTint
-              : FluentianColors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
+    final ink = isSelected ? Colors.white : FluentianColors.textPrimary;
+
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: '${level.code} ${context.tr(level.name)}',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(0),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
             color: isSelected
                 ? FluentianColors.primary
-                : FluentianColors.border,
-            width: isSelected ? 2 : 1,
+                : FluentianColors.cardBg,
+            borderRadius: BorderRadius.circular(0),
+            border: Border.all(
+              color: isSelected
+                  ? FluentianColors.primary
+                  : FluentianColors.border,
+              width: isSelected ? 2 : 1,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            // CEFR badge
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: level.color.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: LText(
-                  '${CEFRLevel.values.indexOf(level) + 1}',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: level.color,
+          child: Row(
+            children: [
+              // The code plate. Fixed width so all six align into a column
+              // and the scale is legible vertically.
+              Container(
+                width: 52,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : FluentianColors.pageBg,
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.white
+                        : FluentianColors.border,
+                  ),
+                ),
+                child: Text(
+                  level.code,
+                  style: FluentianTheme.label(
+                    size: 13,
+                    color: isSelected
+                        ? FluentianColors.primary
+                        : FluentianColors.textPrimary,
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  LText(
-                    level.name,
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: FluentianColors.textPrimary,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LText(
+                      level.name,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: ink,
+                      ),
                     ),
-                  ),
-                  LText(
-                    level.description,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: FluentianColors.textSecondary,
+                    const SizedBox(height: 2),
+                    LText(
+                      level.description,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: isSelected
+                            ? const Color(0xFFC7CCD6)
+                            : FluentianColors.textSecondary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            if (isSelected)
-              Icon(
-                Icons.check_circle_rounded,
-                color: FluentianColors.primary,
-                size: 22,
+              AnimatedScale(
+                duration: const Duration(milliseconds: 200),
+                scale: isSelected ? 1 : 0,
+                child: const Icon(
+                  Icons.check_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

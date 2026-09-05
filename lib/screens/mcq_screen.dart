@@ -487,7 +487,7 @@ class _McqScreenState extends State<McqScreen>
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (_) => Padding(
         padding: const EdgeInsets.all(24),
@@ -511,7 +511,7 @@ class _McqScreenState extends State<McqScreen>
             LText(
               'Hearts are refilling',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: FluentianColors.textPrimary,
@@ -521,7 +521,7 @@ class _McqScreenState extends State<McqScreen>
             LText(
               'Take a quick break, review a lesson, or come back when the next heart is ready.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 14,
                 height: 1.4,
                 color: FluentianColors.textSecondary,
@@ -719,7 +719,7 @@ class _McqScreenState extends State<McqScreen>
       isDismissible: false,
       enableDrag: false,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (sheetContext) {
         var sheetSubmitting = false;
@@ -731,7 +731,7 @@ class _McqScreenState extends State<McqScreen>
                   ? FluentianColors.successTint
                   : FluentianColors.errorTint,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+                top: Radius.circular(0),
               ),
             ),
             child: Column(
@@ -739,8 +739,8 @@ class _McqScreenState extends State<McqScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 LText(
-                  correct ? 'Correct! 🎉' : 'Not quite 💪',
-                  style: GoogleFonts.inter(
+                  correct ? 'Correct' : 'Not quite',
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: correct
@@ -755,7 +755,7 @@ class _McqScreenState extends State<McqScreen>
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     decoration: BoxDecoration(
                       color: FluentianColors.warningTint,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(
                         color: FluentianColors.warning.withValues(alpha: 0.5),
                       ),
@@ -771,7 +771,7 @@ class _McqScreenState extends State<McqScreen>
                         Expanded(
                           child: LText(
                             'Pay attention to the accents:\n$correctAnswer',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF92400E),
@@ -794,7 +794,7 @@ class _McqScreenState extends State<McqScreen>
                       const SizedBox(width: 4),
                       LText(
                         '-1',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: FluentianColors.error,
@@ -807,7 +807,7 @@ class _McqScreenState extends State<McqScreen>
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: FluentianColors.successTint,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(
                         color: FluentianColors.success.withValues(alpha: 0.3),
                       ),
@@ -823,7 +823,7 @@ class _McqScreenState extends State<McqScreen>
                         Expanded(
                           child: LText(
                             correctAnswer,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: FluentianColors.success,
@@ -893,7 +893,7 @@ class _McqScreenState extends State<McqScreen>
                           ? Colors.white
                           : FluentianColors.textPrimary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                     ),
                     child: sheetSubmitting
@@ -1073,7 +1073,7 @@ class _McqScreenState extends State<McqScreen>
                   const SizedBox(width: 12),
                   Expanded(
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                       child: LinearProgressIndicator(
                         value: progress,
                         backgroundColor: Colors.grey.shade200,
@@ -1110,7 +1110,7 @@ class _McqScreenState extends State<McqScreen>
                     else ...[
                       LText(
                         q.questionKind.replaceAll('_', ' ').toUpperCase(),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                           color: FluentianColors.primary,
@@ -1123,7 +1123,7 @@ class _McqScreenState extends State<McqScreen>
                             ? q.promptText
                             : 'Follow the prompt below:',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: FluentianColors.textPrimary,
@@ -1137,7 +1137,7 @@ class _McqScreenState extends State<McqScreen>
                     // Render dynamic image if present
                     if (q.imageUrl != null && q.imageUrl!.isNotEmpty) ...[
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(0),
                         child: Image.network(
                           q.imageUrl!,
                           height: 180,
@@ -1170,7 +1170,7 @@ class _McqScreenState extends State<McqScreen>
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: FluentianColors.primaryTint,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(0),
                           border: Border.all(
                             color: FluentianColors.primary.withValues(
                               alpha: 0.15,
@@ -1212,7 +1212,7 @@ class _McqScreenState extends State<McqScreen>
                                   : _audioPlaying
                                   ? 'Playing...'
                                   : 'Tap to listen to clip',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: FluentianColors.primary,
@@ -1341,7 +1341,7 @@ class _McqScreenState extends State<McqScreen>
           onTap: _state == _AnswerState.unanswered
               ? () => setState(() => _selected = i)
               : null,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(0),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
@@ -1349,7 +1349,7 @@ class _McqScreenState extends State<McqScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: bg,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: border, width: 2),
               // A solid, blur-less bottom edge gives the tile physical depth so
               // it reads as a tappable object, not a rectangle drawn on paper.
@@ -1376,7 +1376,7 @@ class _McqScreenState extends State<McqScreen>
                   child: Center(
                     child: LText(
                       String.fromCharCode(65 + i),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: isSelected
@@ -1390,7 +1390,7 @@ class _McqScreenState extends State<McqScreen>
                 Expanded(
                   child: LText(
                     optionText,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 16,
                       color: FluentianColors.textPrimary,
                     ),
@@ -1446,7 +1446,7 @@ class _McqScreenState extends State<McqScreen>
                   });
                 }
               : null,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(0),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
@@ -1454,7 +1454,7 @@ class _McqScreenState extends State<McqScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: bg,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: border, width: 2),
               boxShadow: [
                 BoxShadow(
@@ -1477,7 +1477,7 @@ class _McqScreenState extends State<McqScreen>
                 Expanded(
                   child: LText(
                     optionText,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 16,
                       color: FluentianColors.textPrimary,
                     ),
@@ -1510,13 +1510,13 @@ class _McqScreenState extends State<McqScreen>
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(color: Colors.grey.shade200),
           ),
           child: LText(
             displaySentence,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: FluentianColors.textPrimary,
@@ -1535,7 +1535,7 @@ class _McqScreenState extends State<McqScreen>
             return ChoiceChip(
               label: LText(
                 optionText,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   color: isSelected
                       ? Colors.white
                       : FluentianColors.textPrimary,
@@ -1549,7 +1549,7 @@ class _McqScreenState extends State<McqScreen>
               selectedColor: FluentianColors.primary,
               backgroundColor: Colors.grey.shade100,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(0),
               ),
             );
           }),
@@ -1575,7 +1575,7 @@ class _McqScreenState extends State<McqScreen>
         LText(
           'Translate this sentence',
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 22,
             fontWeight: FontWeight.w800,
             color: FluentianColors.textPrimary,
@@ -1620,7 +1620,7 @@ class _McqScreenState extends State<McqScreen>
                     ? q.promptText
                     : 'Follow the prompt below:',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: FluentianColors.textPrimary,
@@ -1710,14 +1710,14 @@ class _McqScreenState extends State<McqScreen>
         TextField(
           controller: _textController,
           enabled: _state == _AnswerState.unanswered,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 16,
             color: FluentianColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
             hintText: context.tr('Write your answer in French'),
-            hintStyle: GoogleFonts.inter(
+            hintStyle: GoogleFonts.ibmPlexSans(
               color: Colors.grey.shade400,
               fontWeight: FontWeight.normal,
             ),
@@ -1728,11 +1728,11 @@ class _McqScreenState extends State<McqScreen>
               vertical: 16,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(0),
               borderSide: BorderSide(color: Colors.grey.shade200),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(0),
               borderSide: const BorderSide(
                 color: FluentianColors.primary,
                 width: 2,
@@ -1821,7 +1821,7 @@ class _McqScreenState extends State<McqScreen>
                   ),
                   decoration: BoxDecoration(
                     color: bgCol,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(0),
                     border: Border.all(
                       color: borderCol,
                       width: isSelected || isMatched ? 2 : 1,
@@ -1830,7 +1830,7 @@ class _McqScreenState extends State<McqScreen>
                       if (isSelected)
                         BoxShadow(
                           color: FluentianColors.primary.withValues(alpha: 0.1),
-                          blurRadius: 4,
+                          blurRadius: 0,
                           offset: const Offset(0, 2),
                         ),
                     ],
@@ -1842,7 +1842,7 @@ class _McqScreenState extends State<McqScreen>
                         if (badge.isNotEmpty) ...[
                           LText(
                             badge,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: textCol,
@@ -1854,7 +1854,7 @@ class _McqScreenState extends State<McqScreen>
                           child: LText(
                             left,
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: textCol,
@@ -1946,7 +1946,7 @@ class _McqScreenState extends State<McqScreen>
                   ),
                   decoration: BoxDecoration(
                     color: bgCol,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(0),
                     border: Border.all(
                       color: borderCol,
                       width: isSelected || isMatched ? 2 : 1,
@@ -1955,7 +1955,7 @@ class _McqScreenState extends State<McqScreen>
                       if (isSelected)
                         BoxShadow(
                           color: FluentianColors.primary.withValues(alpha: 0.1),
-                          blurRadius: 4,
+                          blurRadius: 0,
                           offset: const Offset(0, 2),
                         ),
                     ],
@@ -1967,7 +1967,7 @@ class _McqScreenState extends State<McqScreen>
                         if (badge.isNotEmpty) ...[
                           LText(
                             badge,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: textCol,
@@ -1979,7 +1979,7 @@ class _McqScreenState extends State<McqScreen>
                           child: LText(
                             right,
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: textCol,
@@ -2009,7 +2009,7 @@ class _McqScreenState extends State<McqScreen>
         LText(
           phrase,
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 24,
             fontWeight: FontWeight.w700,
             color: FluentianColors.primary,
@@ -2029,7 +2029,7 @@ class _McqScreenState extends State<McqScreen>
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
                   decoration: BoxDecoration(
                     color: FluentianColors.primaryTint,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(0),
                     border: Border.all(
                       color: FluentianColors.primary.withValues(alpha: 0.2),
                     ),
@@ -2058,7 +2058,7 @@ class _McqScreenState extends State<McqScreen>
                             : _audioPlaying
                             ? 'Playing...'
                             : 'Listen',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 14,
                           color: FluentianColors.primary,
                           fontWeight: FontWeight.w600,
@@ -2075,7 +2075,7 @@ class _McqScreenState extends State<McqScreen>
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(0),
                     border: Border.all(
                       color: Colors.grey.shade300,
                     ),
@@ -2091,7 +2091,7 @@ class _McqScreenState extends State<McqScreen>
                       const SizedBox(width: 6),
                       LText(
                         'Slow (0.6x)',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 13,
                           color: FluentianColors.textPrimary,
                           fontWeight: FontWeight.w600,
@@ -2180,7 +2180,7 @@ class _McqScreenState extends State<McqScreen>
                   : isResult
                   ? 'Recorded'
                   : 'Tap to speak',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: FluentianColors.textSecondary,
@@ -2195,7 +2195,7 @@ class _McqScreenState extends State<McqScreen>
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: FluentianColors.border),
               boxShadow: [FluentianShadows.subtle],
             ),
@@ -2212,7 +2212,7 @@ class _McqScreenState extends State<McqScreen>
                     const SizedBox(width: 8),
                     LText(
                       'Recorded — nice practice!',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: FluentianColors.textPrimary,
@@ -2225,7 +2225,7 @@ class _McqScreenState extends State<McqScreen>
                   'Listen to the model again and compare. Automatic '
                   'pronunciation scoring is coming soon.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 13,
                     height: 1.4,
                     color: FluentianColors.textSecondary,
@@ -2301,7 +2301,7 @@ class _WordTileState extends State<_WordTile> {
           ),
           child: LText(
             widget.word,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: widget.placed ? Colors.white : FluentianColors.textPrimary,
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -2363,7 +2363,7 @@ class _QuizHudChip extends StatelessWidget {
           const SizedBox(width: 5),
           LText(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 12,
               fontWeight: FontWeight.w800,
               color: color,

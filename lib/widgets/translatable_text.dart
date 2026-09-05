@@ -72,7 +72,7 @@ class _TranslatableParagraphState extends State<TranslatableParagraph> {
           color: _showParagraphTranslation
               ? FluentianColors.primaryTint
               : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(
             color: _showParagraphTranslation
                 ? FluentianColors.primary.withValues(alpha: 0.22)
@@ -155,7 +155,7 @@ class _TranslatableSentenceState extends State<_TranslatableSentence> {
           onTapDown: (_) => _setPressed(true),
           onTapCancel: () => _setPressed(false),
           onTapUp: (_) => _setPressed(false),
-          borderRadius: BorderRadius.circular(13),
+          borderRadius: BorderRadius.circular(0),
           splashColor: FluentianColors.primary.withValues(alpha: 0.08),
           highlightColor: FluentianColors.primary.withValues(alpha: 0.05),
           child: AnimatedContainer(
@@ -165,7 +165,7 @@ class _TranslatableSentenceState extends State<_TranslatableSentence> {
               color: widget.isTranslated
                   ? FluentianColors.primaryTint
                   : FluentianColors.pageBg,
-              borderRadius: BorderRadius.circular(13),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(
                 color: widget.isTranslated
                     ? FluentianColors.primary.withValues(alpha: 0.26)
@@ -219,7 +219,7 @@ class _TranslatableSentenceState extends State<_TranslatableSentence> {
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(11),
+                              borderRadius: BorderRadius.circular(0),
                               border: Border.all(
                                 color: FluentianColors.primary.withValues(
                                   alpha: 0.14,
@@ -238,7 +238,7 @@ class _TranslatableSentenceState extends State<_TranslatableSentence> {
                                 Expanded(
                                   child: Text(
                                     widget.pair.translated,
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.ibmPlexSans(
                                       fontSize: 14,
                                       height: 1.45,
                                       color: FluentianColors.primaryDark,
@@ -271,7 +271,7 @@ class _WordWrappedText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = GoogleFonts.inter(
+    final style = GoogleFonts.ibmPlexSans(
       fontSize: 16,
       height: 1.45,
       fontWeight: FontWeight.w600,
@@ -308,7 +308,7 @@ class _TranslationPanel extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: FluentianColors.primary.withValues(alpha: 0.16),
         ),
@@ -327,7 +327,7 @@ class _TranslationPanel extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: FluentianColors.primary,
@@ -338,7 +338,7 @@ class _TranslationPanel extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             text,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 14,
               height: 1.5,
               color: FluentianColors.textPrimary,

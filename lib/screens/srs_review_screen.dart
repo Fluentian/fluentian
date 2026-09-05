@@ -54,7 +54,7 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
           iconTheme: const IconThemeData(color: FluentianColors.textPrimary),
           title: LText(
             'Daily Review',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: FluentianColors.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -73,7 +73,7 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
               const SizedBox(height: 16),
               LText(
                 'You\'re all caught up!',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: FluentianColors.textPrimary,
@@ -82,7 +82,7 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
               const SizedBox(height: 8),
               LText(
                 'No questions due for review right now.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 16,
                   color: FluentianColors.textSecondary,
                 ),
@@ -93,7 +93,7 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: FluentianColors.primary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
@@ -102,7 +102,7 @@ class _SrsReviewScreenState extends State<SrsReviewScreen> {
                 ),
                 child: LText(
                   'Go Back',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),

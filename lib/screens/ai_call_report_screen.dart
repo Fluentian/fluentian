@@ -38,7 +38,7 @@ class _AiCallReportScreenState extends State<AiCallReportScreen> {
               ? 'You completed the goal!'
               : 'Nice work practicing!',
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 23,
             fontWeight: FontWeight.w800,
             color: FluentianColors.textPrimary,
@@ -86,7 +86,7 @@ class _AiCallReportScreenState extends State<AiCallReportScreen> {
         children: [
           Text(
             title,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontWeight: FontWeight.w800,
               color: FluentianColors.primary,
             ),
@@ -94,7 +94,7 @@ class _AiCallReportScreenState extends State<AiCallReportScreen> {
           const SizedBox(height: 7),
           Text(
             body,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: FluentianColors.textSecondary,
               height: 1.4,
             ),

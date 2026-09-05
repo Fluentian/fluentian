@@ -153,11 +153,11 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
       height: screenHeight * 0.78,
       decoration: BoxDecoration(
         color: FluentianColors.pageBg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.14),
-            blurRadius: 28,
+            blurRadius: 0,
             offset: const Offset(0, -8),
           ),
         ],
@@ -171,7 +171,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
               height: 4,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(0),
               ),
             ),
           ),
@@ -180,7 +180,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: FluentianColors.border),
               boxShadow: [FluentianShadows.subtle],
             ),
@@ -206,7 +206,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                     children: [
                       LText(
                         'AI Tutor',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color: FluentianColors.textPrimary,
@@ -217,7 +217,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                         'Get hints, examples, and cleaner explanations',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: FluentianColors.textSecondary,
@@ -289,7 +289,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                     minLines: 1,
                     maxLines: 4,
                     textInputAction: TextInputAction.send,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: FluentianColors.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
@@ -303,12 +303,12 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                       hintText: context.tr(
                         'Ask why, request an example, or get a hint',
                       ),
-                      hintStyle: GoogleFonts.inter(
+                      hintStyle: GoogleFonts.ibmPlexSans(
                         color: FluentianColors.textSecondary,
                         fontSize: 14,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(0),
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
@@ -331,7 +331,7 @@ class _AiTutorSheetState extends State<AiTutorSheet> {
                           ? null
                           : FluentianColors.headerGradient,
                       color: _isLoading ? Colors.grey.shade300 : null,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(0),
                       boxShadow: _isLoading ? null : [FluentianShadows.subtle],
                     ),
                     child: IconButton(
@@ -373,14 +373,14 @@ class _PromptChip extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(0),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: FluentianColors.border),
             ),
             child: Row(
@@ -389,7 +389,7 @@ class _PromptChip extends StatelessWidget {
                 const SizedBox(width: 6),
                 LText(
                   label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: FluentianColors.textPrimary,
@@ -436,8 +436,8 @@ class _TutorMessageBubble extends StatelessWidget {
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(isUser ? 18 : 6),
                     topRight: Radius.circular(isUser ? 6 : 18),
-                    bottomLeft: const Radius.circular(18),
-                    bottomRight: const Radius.circular(18),
+                    bottomLeft: const Radius.circular(0),
+                    bottomRight: const Radius.circular(0),
                   ),
                   border: isUser
                       ? null
@@ -447,7 +447,7 @@ class _TutorMessageBubble extends StatelessWidget {
                 child: isUser
                     ? LText(
                         message.content,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           color: Colors.white,
                           fontSize: 14.5,
                           fontWeight: FontWeight.w600,
@@ -487,7 +487,7 @@ class _MarkdownTutorText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseStyle = GoogleFonts.inter(
+    final baseStyle = GoogleFonts.ibmPlexSans(
       color: FluentianColors.textPrimary,
       fontSize: 14.5,
       fontWeight: FontWeight.w500,
@@ -501,25 +501,25 @@ class _MarkdownTutorText extends StatelessWidget {
         p: baseStyle,
         strong: baseStyle.copyWith(fontWeight: FontWeight.w900),
         em: baseStyle.copyWith(fontStyle: FontStyle.italic),
-        h1: GoogleFonts.inter(
+        h1: GoogleFonts.ibmPlexSans(
           color: FluentianColors.textPrimary,
           fontSize: 19,
           fontWeight: FontWeight.w900,
           height: 1.25,
         ),
-        h2: GoogleFonts.inter(
+        h2: GoogleFonts.ibmPlexSans(
           color: FluentianColors.textPrimary,
           fontSize: 17,
           fontWeight: FontWeight.w900,
           height: 1.28,
         ),
-        h3: GoogleFonts.inter(
+        h3: GoogleFonts.ibmPlexSans(
           color: FluentianColors.textPrimary,
           fontSize: 15.5,
           fontWeight: FontWeight.w900,
           height: 1.32,
         ),
-        listBullet: GoogleFonts.inter(
+        listBullet: GoogleFonts.ibmPlexSans(
           color: FluentianColors.primary,
           fontSize: 15,
           fontWeight: FontWeight.w900,
@@ -533,7 +533,7 @@ class _MarkdownTutorText extends StatelessWidget {
         ),
         codeblockDecoration: BoxDecoration(
           color: FluentianColors.primaryTint,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(
             color: FluentianColors.primary.withValues(alpha: 0.14),
           ),
@@ -545,7 +545,7 @@ class _MarkdownTutorText extends StatelessWidget {
         ),
         blockquoteDecoration: BoxDecoration(
           color: FluentianColors.pageBg,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(0),
           border: const Border(
             left: BorderSide(color: FluentianColors.primary, width: 4),
           ),
@@ -613,7 +613,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: FluentianColors.pageBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: FluentianColors.primary.withValues(alpha: 0.16),
         ),
@@ -630,7 +630,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                   color: isPoll
                       ? const Color(0xFFFFF7ED)
                       : FluentianColors.primaryTint,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: Icon(
                   isPoll ? Iconsax.chart_2 : Iconsax.task_square,
@@ -646,7 +646,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                   isPoll ? 'Quick poll' : 'Mini quiz',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     color: FluentianColors.textPrimary,
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
@@ -658,7 +658,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
           const SizedBox(height: 10),
           LText(
             activity.question,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: FluentianColors.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w800,
@@ -692,14 +692,14 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Material(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(0),
                 child: InkWell(
                   onTap: () => setState(() => _selectedIndex = index),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(0),
                   child: Container(
                     padding: const EdgeInsets.all(11),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(
                         color: selected || (showResult && correct && !isPoll)
                             ? accent.withValues(alpha: 0.55)
@@ -724,7 +724,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                             Expanded(
                               child: LText(
                                 option.text,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   color: FluentianColors.textPrimary,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w800,
@@ -748,7 +748,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                           const SizedBox(height: 5),
                           LText(
                             '${(percent * 100).round()}% chose this',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               color: FluentianColors.textSecondary,
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -769,7 +769,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
               padding: const EdgeInsets.all(11),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(0),
                 border: Border.all(color: FluentianColors.border),
               ),
               child: LText(
@@ -782,7 +782,7 @@ class _TutorActivityCardState extends State<_TutorActivityCard> {
                   if (activity.explanation.trim().isNotEmpty)
                     activity.explanation.trim(),
                 ].join(' '),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   color: FluentianColors.textPrimary,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
@@ -814,10 +814,10 @@ class _TypingBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(6),
-                  topRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(18),
-                  bottomRight: Radius.circular(18),
+                  topLeft: Radius.circular(0),
+                  topRight: Radius.circular(0),
+                  bottomLeft: Radius.circular(0),
+                  bottomRight: Radius.circular(0),
                 ),
                 border: Border.fromBorderSide(
                   BorderSide(color: FluentianColors.border),

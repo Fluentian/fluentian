@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+
 import '../core/app_localization.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
 import '../services/onboarding_draft_store.dart';
@@ -41,82 +41,13 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
       totalSteps: 4,
       title: 'Set your daily goal',
       subtitle: 'Consistency beats intensity. Pick what fits your life.',
-      body: GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1.1,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: List.generate(DailyGoal.goals.length, (i) {
-          final goal = DailyGoal.goals[i];
-          final selected = _selectedIndex == i;
-          return Semantics(
-            button: true,
-            selected: selected,
-            label: '${context.tr(goal.label)}, ${goal.xp} XP, ${goal.duration}',
-            child: InkWell(
-              onTap: () => setState(() => _selectedIndex = i),
-              borderRadius: BorderRadius.circular(12),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? FluentianColors.primaryTint
-                      : FluentianColors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: selected
-                        ? FluentianColors.primary
-                        : FluentianColors.border,
-                    width: selected ? 2 : 1,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    if (selected)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Icon(
-                          Icons.check_circle_rounded,
-                          color: FluentianColors.primary,
-                          size: 20,
-                        ),
-                      ),
-                    Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            goal.iconData,
-                            size: 32,
-                            color: FluentianColors.primary,
-                          ),
-                          const SizedBox(height: 8),
-                          LText(
-                            '${goal.xp} XP',
-                            style: GoogleFonts.inter(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: FluentianColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          LText(
-                            '${goal.label} · ${goal.duration}',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: FluentianColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          return _GoalRow(
+            goal: DailyGoal.goals[i],
+            selected: _selectedIndex == i,
+            onTap: () => setState(() => _selectedIndex = i),
           );
         }),
       ),
@@ -134,6 +65,121 @@ class _GoalSetupScreenState extends State<GoalSetupScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+/// One commitment level.
+///
+/// Was a 2x2 grid of icon tiles -- the arrangement every goal-picker ships.
+/// The grid also buried the only number that matters (minutes) under an
+/// icon and an XP figure. Here minutes lead, set in the display face at a
+/// size you read before the label, and the rows share the ink-invert
+/// selection used by every other onboarding step.
+class _GoalRow extends StatelessWidget {
+  const _GoalRow({
+    required this.goal,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final DailyGoal goal;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '${context.tr(goal.label)}, ${goal.duration}, ${goal.xp} XP',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(0),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: BoxDecoration(
+            color: selected ? FluentianColors.primary : FluentianColors.cardBg,
+            border: Border.all(
+              color: selected
+                  ? FluentianColors.primary
+                  : FluentianColors.border,
+              width: selected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 64,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      '${goal.minutes}',
+                      style: text.displaySmall?.copyWith(
+                        height: 1.0,
+                        color: selected
+                            ? Colors.white
+                            : FluentianColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      'min',
+                      style: FluentianTheme.label(
+                        color: selected
+                            ? const Color(0xFFC7CCD6)
+                            : FluentianColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LText(
+                      goal.label,
+                      style: text.titleSmall?.copyWith(
+                        color: selected
+                            ? Colors.white
+                            : FluentianColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'a day  ·  ${goal.xp} XP',
+                      style: FluentianTheme.label(
+                        color: selected
+                            ? const Color(0xFFC7CCD6)
+                            : FluentianColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AnimatedScale(
+                duration: const Duration(milliseconds: 200),
+                scale: selected ? 1 : 0,
+                child: const Icon(
+                  Icons.check_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

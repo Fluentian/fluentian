@@ -81,7 +81,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                     height: 42,
                     decoration: BoxDecoration(
                       color: FluentianColors.accentTint,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(0),
                     ),
                     child: const Icon(
                       Iconsax.briefcase,
@@ -96,7 +96,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                       children: [
                         LText(
                           'Opportunities',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
                             color: FluentianColors.textPrimary,
@@ -104,7 +104,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                         ),
                         LText(
                           'Find your next step',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: FluentianColors.textSecondary,
@@ -139,7 +139,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                         color: isSelected
                             ? FluentianColors.accent
                             : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(
                           color: isSelected
                               ? FluentianColors.accent
@@ -151,7 +151,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                                   color: FluentianColors.accent.withValues(
                                     alpha: 0.3,
                                   ),
-                                  blurRadius: 8,
+                                  blurRadius: 0,
                                   offset: const Offset(0, 4),
                                 ),
                               ]
@@ -173,7 +173,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                           ],
                           LText(
                             label,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 13,
                               fontWeight: isSelected
                                   ? FontWeight.w700
@@ -225,7 +225,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                             const SizedBox(height: 16),
                             LText(
                               'Could not load opportunities',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -234,7 +234,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                             LText(
                               _error!,
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 color: FluentianColors.textSecondary,
                               ),
                             ),
@@ -272,7 +272,7 @@ class _OpportunityScreenState extends State<OpportunityScreen> {
                                 LText(
                                   'No opportunities found',
                                   textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.ibmPlexSans(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: FluentianColors.textSecondary,
@@ -364,12 +364,12 @@ class _OpportunityCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
+              blurRadius: 0,
               offset: const Offset(0, 4),
             ),
           ],
@@ -404,7 +404,7 @@ class _OpportunityCard extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: typeColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(0),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -420,7 +420,7 @@ class _OpportunityCard extends StatelessWidget {
                                   opportunity.type.toUpperCase(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.ibmPlexSans(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
                                     color: typeColor,
@@ -439,7 +439,7 @@ class _OpportunityCard extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: FluentianColors.success.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(0),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -455,7 +455,7 @@ class _OpportunityCard extends StatelessWidget {
                             const SizedBox(width: 6),
                             LText(
                               'Open',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: FluentianColors.success,
@@ -471,7 +471,7 @@ class _OpportunityCard extends StatelessWidget {
                     opportunity.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: FluentianColors.textPrimary,
@@ -483,7 +483,7 @@ class _OpportunityCard extends StatelessWidget {
                     opportunity.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 14,
                       color: FluentianColors.textSecondary,
                       height: 1.4,
@@ -516,7 +516,7 @@ class _OpportunityCard extends StatelessWidget {
                           deadlineText,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: FluentianColors.textSecondary,
@@ -530,7 +530,7 @@ class _OpportunityCard extends StatelessWidget {
                     children: [
                       LText(
                         'View details',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
                           color: FluentianColors.accent,

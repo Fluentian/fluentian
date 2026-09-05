@@ -96,7 +96,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
       appBar: AppBar(
         title: LText(
           widget.title,
-          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
+          style: GoogleFonts.ibmPlexSans(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         backgroundColor: FluentianColors.pageBg,
         scrolledUnderElevation: 0,
@@ -122,7 +122,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
                     LText(
                       'Could not load this page. Check your connection and try again.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         color: FluentianColors.textSecondary,
                       ),
                     ),

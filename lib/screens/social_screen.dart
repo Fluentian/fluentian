@@ -133,7 +133,7 @@ class _SocialScreenState extends State<SocialScreen> {
             children: [
               LText(
                 'Social',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                   color: FluentianColors.textPrimary,
@@ -142,7 +142,7 @@ class _SocialScreenState extends State<SocialScreen> {
               const SizedBox(height: 3),
               LText(
                 'Friends, progress, and friendly challenges',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: FluentianColors.textSecondary,
@@ -169,7 +169,7 @@ class _SocialScreenState extends State<SocialScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: FluentianColors.headerGradient,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(0),
         boxShadow: [FluentianShadows.subtle],
       ),
       child: Column(
@@ -182,7 +182,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 height: 50,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: const Icon(Iconsax.people, color: Colors.white),
               ),
@@ -190,7 +190,7 @@ class _SocialScreenState extends State<SocialScreen> {
               Expanded(
                 child: LText(
                   'Build your French circle',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -227,7 +227,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 elevation: 0,
                 minimumSize: const Size(double.infinity, 46),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(0),
                 ),
               ),
             ),
@@ -388,16 +388,16 @@ class _SocialScreenState extends State<SocialScreen> {
     final reward = _leaderboard?.rewardXp;
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(0),
       child: InkWell(
         onTap: () => Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const LeaderboardScreen())),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(0),
         child: Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(
               color: FluentianColors.secondary.withValues(alpha: .2),
             ),
@@ -412,7 +412,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 height: 42,
                 decoration: BoxDecoration(
                   color: FluentianColors.warningTint,
-                  borderRadius: BorderRadius.circular(13),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: const Icon(
                   Iconsax.cup5,
@@ -427,7 +427,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   children: [
                     LText(
                       'Weekly league',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                         color: FluentianColors.textPrimary,
@@ -442,7 +442,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           : '${me.weeklyXp} XP this week · ${reward ?? 100} XP prize',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: FluentianColors.textSecondary,
@@ -464,7 +464,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   ),
                   child: LText(
                     '#$rank',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
                       color: FluentianColors.secondary,
@@ -505,7 +505,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     request.user.displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
                       color: FluentianColors.textPrimary,
@@ -517,7 +517,7 @@ class _SocialScreenState extends State<SocialScreen> {
                         : 'request sent to @${request.user.username}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: FluentianColors.textSecondary,
@@ -586,7 +586,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     text: TextSpan(
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 13,
                         height: 1.25,
                         color: FluentianColors.textPrimary,
@@ -605,7 +605,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     activity.body,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: FluentianColors.textSecondary,
@@ -618,7 +618,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       const SizedBox(width: 8),
                       LText(
                         _relativeTime(activity.createdAt),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                           color: FluentianColors.textSecondary,
@@ -652,7 +652,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   height: 42,
                   decoration: BoxDecoration(
                     color: FluentianColors.accentTint,
-                    borderRadius: BorderRadius.circular(13),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: const Icon(Iconsax.cup, color: FluentianColors.accent),
                 ),
@@ -665,7 +665,7 @@ class _SocialScreenState extends State<SocialScreen> {
                         challenge.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w900,
                           color: FluentianColors.textPrimary,
@@ -673,7 +673,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       ),
                       LText(
                         '${challenge.status.toUpperCase()} · ${challenge.durationDays} days',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                           color: active
@@ -700,7 +700,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 if (pending && !canRespond)
                   LText(
                     'Sent',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
                       color: FluentianColors.textSecondary,
@@ -737,7 +737,7 @@ class _SocialScreenState extends State<SocialScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: FluentianColors.primary.withValues(alpha: .12),
         ),
@@ -753,7 +753,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 height: 44,
                 decoration: BoxDecoration(
                   gradient: FluentianColors.headerGradient,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: const Icon(Iconsax.people, color: Colors.white),
               ),
@@ -766,7 +766,7 @@ class _SocialScreenState extends State<SocialScreen> {
                       item.partner.displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 15,
                         fontWeight: FontWeight.w900,
                       ),
@@ -777,7 +777,7 @@ class _SocialScreenState extends State<SocialScreen> {
                                 ? 'Invited you to team up'
                                 : 'Invitation waiting')
                           : '${item.durationDays}-day shared goal',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 11,
                         color: FluentianColors.textSecondary,
                       ),
@@ -795,7 +795,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 ),
                 child: LText(
                   item.status.toUpperCase(),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 9,
                     fontWeight: FontWeight.w900,
                     color: item.status == 'active'
@@ -810,7 +810,7 @@ class _SocialScreenState extends State<SocialScreen> {
             const SizedBox(height: 12),
             LText(
               '“${item.message}”',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 12,
                 fontStyle: FontStyle.italic,
                 color: FluentianColors.textSecondary,
@@ -863,7 +863,7 @@ class _SocialScreenState extends State<SocialScreen> {
           else
             LText(
               'Goal: ${item.targetValue} $unit in ${item.durationDays} days',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: FluentianColors.primaryDark,
@@ -892,7 +892,7 @@ class _SocialScreenState extends State<SocialScreen> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, setSheetState) => Padding(
@@ -920,7 +920,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 const SizedBox(height: 20),
                 LText(
                   'Choose your accountability partner',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                   ),
@@ -928,7 +928,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 const SizedBox(height: 5),
                 LText(
                   'You both opt in and work toward the same goal.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 12,
                     color: FluentianColors.textSecondary,
                   ),
@@ -1060,7 +1060,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 );
               }
             : null,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(0),
         child: _Surface(
           child: Row(
             children: [
@@ -1069,7 +1069,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 height: 44,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.13),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: Icon(
                   !room.eligible
@@ -1090,7 +1090,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   children: [
                     LText(
                       room.title,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 15,
                         fontWeight: FontWeight.w900,
                         color: FluentianColors.textPrimary,
@@ -1102,7 +1102,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           : 'Locked · ${room.eligibilityLabel}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: FluentianColors.textSecondary,
@@ -1149,7 +1149,7 @@ class _SocialScreenState extends State<SocialScreen> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (context) => StatefulBuilder(
         builder: (context, setSheetState) {
@@ -1225,7 +1225,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           height: 48,
                           decoration: BoxDecoration(
                             color: FluentianColors.primaryTint,
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(0),
                           ),
                           child: const Icon(
                             Iconsax.user_search,
@@ -1239,7 +1239,7 @@ class _SocialScreenState extends State<SocialScreen> {
                             children: [
                               LText(
                                 'Find a learning partner',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w900,
                                   color: FluentianColors.textPrimary,
@@ -1248,7 +1248,7 @@ class _SocialScreenState extends State<SocialScreen> {
                               const SizedBox(height: 3),
                               LText(
                                 'Search by username or email address',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: FluentianColors.textSecondary,
@@ -1268,7 +1268,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     Container(
                       decoration: BoxDecoration(
                         color: FluentianColors.pageBg,
-                        borderRadius: BorderRadius.circular(17),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(
                           color: FluentianColors.primary.withValues(
                             alpha: 0.14,
@@ -1289,7 +1289,7 @@ class _SocialScreenState extends State<SocialScreen> {
                           hintText: context.tr(
                             'Search by username or email address',
                           ),
-                          hintStyle: GoogleFonts.inter(
+                          hintStyle: GoogleFonts.ibmPlexSans(
                             color: FluentianColors.textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
@@ -1336,11 +1336,11 @@ class _SocialScreenState extends State<SocialScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: FluentianColors.primaryTint,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(0),
                         ),
                         child: LText(
                           message!,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             color: FluentianColors.primaryDark,
@@ -1390,7 +1390,7 @@ class _SocialScreenState extends State<SocialScreen> {
     await showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheetState) => Padding(
@@ -1401,7 +1401,7 @@ class _SocialScreenState extends State<SocialScreen> {
             children: [
               LText(
                 'Challenge ${friend.displayName}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                   color: FluentianColors.textPrimary,
@@ -1553,7 +1553,7 @@ class _FriendSearchEmpty extends StatelessWidget {
             LText(
               hasSearched ? 'No learners found' : 'Build your French circle',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 17,
                 fontWeight: FontWeight.w900,
                 color: FluentianColors.textPrimary,
@@ -1565,7 +1565,7 @@ class _FriendSearchEmpty extends StatelessWidget {
                   ? 'Check the spelling or try another username or email.'
                   : 'Search for a learner, connect, and motivate each other as you progress.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 13,
                 height: 1.45,
                 color: FluentianColors.textSecondary,
@@ -1600,12 +1600,12 @@ class _FriendSearchResult extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.black.withValues(alpha: 0.055)),
         boxShadow: [
           BoxShadow(
             color: FluentianColors.primary.withValues(alpha: 0.055),
-            blurRadius: 18,
+            blurRadius: 0,
             offset: const Offset(0, 7),
           ),
         ],
@@ -1626,7 +1626,7 @@ class _FriendSearchResult extends StatelessWidget {
             alignment: Alignment.center,
             child: LText(
               initial,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
@@ -1642,7 +1642,7 @@ class _FriendSearchResult extends StatelessWidget {
                   name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
                     color: FluentianColors.textPrimary,
@@ -1653,7 +1653,7 @@ class _FriendSearchResult extends StatelessWidget {
                   '@${user.username}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 12,
                     color: FluentianColors.textSecondary,
                   ),
@@ -1716,7 +1716,7 @@ class _FriendStat extends StatelessWidget {
       ),
       child: LText(
         label,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 9,
           fontWeight: FontWeight.w800,
           color: FluentianColors.primaryDark,
@@ -1754,7 +1754,7 @@ class _PartnerProgress extends StatelessWidget {
               name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
               ),
@@ -1762,7 +1762,7 @@ class _PartnerProgress extends StatelessWidget {
           ),
           LText(
             '$value / $target $unit',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: FluentianColors.textSecondary,
@@ -1814,7 +1814,7 @@ class _FriendCard extends StatelessWidget {
                         friend.displayName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w900,
                           color: FluentianColors.textPrimary,
@@ -1824,7 +1824,7 @@ class _FriendCard extends StatelessWidget {
                         '@${friend.username}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 12,
                           color: FluentianColors.textSecondary,
                         ),
@@ -1868,7 +1868,7 @@ class _FriendCard extends StatelessWidget {
                   backgroundColor: FluentianColors.primaryTint,
                   foregroundColor: FluentianColors.primary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                 ),
               ),
@@ -1891,7 +1891,7 @@ class _Surface extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
         boxShadow: [FluentianShadows.subtle],
       ),
@@ -1913,7 +1913,7 @@ class _SectionTitle extends StatelessWidget {
       children: [
         LText(
           title,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 16,
             fontWeight: FontWeight.w900,
             color: FluentianColors.textPrimary,
@@ -1923,12 +1923,12 @@ class _SectionTitle extends StatelessWidget {
         if (action != null)
           InkWell(
             onTap: onAction,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(0),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
               child: LText(
                 action!,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                   color: onAction == null
@@ -1983,13 +1983,13 @@ class _IconButton extends StatelessWidget {
       message: tooltip,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
         child: Container(
           width: 44,
           height: 44,
           decoration: BoxDecoration(
             color: FluentianColors.primaryTint,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(0),
           ),
           child: Icon(icon, color: FluentianColors.primary, size: 21),
         ),
@@ -2039,14 +2039,14 @@ class _HeroStat extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           LText(
             value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white,
               fontSize: 22,
               fontWeight: FontWeight.w900,
@@ -2054,7 +2054,7 @@ class _HeroStat extends StatelessWidget {
           ),
           LText(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white.withValues(alpha: 0.72),
               fontSize: 12,
               fontWeight: FontWeight.w700,
@@ -2077,11 +2077,11 @@ class _LevelBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: FluentianColors.primaryTint,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(0),
       ),
       child: LText(
         level,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.ibmPlexSans(
           fontSize: 11,
           fontWeight: FontWeight.w900,
           color: FluentianColors.primary,
@@ -2104,7 +2104,7 @@ class _FriendMetric extends StatelessWidget {
       children: [
         LText(
           value,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 15,
             fontWeight: FontWeight.w900,
             color: FluentianColors.textPrimary,
@@ -2112,7 +2112,7 @@ class _FriendMetric extends StatelessWidget {
         ),
         LText(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 11,
             fontWeight: FontWeight.w700,
             color: FluentianColors.textSecondary,
@@ -2146,7 +2146,7 @@ class _ProgressLine extends StatelessWidget {
           children: [
             LText(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 color: FluentianColors.textPrimary,
@@ -2155,7 +2155,7 @@ class _ProgressLine extends StatelessWidget {
             const Spacer(),
             LText(
               '$value / $target',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 color: FluentianColors.textSecondary,
@@ -2203,7 +2203,7 @@ class _EmptyPanel extends StatelessWidget {
           LText(
             title,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 15,
               fontWeight: FontWeight.w900,
               color: FluentianColors.textPrimary,
@@ -2213,7 +2213,7 @@ class _EmptyPanel extends StatelessWidget {
           LText(
             body,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 12,
               height: 1.35,
               color: FluentianColors.textSecondary,
@@ -2261,7 +2261,7 @@ class _SocialLoading extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
             ),
             child: Row(
@@ -2315,7 +2315,7 @@ class _ChoiceChip extends StatelessWidget {
         ),
         child: LText(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             color: selected ? Colors.white : FluentianColors.primary,
             fontWeight: FontWeight.w900,
           ),
@@ -2347,7 +2347,7 @@ class _StepperRow extends StatelessWidget {
         Expanded(
           child: LText(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontWeight: FontWeight.w800,
               color: FluentianColors.textPrimary,
             ),
@@ -2362,7 +2362,7 @@ class _StepperRow extends StatelessWidget {
           child: Center(
             child: LText(
               '$value',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
                 color: FluentianColors.textPrimary,

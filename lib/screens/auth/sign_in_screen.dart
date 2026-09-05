@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../legal_document_screen.dart';
 import 'auth_widgets.dart';
@@ -149,26 +150,20 @@ class _SignInScreenState extends State<SignInScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 12),
-                  const Center(child: AuthLogo()),
+                  const AuthLogo(),
                   const SizedBox(height: 36),
 
+                  // Straight off the theme, so the auth pages and the
+                  // onboarding pages share one heading size and one
+                  // measure rather than each screen picking its own.
                   LText(
                     'Welcome back',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: AuthColors.heading,
-                      letterSpacing: -0.8,
-                    ),
+                    style: Theme.of(context).textTheme.displayMedium,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   LText(
                     'Sign in to your Fluentian account to continue.',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 15,
-                      color: AuthColors.placeholder,
-                      height: 1.4,
-                    ),
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 32),
 
@@ -216,12 +211,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                 color: _rememberMe
                                     ? AuthColors.primaryBlue
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(0),
                                 border: Border.all(
                                   color: _rememberMe
                                       ? AuthColors.primaryBlue
                                       : AuthColors.border,
-                                  width: 1.5,
+                                  width: _rememberMe ? 2 : 1,
                                 ),
                               ),
                               child: _rememberMe
@@ -235,10 +230,10 @@ class _SignInScreenState extends State<SignInScreen> {
                             const SizedBox(width: 10),
                             LText(
                               'Remember me',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
+                              style: GoogleFonts.ibmPlexSans(
+                                fontSize: 13.5,
                                 fontWeight: FontWeight.w600,
-                                color: AuthColors.body,
+                                color: AuthColors.heading,
                               ),
                             ),
                           ],
@@ -249,7 +244,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             _openAuthPage(const ForgotPasswordScreen()),
                         child: LText(
                           'Forgot password?',
-                          style: GoogleFonts.plusJakartaSans(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: AuthColors.primaryBlue,
@@ -262,7 +257,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   // Error banner
                   if (auth.errorMessage != null) ...[
                     const SizedBox(height: 20),
-                    _ErrorBanner(message: auth.errorMessage!),
+                    AuthErrorBanner(message: auth.errorMessage!),
                   ],
 
                   const SizedBox(height: 28),
@@ -281,49 +276,50 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  Center(
-                    child: Column(
-                      children: [
-                        TextButton.icon(
-                          onPressed: () => Navigator.of(context).push(
-                            LegalDocumentScreen.route(
-                              title: 'Privacy policy',
-                              url:
-                                  Endpoints.privacy,
-                            ),
-                          ),
-                          icon: const Icon(Icons.shield_outlined, size: 16, color: AuthColors.placeholder),
-                          label: LText(
-                            'Privacy policy',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              color: AuthColors.placeholder,
-                            ),
-                          ),
+                  // Left-aligned like everything above it. This block used
+                  // to be centred under a left-aligned page, and the privacy
+                  // link wore a shield icon -- a padlock-for-security reflex
+                  // that adds nothing to a word that already says it.
+                  GestureDetector(
+                    onTap: () => _openAuthPage(const SignUpScreen()),
+                    child: RichText(
+                      text: TextSpan(
+                        style: GoogleFonts.ibmPlexSans(
+                          fontSize: 14.5,
+                          color: AuthColors.body,
                         ),
-                        const SizedBox(height: 4),
-                        GestureDetector(
-                          onTap: () => _openAuthPage(const SignUpScreen()),
-                          child: RichText(
-                            text: TextSpan(
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14,
-                                color: AuthColors.placeholder,
-                              ),
-                              children: [
-                                TextSpan(text: context.tr("Don't have an account? ")),
-                                TextSpan(
-                                  text: context.tr('Sign up'),
-                                  style: const TextStyle(
-                                    color: AuthColors.primaryBlue,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
+                        children: [
+                          TextSpan(
+                            text: context.tr("Don't have an account? "),
+                          ),
+                          TextSpan(
+                            text: context.tr('Sign up'),
+                            style: const TextStyle(
+                              color: AuthColors.primaryBlue,
+                              fontWeight: FontWeight.w700,
+                              decoration: TextDecoration.underline,
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Divider(color: AuthColors.border, height: 1),
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        LegalDocumentScreen.route(
+                          title: 'Privacy policy',
+                          url: Endpoints.privacy,
                         ),
-                      ],
+                      ),
+                      child: Text(
+                        context.tr('Privacy policy').toUpperCase(),
+                        style: FluentianTheme.label(),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -337,35 +333,3 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 }
 
-class _ErrorBanner extends StatelessWidget {
-  final String message;
-  const _ErrorBanner({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFECACA)),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: AuthColors.errorText,
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: LText(
-              message,
-              style: GoogleFonts.inter(fontSize: 14, color: AuthColors.body),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

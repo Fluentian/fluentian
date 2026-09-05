@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../core/app_localization.dart';
 import '../core/theme.dart';
+import 'tibeb_band.dart';
 import 'common_widgets.dart';
 
 /// Shared chrome for onboarding steps: back arrow + "Step X of Y" header,
@@ -36,7 +37,7 @@ class OnboardingScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: FluentianColors.white,
+      backgroundColor: FluentianColors.pageBg,
       body: SafeArea(
         child: Column(
           children: [
@@ -49,31 +50,22 @@ class OnboardingScaffold extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.arrow_back_rounded),
                   ),
-                  const Spacer(),
-                  LText(
-                    'Step $step of $totalSteps',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: FluentianColors.textSecondary,
-                    ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Step $step / $totalSteps',
+                    style: FluentianTheme.label(),
                   ),
                   const Spacer(),
-                  const SizedBox(width: 24),
                 ],
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(99),
-                child: LinearProgressIndicator(
-                  value: step / totalSteps,
-                  minHeight: 5,
-                  backgroundColor: FluentianColors.border,
-                  valueColor: const AlwaysStoppedAnimation(
-                    FluentianColors.primary,
-                  ),
-                ),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: step / totalSteps),
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.easeOutCubic,
+                builder: (context, v, _) => TibebBand(height: 12, progress: v),
               ),
             ),
             Expanded(
@@ -85,18 +77,14 @@ class OnboardingScaffold extends StatelessWidget {
                     const SizedBox(height: 20),
                     LText(
                       title,
-                      style: GoogleFonts.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: FluentianColors.textPrimary,
-                      ),
+                      style: Theme.of(context).textTheme.displayMedium,
                     ),
-                    const SizedBox(height: 8),
-                    LText(
-                      subtitle,
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: FluentianColors.textSecondary,
+                    const SizedBox(height: 10),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      child: LText(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -152,17 +140,18 @@ class OnboardingOptionCard extends StatelessWidget {
       label: context.tr(label),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(0),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: selected
-                ? FluentianColors.primaryTint
-                : FluentianColors.white,
-            borderRadius: BorderRadius.circular(16),
+            // Selected inverts to solid ink rather than a pale tint. A tinted
+            // card with a checkmark is the default everywhere; a filled block
+            // reads as a decision that has been made.
+            color: selected ? FluentianColors.primary : FluentianColors.cardBg,
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(
               color: selected
                   ? FluentianColors.primary
@@ -173,7 +162,7 @@ class OnboardingOptionCard extends StatelessWidget {
                 ? [
                     BoxShadow(
                       color: FluentianColors.primary.withValues(alpha: .15),
-                      blurRadius: 12,
+                      blurRadius: 0,
                       offset: const Offset(0, 4),
                     ),
                   ]
@@ -188,15 +177,15 @@ class OnboardingOptionCard extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: selected
-                        ? FluentianColors.primary
+                        ? Colors.white
                         : FluentianColors.pageBg,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: Icon(
                     iconData,
                     size: 22,
                     color: selected
-                        ? Colors.white
+                        ? FluentianColors.primary
                         : FluentianColors.textSecondary,
                   ),
                 ),
@@ -208,18 +197,22 @@ class OnboardingOptionCard extends StatelessWidget {
                   children: [
                     LText(
                       label,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: FluentianColors.textPrimary,
+                        color: selected
+                            ? Colors.white
+                            : FluentianColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     LText(
                       description,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 12.5,
-                        color: FluentianColors.textSecondary,
+                        color: selected
+                            ? const Color(0xFFC7CCD6)
+                            : FluentianColors.textSecondary,
                         height: 1.3,
                       ),
                     ),
@@ -230,8 +223,8 @@ class OnboardingOptionCard extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 scale: selected ? 1 : 0,
                 child: const Icon(
-                  Icons.check_circle_rounded,
-                  color: FluentianColors.primary,
+                  Icons.check_rounded,
+                  color: Colors.white,
                   size: 22,
                 ),
               ),

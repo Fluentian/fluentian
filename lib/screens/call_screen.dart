@@ -58,12 +58,12 @@ class _SafetyAction extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 8),
     child: InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(0),
       child: Container(
         padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: .07),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(color: Colors.white10),
         ),
         child: Row(
@@ -74,7 +74,7 @@ class _SafetyAction extends StatelessWidget {
               decoration: BoxDecoration(
                 color: (danger ? Colors.red : FluentianColors.primary)
                     .withValues(alpha: .17),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(0),
               ),
               child: Icon(
                 icon,
@@ -91,7 +91,7 @@ class _SafetyAction extends StatelessWidget {
                 children: [
                   LText(
                     title,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: Colors.white,
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
@@ -100,7 +100,7 @@ class _SafetyAction extends StatelessWidget {
                   const SizedBox(height: 2),
                   LText(
                     subtitle,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: Colors.white54,
                       fontSize: 10,
                     ),
@@ -585,7 +585,7 @@ class _CallScreenState extends State<CallScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.white12),
       ),
       child: Row(
@@ -600,7 +600,7 @@ class _CallScreenState extends State<CallScreen> {
               boxShadow: [
                 BoxShadow(
                   color: color.withValues(alpha: 0.6),
-                  blurRadius: 4,
+                  blurRadius: 0,
                   spreadRadius: 1,
                 ),
               ],
@@ -609,7 +609,7 @@ class _CallScreenState extends State<CallScreen> {
           const SizedBox(width: 5),
           Text(
             '$_pingMs ms',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white70,
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -723,7 +723,7 @@ class _CallScreenState extends State<CallScreen> {
           const SizedBox(height: 28),
           LText(
             'Finding your partner',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white,
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -733,12 +733,12 @@ class _CallScreenState extends State<CallScreen> {
           LText(
             _status,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+            style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 13),
           ),
           const SizedBox(height: 6),
           LText(
             'You can leave anytime',
-            style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+            style: GoogleFonts.ibmPlexSans(color: Colors.white38, fontSize: 12),
           ),
           const SizedBox(height: 40),
           AnimatedSwitcher(
@@ -749,7 +749,7 @@ class _CallScreenState extends State<CallScreen> {
               child: LText(
                 '"${_languageLearningQuotes[_quoteIndex]}"',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   color: Colors.white70,
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
@@ -768,12 +768,12 @@ class _CallScreenState extends State<CallScreen> {
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: Colors.white24),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(0),
                 ),
               ),
               child: LText(
                 'Cancel',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                style: GoogleFonts.ibmPlexSans(fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -800,7 +800,7 @@ class _CallScreenState extends State<CallScreen> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     color: Colors.white,
                     fontSize: wide ? 18 : 16,
                     fontWeight: FontWeight.w800,
@@ -810,7 +810,7 @@ class _CallScreenState extends State<CallScreen> {
                   _status,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                  style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 12),
                 ),
                 if (widget.miniGoal != null) ...[
                   const SizedBox(height: 2),
@@ -818,7 +818,7 @@ class _CallScreenState extends State<CallScreen> {
                     'Goal: ${widget.miniGoal}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(color: FluentianColors.accent, fontSize: 11, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.ibmPlexSans(color: FluentianColors.accent, fontSize: 11, fontWeight: FontWeight.w700),
                   ),
                 ],
               ],
@@ -850,7 +850,7 @@ class _CallScreenState extends State<CallScreen> {
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
         decoration: const BoxDecoration(
           color: Color(0xFF1B1B22),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
         ),
         child: SafeArea(
           top: false,
@@ -876,7 +876,7 @@ class _CallScreenState extends State<CallScreen> {
                     height: 48,
                     decoration: BoxDecoration(
                       color: FluentianColors.primary.withValues(alpha: .2),
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(0),
                     ),
                     child: const Icon(
                       Iconsax.shield_tick,
@@ -890,7 +890,7 @@ class _CallScreenState extends State<CallScreen> {
                       children: [
                         LText(
                           'Safety center',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             color: Colors.white,
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
@@ -898,7 +898,7 @@ class _CallScreenState extends State<CallScreen> {
                         ),
                         LText(
                           'You are always in control of your room',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             color: Colors.white60,
                             fontSize: 12,
                           ),
@@ -931,7 +931,7 @@ class _CallScreenState extends State<CallScreen> {
               const SizedBox(height: 18),
               LText(
                 'PEOPLE IN THIS ROOM',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   color: Colors.white54,
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -942,7 +942,7 @@ class _CallScreenState extends State<CallScreen> {
               if (participants.isEmpty)
                 LText(
                   'No other participants are connected yet.',
-                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+                  style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 13),
                 )
               else
                 ...participants.map(
@@ -964,7 +964,7 @@ class _CallScreenState extends State<CallScreen> {
                 padding: const EdgeInsets.all(13),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: .06),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -978,7 +978,7 @@ class _CallScreenState extends State<CallScreen> {
                     Expanded(
                       child: LText(
                         'Reports are confidential. Blocking prevents future direct matching and is saved to your account.',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           color: Colors.white60,
                           fontSize: 11,
                           height: 1.4,
@@ -1003,7 +1003,7 @@ class _CallScreenState extends State<CallScreen> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, setSheetState) => Padding(
@@ -1031,7 +1031,7 @@ class _CallScreenState extends State<CallScreen> {
                 const SizedBox(height: 20),
                 LText(
                   'Report ${participant.name.isEmpty ? 'learner' : participant.name}',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                   ),
@@ -1039,7 +1039,7 @@ class _CallScreenState extends State<CallScreen> {
                 const SizedBox(height: 5),
                 LText(
                   'Choose the reason that best describes what happened.',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 12,
                     color: FluentianColors.textSecondary,
                   ),
@@ -1225,7 +1225,7 @@ class _CallScreenState extends State<CallScreen> {
       child: Center(
         child: LText(
           time,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             color: Colors.white,
             fontSize: 28,
             fontWeight: FontWeight.w800,
@@ -1269,7 +1269,7 @@ class _CallScreenState extends State<CallScreen> {
           SizedBox(height: compact ? 14 : 22),
           LText(
             '$_participantCount speaking now',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white,
               fontSize: compact ? 15 : 18,
               fontWeight: FontWeight.w800,
@@ -1281,7 +1281,7 @@ class _CallScreenState extends State<CallScreen> {
                 ? 'Guided French conversation'
                 : '$_matchedLevel guided French conversation',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+            style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 13),
           ),
           if (!compact) ...[const SizedBox(height: 30), _buildWaveform()],
         ],
@@ -1295,7 +1295,7 @@ class _CallScreenState extends State<CallScreen> {
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(0),
             child: Container(
               width: double.infinity,
               height: 250,
@@ -1321,11 +1321,11 @@ class _CallScreenState extends State<CallScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: LText(
                     time,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
                     ),
@@ -1340,7 +1340,7 @@ class _CallScreenState extends State<CallScreen> {
             right: 12,
             bottom: 20,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(0),
               child: Container(
                 width: 92,
                 height: 126,
@@ -1361,7 +1361,7 @@ class _CallScreenState extends State<CallScreen> {
 
   Widget _buildWideVideoStage(String time) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(26),
+      borderRadius: BorderRadius.circular(0),
       child: Stack(
         children: [
           Container(
@@ -1391,7 +1391,7 @@ class _CallScreenState extends State<CallScreen> {
             right: 16,
             bottom: 16,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(0),
               child: Container(
                 width: 150,
                 height: 200,
@@ -1430,7 +1430,7 @@ class _CallScreenState extends State<CallScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.white12),
       ),
       child: ListView(
@@ -1438,7 +1438,7 @@ class _CallScreenState extends State<CallScreen> {
         children: [
           LText(
             'Speaking prompts',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white,
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -1457,7 +1457,7 @@ class _CallScreenState extends State<CallScreen> {
             _roomName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+            style: GoogleFonts.ibmPlexSans(color: Colors.white38, fontSize: 11),
           ),
         ],
       ),
@@ -1482,7 +1482,7 @@ class _CallScreenState extends State<CallScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.white12),
       ),
       child: ListView(
@@ -1490,7 +1490,7 @@ class _CallScreenState extends State<CallScreen> {
         children: [
           LText(
             'Practice guide',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.w900,
@@ -1499,7 +1499,7 @@ class _CallScreenState extends State<CallScreen> {
           const SizedBox(height: 6),
           LText(
             'Use one prompt, then pass the turn.',
-            style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+            style: GoogleFonts.ibmPlexSans(color: Colors.white60, fontSize: 13),
           ),
           const SizedBox(height: 18),
           if (_matchReason != null) ...[
@@ -1516,7 +1516,7 @@ class _CallScreenState extends State<CallScreen> {
             _roomName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+            style: GoogleFonts.ibmPlexSans(color: Colors.white38, fontSize: 11),
           ),
         ],
       ),
@@ -1538,7 +1538,7 @@ class _CallScreenState extends State<CallScreen> {
           Expanded(
             child: LText(
               prompt,
-              style: GoogleFonts.inter(color: Colors.white70, height: 1.35),
+              style: GoogleFonts.ibmPlexSans(color: Colors.white70, height: 1.35),
             ),
           ),
         ],
@@ -1552,7 +1552,7 @@ class _CallScreenState extends State<CallScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: FluentianColors.primaryLight.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: FluentianColors.primaryLight.withValues(alpha: 0.18),
         ),
@@ -1569,7 +1569,7 @@ class _CallScreenState extends State<CallScreen> {
           Expanded(
             child: LText(
               _matchReason!,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 color: Colors.white70,
                 fontSize: 12,
                 height: 1.35,
@@ -1588,7 +1588,7 @@ class _CallScreenState extends State<CallScreen> {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: FluentianColors.error.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(
             color: FluentianColors.error.withValues(alpha: 0.35),
           ),
@@ -1605,7 +1605,7 @@ class _CallScreenState extends State<CallScreen> {
             LText(
               _error!,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white, height: 1.35),
+              style: GoogleFonts.ibmPlexSans(color: Colors.white, height: 1.35),
             ),
             const SizedBox(height: 14),
             TextButton(
@@ -1629,7 +1629,7 @@ class _CallScreenState extends State<CallScreen> {
       padding: EdgeInsets.fromLTRB(wide ? 40 : 16, 14, wide ? 40 : 16, 18),
       decoration: const BoxDecoration(
         color: Colors.black,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) => Center(
@@ -1857,7 +1857,7 @@ class _StatusPill extends StatelessWidget {
           const SizedBox(width: 6),
           LText(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white,
               fontWeight: FontWeight.w800,
             ),
@@ -1881,7 +1881,7 @@ class _MiniStat extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.white10),
       ),
       child: Row(
@@ -1894,7 +1894,7 @@ class _MiniStat extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 color: Colors.white70,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
@@ -1919,7 +1919,7 @@ class _SmallAction extends StatelessWidget {
       height: 42,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.white10),
       ),
       child: Row(
@@ -1929,7 +1929,7 @@ class _SmallAction extends StatelessWidget {
           const SizedBox(width: 7),
           LText(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white70,
               fontSize: 12,
               fontWeight: FontWeight.w800,

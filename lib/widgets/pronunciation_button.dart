@@ -64,7 +64,7 @@ class _PronunciationButtonState extends State<PronunciationButton> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: FluentianColors.primaryTint,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: FluentianColors.primary.withValues(alpha: 0.2)),
             ),
             child: Row(
@@ -83,7 +83,7 @@ class _PronunciationButtonState extends State<PronunciationButton> {
                 const SizedBox(width: 6),
                 LText(
                   'Listen',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 13,
                     color: FluentianColors.primary,
                     fontWeight: FontWeight.w600,
@@ -105,7 +105,7 @@ class _PronunciationButtonState extends State<PronunciationButton> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: Row(
@@ -124,7 +124,7 @@ class _PronunciationButtonState extends State<PronunciationButton> {
                 const SizedBox(width: 6),
                 LText(
                   'Slow',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 13,
                     color: FluentianColors.textPrimary,
                     fontWeight: FontWeight.w600,

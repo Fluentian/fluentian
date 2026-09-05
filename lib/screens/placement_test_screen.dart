@@ -64,7 +64,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
               boxShadow: [FluentianShadows.subtle],
             ),
@@ -73,7 +73,7 @@ class _PlacementTestScreenState extends State<PlacementTestScreen> {
               children: [
                 LText(
                   q.prompt,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.ibmPlexSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: FluentianColors.textPrimary,

@@ -115,7 +115,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                     LText(
                       isPassed ? 'Lesson complete' : 'Keep practicing!',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
                         color: FluentianColors.textPrimary,
@@ -129,7 +129,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                               : 'Nice work, ${user.displayName}.')
                           : 'You scored $accuracyPercent%. Score at least 60% to pass and unlock the next lesson.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 15,
                         color: FluentianColors.textSecondary,
                         height: 1.4,
@@ -148,7 +148,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                                   FluentianColors.darkNav,
                                 ],
                               ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(0),
                       ),
                       child: Column(
                         children: [
@@ -160,7 +160,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                           const SizedBox(height: 6),
                           LText(
                             isPassed ? '+$xpEarned XP' : '$accuracyPercent% Score',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 38,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
@@ -173,7 +173,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                                 : isPassed
                                 ? '$previousXp -> $newXpTotal total XP'
                                 : '60% required to earn XP & advance',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 13,
                               color: Colors.white.withValues(alpha: 0.85),
                             ),
@@ -196,12 +196,12 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                             gradient: const LinearGradient(
                               colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
                             ),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(0),
                             boxShadow: [
                               BoxShadow(
                                 color: FluentianColors.warning
                                     .withValues(alpha: 0.35),
-                                blurRadius: 12,
+                                blurRadius: 0,
                                 offset: const Offset(0, 4),
                               ),
                             ],
@@ -220,9 +220,9 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                                 children: [
                                   LText(
                                     isPassed
-                                        ? 'STREAK INCREASED! 🔥'
-                                        : 'DAILY PRACTICE RECORDED! 🔥',
-                                    style: GoogleFonts.inter(
+                                        ? 'STREAK INCREASED'
+                                        : 'DAILY PRACTICE RECORDED',
+                                    style: GoogleFonts.ibmPlexSans(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: 0.5,
@@ -231,7 +231,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                                   ),
                                   LText(
                                     '$streak Day Streak Active',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.ibmPlexSans(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white,
@@ -254,7 +254,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: FluentianColors.infoTint,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(0),
                           border: Border.all(
                             color: FluentianColors.info.withValues(alpha: 0.4),
                           ),
@@ -272,8 +272,8 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 LText(
-                                  'PERFECT TRIAL BONUS! 🛡️',
-                                  style: GoogleFonts.inter(
+                                  'PERFECT TRIAL BONUS',
+                                  style: GoogleFonts.ibmPlexSans(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 0.5,
@@ -282,7 +282,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                                 ),
                                 LText(
                                   '+1 Streak Freeze Earned (Max 3)',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.ibmPlexSans(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w800,
                                     color: FluentianColors.textPrimary,
@@ -313,7 +313,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                     else
                       LText(
                         'Feedback sent. Thank you.',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           color: FluentianColors.success,
                           fontWeight: FontWeight.w700,
                         ),
@@ -360,7 +360,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                         onPressed: () => Navigator.of(context).pop(),
                         child: Text(
                           context.tr('Back to Roadmap'),
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             color: FluentianColors.textSecondary,
                             fontWeight: FontWeight.w600,
                           ),
@@ -385,7 +385,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -403,7 +403,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                 children: [
                   LText(
                     'How was this lesson?',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
@@ -481,7 +481,7 @@ class _StatColumn extends StatelessWidget {
       children: [
         LText(
           value,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 22,
             fontWeight: FontWeight.w800,
             color: FluentianColors.textPrimary,
@@ -490,7 +490,7 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 4),
         LText(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 13,
             color: FluentianColors.textSecondary,
           ),

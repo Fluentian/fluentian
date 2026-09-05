@@ -174,7 +174,7 @@ class UserAvatar extends StatelessWidget {
       child: Center(
         child: Text(
           initial,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: size * 0.44,
             fontWeight: FontWeight.w800,
             color: Colors.white,

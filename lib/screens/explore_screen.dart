@@ -72,7 +72,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ),
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -96,7 +96,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     height: 52,
                     decoration: BoxDecoration(
                       gradient: FluentianColors.headerGradient,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(0),
                     ),
                     child: const Icon(Iconsax.book_saved, color: Colors.white),
                   ),
@@ -107,7 +107,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       children: [
                         LText(
                           cleaned,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 26,
                             fontWeight: FontWeight.w900,
                             color: FluentianColors.textPrimary,
@@ -115,7 +115,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         ),
                         LText(
                           'From this Explore story',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: FluentianColors.textSecondary,
@@ -218,11 +218,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: FluentianColors.headerGradient,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(0),
                 boxShadow: [
                   BoxShadow(
                     color: FluentianColors.primary.withValues(alpha: .18),
-                    blurRadius: 18,
+                    blurRadius: 0,
                     offset: const Offset(0, 7),
                   ),
                 ],
@@ -234,7 +234,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     height: 46,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: .14),
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(0),
                     ),
                     child: const Icon(
                       Iconsax.global,
@@ -249,7 +249,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       children: [
                         LText(
                           'Explore France',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
@@ -260,7 +260,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           'Stories, sounds, and everyday culture',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Colors.white.withValues(alpha: .72),
@@ -368,7 +368,7 @@ class _CultureStoryView extends StatelessWidget {
                     Expanded(
                       child: LText(
                         story.title,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 25,
                           fontWeight: FontWeight.w800,
                           height: 1.12,
@@ -393,7 +393,7 @@ class _CultureStoryView extends StatelessWidget {
                       child: LText(
                         story.location,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: FluentianColors.textSecondary,
@@ -432,7 +432,7 @@ class _TranslateHintCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: FluentianColors.primaryTint,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: FluentianColors.primary.withValues(alpha: 0.12),
         ),
@@ -450,7 +450,7 @@ class _TranslateHintCard extends StatelessWidget {
               'Tap any sentence to reveal its translation. Long press a paragraph for the full translation.',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 12.5,
                 height: 1.3,
                 fontWeight: FontWeight.w700,
@@ -478,7 +478,7 @@ class _WordContext extends StatelessWidget {
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: FluentianColors.pageBg,
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(0),
       border: Border.all(color: FluentianColors.border),
     ),
     child: Column(
@@ -490,7 +490,7 @@ class _WordContext extends StatelessWidget {
             const SizedBox(width: 7),
             LText(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 10,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 1,
@@ -502,7 +502,7 @@ class _WordContext extends StatelessWidget {
         const SizedBox(height: 8),
         LText(
           text,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             fontSize: 14,
             height: 1.45,
             fontWeight: FontWeight.w600,
@@ -564,7 +564,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
         ),
         child: SafeArea(
           top: false,
@@ -589,7 +589,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     gradient: FluentianColors.headerGradient,
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: Row(
                     children: [
@@ -599,7 +599,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                           children: [
                             LText(
                               'SAVED WORD',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 color: Colors.white70,
                                 fontSize: 10,
                                 letterSpacing: 1.2,
@@ -609,7 +609,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                             const SizedBox(height: 6),
                             LText(
                               item.word,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 color: Colors.white,
                                 fontSize: 29,
                                 fontWeight: FontWeight.w900,
@@ -619,7 +619,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                               const SizedBox(height: 4),
                               LText(
                                 item.translation,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   color: Colors.white70,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -663,7 +663,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: FluentianColors.primaryTint,
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: Row(
                     children: [
@@ -676,7 +676,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                       Expanded(
                         child: LText(
                           'Listen, then say the word and the full sentence aloud.',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.ibmPlexSans(
                             fontSize: 12,
                             height: 1.4,
                             fontWeight: FontWeight.w700,
@@ -769,7 +769,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                   const SizedBox(height: 18),
                   LText(
                     "Couldn't load your word bank",
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 19,
                       fontWeight: FontWeight.w900,
                     ),
@@ -778,7 +778,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                   LText(
                     'Check your connection and try again.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       height: 1.45,
                       color: FluentianColors.textSecondary,
                     ),
@@ -818,7 +818,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                   const SizedBox(height: 18),
                   LText(
                     'Your word bank is ready',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 19,
                       fontWeight: FontWeight.w900,
                     ),
@@ -827,7 +827,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                   LText(
                     'Tap any word in an Explore story to save it with its real context.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       height: 1.45,
                       color: FluentianColors.textSecondary,
                     ),
@@ -851,7 +851,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                 padding: const EdgeInsets.only(right: 22),
                 decoration: BoxDecoration(
                   color: Colors.red.shade400,
-                  borderRadius: BorderRadius.circular(17),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: const Icon(Icons.delete_outline, color: Colors.white),
               ),
@@ -861,14 +861,14 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
               },
               child: Material(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(17),
+                borderRadius: BorderRadius.circular(0),
                 child: InkWell(
                   onTap: () => _openWord(item),
-                  borderRadius: BorderRadius.circular(17),
+                  borderRadius: BorderRadius.circular(0),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(17),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(
                         color: FluentianColors.primary.withValues(alpha: .13),
                       ),
@@ -882,11 +882,11 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: FluentianColors.primaryTint,
-                            borderRadius: BorderRadius.circular(13),
+                            borderRadius: BorderRadius.circular(0),
                           ),
                           child: LText(
                             item.word.characters.first.toUpperCase(),
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.ibmPlexSans(
                               fontSize: 18,
                               fontWeight: FontWeight.w900,
                               color: FluentianColors.primary,
@@ -900,7 +900,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                             children: [
                               LText(
                                 item.word,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
                                 ),
@@ -910,7 +910,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                                 item.sourceSentence,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.ibmPlexSans(
                                   fontSize: 12,
                                   height: 1.35,
                                   color: FluentianColors.textSecondary,
@@ -924,7 +924,7 @@ class _VocabularyScreenState extends State<_VocabularyScreen> {
                           height: 34,
                           decoration: BoxDecoration(
                             color: FluentianColors.primaryTint,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(0),
                           ),
                           child: const Icon(
                             Icons.chevron_right_rounded,
@@ -981,7 +981,7 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
         height: 260,
         decoration: BoxDecoration(
           color: FluentianColors.divider,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(0),
         ),
         child: const Center(
           child: Icon(
@@ -993,7 +993,7 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
       );
     }
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(0),
       child: AspectRatio(
         aspectRatio: 1.05,
         child: Stack(
@@ -1072,7 +1072,7 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
                   ),
                   child: LText(
                     '${_currentMedia + 1}/${widget.media.length}',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
@@ -1113,7 +1113,7 @@ class _CultureMediaCarouselState extends State<_CultureMediaCarousel> {
                       widget.media[_currentMedia].caption,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 14,
                         height: 1.25,
                         color: Colors.white,
@@ -1252,7 +1252,7 @@ class _ExploreEmptyState extends StatelessWidget {
             const SizedBox(height: 12),
             LText(
               'No culture stories yet',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: FluentianColors.textPrimary,
@@ -1262,7 +1262,7 @@ class _ExploreEmptyState extends StatelessWidget {
             LText(
               'Published stories from the backend will appear here.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 14,
                 height: 1.45,
                 color: FluentianColors.textSecondary,
@@ -1294,7 +1294,7 @@ class _MetaChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: FluentianColors.primaryTint,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(0),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1306,7 +1306,7 @@ class _MetaChip extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 color: FluentianColors.primary,
@@ -1353,7 +1353,7 @@ class _StoryIndicator extends StatelessWidget {
               height: 7,
               decoration: BoxDecoration(
                 color: selected ? activeColor : inactiveColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(0),
               ),
             ),
           ),

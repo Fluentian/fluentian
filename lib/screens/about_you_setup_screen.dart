@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../core/app_localization.dart';
 import '../core/constants.dart';
@@ -69,23 +68,16 @@ class _AboutYouSetupScreenState extends State<AboutYouSetupScreen> {
         return Container(
           height: 320,
           decoration: const BoxDecoration(
-            color: FluentianColors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            color: FluentianColors.cardBg,
+            border: Border(top: FluentianBorders.hairline),
           ),
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+                padding: const EdgeInsets.fromLTRB(16, 18, 8, 6),
                 child: Row(
                   children: [
-                    LText(
-                      'Your birth date',
-                      style: GoogleFonts.inter(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: FluentianColors.textPrimary,
-                      ),
-                    ),
+                    Text('BIRTH DATE', style: FluentianTheme.label()),
                     const Spacer(),
                     TextButton(
                       onPressed: () {
@@ -147,84 +139,16 @@ class _AboutYouSetupScreenState extends State<AboutYouSetupScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LText(
-            'Birth date',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: FluentianColors.textSecondary,
-              letterSpacing: 0.5,
-            ),
-          ),
+          const _SectionLabel('BIRTH DATE'),
           const SizedBox(height: 10),
-          GestureDetector(
+          _BirthDateField(
+            date: _birthDate,
+            age: _age,
+            formatted: _birthDate == null ? null : _formatDate(_birthDate!),
             onTap: _pickBirthDate,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: _birthDate != null
-                    ? FluentianColors.primaryTint
-                    : FluentianColors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: _birthDate != null
-                      ? FluentianColors.primary
-                      : FluentianColors.border,
-                  width: _birthDate != null ? 2 : 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: _birthDate != null
-                          ? FluentianColors.primary
-                          : FluentianColors.pageBg,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.cake_rounded,
-                      size: 22,
-                      color: _birthDate != null
-                          ? Colors.white
-                          : FluentianColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: LText(
-                      _birthDate != null
-                          ? '${_formatDate(_birthDate!)} · $_age years old'
-                          : 'Tap to select your birth date',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: _birthDate != null
-                            ? FluentianColors.textPrimary
-                            : FluentianColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: FluentianColors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
           ),
           const SizedBox(height: 28),
-          LText(
-            'Your French so far',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: FluentianColors.textSecondary,
-              letterSpacing: 0.5,
-            ),
-          ),
+          const _SectionLabel('YOUR FRENCH SO FAR'),
           const SizedBox(height: 10),
           ...PriorFrenchExposure.values.map(
             (option) => OnboardingOptionCard(
@@ -256,6 +180,100 @@ class _AboutYouSetupScreenState extends State<AboutYouSetupScreen> {
               );
             }
           : null,
+    );
+  }
+}
+
+/// A field-set caption. Mono, upper, tracked -- the same label voice used for
+/// step counters and plate captions, so the form reads as one document
+/// rather than a stack of unrelated bold headings.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) =>
+      Text(text, style: FluentianTheme.label());
+}
+
+/// The birth-date field.
+///
+/// Dropped the birthday-cake icon: a cake for a date-of-birth input is the
+/// cute-icon reflex, and it says nothing the label doesn't. Once filled, the
+/// row inverts to ink like every other answered question in onboarding, and
+/// the chosen date is set in the mono face because it is data, not prose.
+class _BirthDateField extends StatelessWidget {
+  const _BirthDateField({
+    required this.date,
+    required this.age,
+    required this.formatted,
+    required this.onTap,
+  });
+
+  final DateTime? date;
+  final int? age;
+  final String? formatted;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final filled = date != null;
+
+    return Semantics(
+      button: true,
+      label: filled
+          ? '${context.tr('Birth date')} $formatted'
+          : context.tr('Select your birth date'),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(0),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.fromLTRB(14, 16, 10, 16),
+          decoration: BoxDecoration(
+            color: filled ? FluentianColors.primary : FluentianColors.cardBg,
+            border: Border.all(
+              color: filled ? FluentianColors.primary : FluentianColors.border,
+              width: filled ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: filled
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            formatted!,
+                            style: FluentianTheme.label(
+                              size: 15,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '$age years old',
+                            style: FluentianTheme.label(
+                              color: const Color(0xFFC7CCD6),
+                            ),
+                          ),
+                        ],
+                      )
+                    : LText(
+                        'Select your birth date',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: filled ? Colors.white : FluentianColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

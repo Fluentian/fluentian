@@ -446,7 +446,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
               ),
               LText(
                 'Private French tutor',
-                style: GoogleFonts.inter(color: Colors.white54, fontSize: 10),
+                style: GoogleFonts.ibmPlexSans(color: Colors.white54, fontSize: 10),
               ),
             ],
           ),
@@ -460,7 +460,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
           ),
           child: Text(
             time,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white70,
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -518,7 +518,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
           child: Text(
             _agentStatus,
             key: ValueKey(_agentStatus),
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: _agentColor,
               fontSize: 10,
               fontWeight: FontWeight.w900,
@@ -540,7 +540,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
                 ? 'Marie is joining your room. You can begin speaking as soon as she says bonjour.'
                 : 'Say bonjour, or choose a way to begin.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white54,
               fontSize: 12,
               height: 1.45,
@@ -554,12 +554,12 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: InkWell(
                     onTap: _isStarting ? null : () => _send(prompt),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(0),
                     child: Container(
                       padding: const EdgeInsets.all(13),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: .055),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(color: Colors.white10),
                       ),
                       child: Row(
@@ -573,7 +573,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
                           Expanded(
                             child: Text(
                               prompt,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 color: Colors.white70,
                                 fontSize: 12,
                                 height: 1.35,
@@ -609,8 +609,8 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
                   ? FluentianColors.primary
                   : Colors.white.withValues(alpha: .075),
               borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(17),
-                topRight: const Radius.circular(17),
+                topLeft: const Radius.circular(0),
+                topRight: const Radius.circular(0),
                 bottomLeft: Radius.circular(isUser ? 17 : 4),
                 bottomRight: Radius.circular(isUser ? 4 : 17),
               ),
@@ -618,7 +618,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
             ),
             child: Text(
               message.content.text,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 color: Colors.white,
                 fontSize: 13,
                 height: 1.4,
@@ -636,7 +636,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
       padding: const EdgeInsets.fromLTRB(14, 3, 5, 3),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: .075),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.white12),
       ),
       child: Row(
@@ -650,11 +650,11 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
               maxLines: 3,
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => _send(),
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+              style: GoogleFonts.ibmPlexSans(color: Colors.white, fontSize: 13),
               decoration: InputDecoration(
                 hintText: context.tr('Type to Marie…'),
                 counterText: '',
-                hintStyle: GoogleFonts.inter(
+                hintStyle: GoogleFonts.ibmPlexSans(
                   color: Colors.white38,
                   fontSize: 13,
                 ),
@@ -726,7 +726,7 @@ class _AiLiveCallScreenState extends State<AiLiveCallScreen> {
           LText(
             _error!,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               color: Colors.white70,
               fontSize: 13,
               height: 1.45,
@@ -779,7 +779,7 @@ class _CallControl extends StatelessWidget {
     label: context.tr(label),
     child: InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(0),
       child: SizedBox(
         width: 66,
         child: Column(
@@ -809,7 +809,7 @@ class _CallControl extends StatelessWidget {
             const SizedBox(height: 5),
             LText(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 color: Colors.white54,
                 fontSize: 9,
                 fontWeight: FontWeight.w700,

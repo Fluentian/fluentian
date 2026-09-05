@@ -91,7 +91,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       Navigator.pop(context);
                     },
                   ),
-                  const Expanded(child: _SmallLogo()),
+                  const Expanded(child: AuthLogo()),
                   const SizedBox(width: 48),
                 ],
               ),
@@ -99,17 +99,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
               Column(
                 children: [
-                  SizedBox(
-                    height: 80,
-                    child: Center(
-                      child: Icon(
-                        Icons.mark_email_unread_outlined,
-                        size: 48,
-                        color: AuthColors.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                  // Was a 48px envelope icon floating over the card. A
+                  // giant outline glyph restating the heading is the stock
+                  // empty-state move; the heading already says it.
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 28,
@@ -117,7 +109,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: AuthColors.cardBg,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(color: AuthColors.border),
                     ),
                     child: Column(
@@ -125,25 +117,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       children: [
                         LText(
                           'Forgot your password?',
-                          style: GoogleFonts.inter(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                            color: AuthColors.heading,
-                          ),
+                          style: Theme.of(context).textTheme.displaySmall,
                         ),
                         const SizedBox(height: 8),
                         LText(
-                          "No worries. Enter your email and we'll send you a 6-digit verification code to reset your password.",
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            color: AuthColors.placeholder,
-                            height: 1.5,
-                          ),
+                          "Enter your email and we'll send a 6-digit code to reset your password.",
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         const SizedBox(height: 24),
                         AuthInputField(
                           label: 'Email address',
-                          leftIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           hint: 'Enter the email linked to your account',
                           onChanged: (val) {
@@ -160,7 +143,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           onPressed: _isLoading ? null : _handleSendResetOtp,
                         ),
                         const SizedBox(height: 16),
-                        Center(
+                        Align(
+                          alignment: Alignment.centerLeft,
                           child: GestureDetector(
                             onTap: () {
                               _dismissMessages();
@@ -177,8 +161,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 const SizedBox(width: 6),
                                 LText(
                                   'Back to sign in',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.ibmPlexSans(
                                     fontSize: 14,
+                                    fontWeight: FontWeight.w600,
                                     color: AuthColors.primary,
                                   ),
                                 ),
@@ -199,42 +184,3 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 }
 
-class _SmallLogo extends StatelessWidget {
-  const _SmallLogo();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: AuthColors.primary,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Center(
-            child: LText(
-              'F',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        LText(
-          'fluentian',
-          style: GoogleFonts.inter(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: AuthColors.heading,
-          ),
-        ),
-      ],
-    );
-  }
-}

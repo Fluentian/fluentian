@@ -121,7 +121,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         iconTheme: const IconThemeData(color: FluentianColors.textPrimary),
         title: LText(
           _lesson!.title,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             color: FluentianColors.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -234,7 +234,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(0),
         boxShadow: [FluentianShadows.card],
       ),
       child: Column(
@@ -247,7 +247,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 height: 44,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(0),
                 ),
                 child: const Icon(
                   Iconsax.book_1,
@@ -262,7 +262,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   children: [
                     LText(
                       'Lesson path',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                         color: Colors.white.withValues(alpha: 0.72),
@@ -273,7 +273,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       _lesson!.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 19,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
@@ -302,7 +302,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           ),
           const SizedBox(height: 16),
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(0),
             child: LinearProgressIndicator(
               value: blockCount == 0 ? 0 : 0.18,
               minHeight: 8,
@@ -313,7 +313,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           const SizedBox(height: 8),
           LText(
             'Read, listen, ask AI, then prove it in the quiz.',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Colors.white.withValues(alpha: 0.78),
@@ -330,7 +330,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
         boxShadow: [FluentianShadows.subtle],
       ),
@@ -353,7 +353,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           const SizedBox(height: 20),
           LText(
             'Quiz-Only Session',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: FluentianColors.textPrimary,
@@ -363,7 +363,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           LText(
             'This lesson is an assessment designed to test your skills directly without preparatory reading material.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.ibmPlexSans(
               fontSize: 14,
               color: FluentianColors.textSecondary,
               height: 1.5,
@@ -385,7 +385,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 0,
             offset: const Offset(0, -4),
           ),
         ],
@@ -404,7 +404,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   padding: EdgeInsets.zero,
                   side: const BorderSide(color: FluentianColors.border),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                 ),
                 child: const Icon(
@@ -466,7 +466,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: FluentianColors.primary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                 ),
                 child: Row(
@@ -488,7 +488,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                           : quizQuestions.isEmpty
                           ? 'Complete Lesson'
                           : 'Continue to Quiz',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -523,7 +523,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               ),
               child: LText(
                 'STEP $step OF $total',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   color: FluentianColors.primary,
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -534,7 +534,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             const Spacer(),
             LText(
               '${((step / total) * 100).round()}%',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.ibmPlexSans(
                 color: FluentianColors.textSecondary,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -551,7 +551,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               height: 46,
               decoration: BoxDecoration(
                 color: presentation.color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(0),
               ),
               child: Icon(
                 presentation.icon,
@@ -566,7 +566,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 children: [
                   LText(
                     presentation.title,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: FluentianColors.textPrimary,
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
@@ -576,7 +576,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   const SizedBox(height: 5),
                   LText(
                     presentation.instruction,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       color: FluentianColors.textSecondary,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -596,7 +596,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               ? 'Great work — the quiz is next.'
               : 'Take your time. Continue when this feels clear.',
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.ibmPlexSans(
             color: FluentianColors.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -708,7 +708,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(0),
               border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
               boxShadow: [FluentianShadows.subtle],
             ),
@@ -718,7 +718,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 Expanded(
                   child: LText(
                     text,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 15,
                       color: FluentianColors.textPrimary,
                       height: 1.6,
@@ -779,7 +779,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
             boxShadow: [FluentianShadows.subtle],
           ),
@@ -791,7 +791,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   children: [
                     LText(
                       word,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: FluentianColors.textPrimary,
@@ -801,7 +801,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       const SizedBox(height: 3),
                       LText(
                         phonetic,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 13,
                           fontStyle: FontStyle.italic,
                           fontWeight: FontWeight.w600,
@@ -812,7 +812,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                     const SizedBox(height: 4),
                     LText(
                       meaning,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 14,
                         color: FluentianColors.textSecondary,
                         fontWeight: FontWeight.w500,
@@ -888,7 +888,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(
               color: FluentianColors.primary.withValues(alpha: 0.1),
             ),
@@ -902,7 +902,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   children: [
                     LText(
                       target.isNotEmpty ? target : textToSpeak,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.ibmPlexSans(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: FluentianColors.primary,
@@ -919,7 +919,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                       const SizedBox(height: 8),
                       LText(
                         base,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.ibmPlexSans(
                           fontSize: 14,
                           color: FluentianColors.textSecondary,
                           fontWeight: FontWeight.w500,
@@ -981,7 +981,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: FluentianColors.primaryTint,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(
               color: FluentianColors.primary.withValues(alpha: 0.15),
             ),
@@ -999,7 +999,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   const SizedBox(width: 8),
                   LText(
                     'GRAMMAR RULE',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.ibmPlexSans(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
                       color: FluentianColors.primary,
@@ -1011,7 +1011,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
               const SizedBox(height: 12),
               LText(
                 rule,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: FluentianColors.textPrimary,
@@ -1041,7 +1041,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(0),
                   ),
                   child: Row(
                     children: [
@@ -1051,7 +1051,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                           children: [
                             LText(
                               'EXAMPLE',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.grey.shade500,
@@ -1061,7 +1061,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                             const SizedBox(height: 4),
                             LText(
                               example,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.ibmPlexSans(
                                 fontSize: 13,
                                 fontStyle: FontStyle.italic,
                                 color: FluentianColors.textSecondary,
@@ -1170,7 +1170,7 @@ class _HeroMetric extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
         child: Row(
@@ -1182,7 +1182,7 @@ class _HeroMetric extends StatelessWidget {
               child: LText(
                 label,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.ibmPlexSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
